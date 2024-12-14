@@ -3,31 +3,55 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Icons } from "@/components/ui/icons";
+import { useChat } from "ai/react";
 import { cn } from "@/lib/utils";
-import { useChat } from "@/hooks/use-chat";
+import useChatStore from "@/store/chat";
 
 interface ChatUIProps {
   chatId: string;
 }
 
 export function ChatUI({ chatId }: ChatUIProps) {
-  const { messages, isLoading, sendMessage } = useChat(chatId);
+  const addMessage = useChatStore((state) => state.addMessage);
+  const updateGeneratedCode = useChatStore((state) => state.updateGeneratedCode);
+
+  const { messages, input, handleInputChange, handleSubmit: onSubmit } = useChat({
+    api: "/api/chat",
+    id: chatId,
+    initialMessages: [],
+    onFinish: (message) => {
+      console.log('onFinish:', message);
+      addMessage(chatId, { id: chatId + Date.now(), role: 'assistant', content: message.content });
+      
+      // Extract and update generated code if present
+      const codeMatch = message.content.match(/```(?:jsx|tsx)?\n([\s\S]*?)```/);
+      if (codeMatch) {
+        const files = [{
+          path: 'app/page.tsx',
+          content: codeMatch[1].trim()
+        }];
+        updateGeneratedCode(chatId, files);
+      }
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const input = form.elements.namedItem("message") as HTMLTextAreaElement;
+    if (!input.trim()) return;
     
-    await sendMessage(input.value);
-    input.value = "";
+    // Add user message to store first
+    addMessage(chatId, { id: chatId + Date.now(), role: 'user', content: input });
+    
+    // Then submit to API
+    onSubmit(e);
   };
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
+        {messages.map((message) => (
           <div
-            key={index}
+            key={message.id}
             className={cn(
               "flex w-max max-w-[80%] flex-col gap-2 rounded-lg px-3 py-2 text-sm",
               message.role === "user"
@@ -41,22 +65,21 @@ export function ChatUI({ chatId }: ChatUIProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="border-t p-4">
-        <div className="flex gap-4">
+        <div className="flex gap-2">
           <Textarea
-            name="message"
+            value={input}
+            onChange={handleInputChange}
             placeholder="Type a message..."
-            className="min-h-[44px] rounded-md border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="flex-1 min-h-[44px] resize-none"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e as any);
+              }
+            }}
           />
-          <Button 
-            type="submit" 
-            size="icon"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <Icons.spinner className="h-4 w-4 animate-spin" />
-            ) : (
-              <Icons.send className="h-4 w-4" />
-            )}
+          <Button type="submit" size="icon">
+            <Icons.send className="h-4 w-4" />
           </Button>
         </div>
       </form>

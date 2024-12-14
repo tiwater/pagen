@@ -5,6 +5,7 @@ import {
   Square,
   Send,
   Bot,
+  Wand,
 } from "lucide-react";
 
 export const Icons = {
@@ -14,4 +15,5 @@ export const Icons = {
   figma: Square, // Using Square as a placeholder for Figma icon
   send: Send,
   bot: Bot,
+  wand: Wand,
 };

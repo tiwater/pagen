@@ -3,28 +3,30 @@
 import { ChatUI } from "@/components/chat-ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PreviewFrame } from "@/components/preview-frame";
-import { generateNextProject } from "@/lib/project-generator";
-import { useChatStore } from "@/lib/store";
+import useChatStore from "@/store/chat";
+import { use } from "react";
 
-export default function ChatPage({ params }: { params: { id: string }}) {
-  const messages = useChatStore((state) => state.messages[params.id] || [])
+export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const chat = useChatStore((state) => state.chats[id])
   
-  // Get the latest assistant message for preview
-  const latestContent = messages
-    .filter(msg => msg.role === 'assistant')
-    .pop()?.content || ''
+  // If no chat exists, show loading or error state
+  if (!chat) {
+    return <div>Chat not found</div>
+  }
 
-  const files = generateNextProject(latestContent)
+  // Get the generated code from the store
+  const files = chat.generatedCode?.files || [];
 
   return (
     <div className="flex h-screen">
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col max-w-1/2">
         <div className="flex items-center gap-2 border-b px-4 h-12">
-          <span className="font-semibold">Chat</span>
+          <span className="font-semibold">{chat.title}</span>
           <span className="text-xs text-muted-foreground">Private</span>
         </div>
         <div className="flex-1 overflow-hidden">
-          <ChatUI chatId={params.id} />
+          <ChatUI chatId={id} />
         </div>
       </div>
       <div className="w-[600px] border-l">
@@ -39,8 +41,15 @@ export default function ChatPage({ params }: { params: { id: string }}) {
             <PreviewFrame files={files} />
           </TabsContent>
           <TabsContent value="code" className="p-4">
-            <pre className="text-sm">
-              <code>{JSON.stringify(files, null, 2)}</code>
+            <pre className="whitespace-pre-wrap text-sm">
+              {files.map((file) => (
+                <div key={file.path} className="mb-8">
+                  <div className="font-medium mb-2">{file.path}</div>
+                  <code className="block bg-muted p-4 rounded-lg">
+                    {file.content}
+                  </code>
+                </div>
+              ))}
             </pre>
           </TabsContent>
         </Tabs>

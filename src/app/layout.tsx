@@ -4,19 +4,12 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "./providers";
 
-const fontSans = localFont({
-  src: [
-    {
-      path: "../assets/fonts/CalSans-SemiBold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-  ],
-  variable: "--font-sans",
+const inter = localFont({
+  src: "../assets/fonts/Inter-Regular.woff2",
+  variable: "--font-inter",
 });
-
 const fontHeading = localFont({
-  src: "../assets/fonts/CalSans-SemiBold.woff2",
+  src: "../assets/fonts/Inter-SemiBold.woff2",
   variable: "--font-heading",
 });
 
@@ -39,7 +32,8 @@ export default function RootLayout({
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
+          inter.variable,
+          fontHeading.variable
         )}
       >
         <Providers>
