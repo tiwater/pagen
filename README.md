@@ -1,14 +1,15 @@
 # Pagen - AI Page Generator
 
-A Next.js application that generates professional-looking SaaS-style webpages using AI. Built with Next.js 14, TypeScript, shadcn/ui components, and the Vercel AI SDK.
+A Next.js application that generates professional-looking SaaS-style webpages using AI. Built with Next.js 15, TypeScript, shadcn/ui components, and the Vercel AI SDK.
 
 ## Features
 
 - Generate webpages from natural language descriptions
 - Real-time preview of generated webpages
 - View and edit source code
-- Download generated HTML
+- Live chat interface with AI
 - Modern UI with shadcn/ui components
+- Persistent chat history with Zustand
 - Powered by OpenAI's GPT-4
 
 ## Getting Started
@@ -19,10 +20,14 @@ A Next.js application that generates professional-looking SaaS-style webpages us
    pnpm install
    ```
 
-3. Copy the example environment file and add your OpenAI API key:
+3. Copy the example environment file and add your API keys:
    ```bash
    cp .env.example .env.local
    ```
+
+   Required environment variables:
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `HELICONE_API_KEY`: Your Helicone API key (optional, for analytics)
 
 4. Start the development server:
    ```bash
@@ -33,12 +38,13 @@ A Next.js application that generates professional-looking SaaS-style webpages us
 
 ## Technologies Used
 
-- Next.js 14
+- Next.js 15 (App Router)
 - TypeScript
 - shadcn/ui components
 - Vercel AI SDK
 - OpenAI GPT-4
 - Tailwind CSS
+- Zustand for state management
 
 ## Project Structure
 
@@ -47,18 +53,44 @@ pagen/
 ├── src/
 │   ├── app/
 │   │   ├── api/
+│   │   │   ├── chat/
+│   │   │   │   └── route.ts     # Chat API endpoint
 │   │   │   └── generate/
-│   │   │       └── route.ts
-│   │   ├── layout.tsx
-│   │   └── page.tsx
+│   │   │       └── route.ts     # Page generation endpoint
+│   │   ├── chat/
+│   │   │   └── [id]/
+│   │   │       └── page.tsx     # Chat interface page
+│   │   ├── layout.tsx           # Root layout with Inter font
+│   │   ├── page.tsx            # Homepage
+│   │   └── providers.tsx       # App providers
 │   ├── components/
-│   │   ├── ui/
-│   │   │   ├── button.tsx
-│   │   │   ├── tabs.tsx
-│   │   │   └── textarea.tsx
-│   │   └── webpage-generator.tsx
+│   │   ├── chat-ui.tsx         # Chat interface component
+│   │   ├── preview-frame.tsx   # Generated page preview
+│   │   └── webpage-generator.tsx # Page generation form
+│   ├── store/
+│   │   └── chat.ts            # Zustand store for chat state
 │   └── lib/
-│       └── utils.ts
-├── .env.example
-├── package.json
-└── tsconfig.json
+│       └── utils.ts           # Utility functions
+```
+
+## Features in Detail
+
+### Chat Interface
+- Real-time streaming responses from GPT-4
+- Code extraction and preview
+- Persistent chat history
+- Split view with preview pane
+
+### Page Generation
+- Natural language to webpage conversion
+- Real-time preview
+- Code view with syntax highlighting
+- Multiple file support
+
+## Contributing
+
+Feel free to open issues and pull requests for any improvements you'd like to add.
+
+## License
+
+MIT

@@ -1,7 +1,10 @@
 {
   "name": "pagen",
+  "description": "Generate professional-looking SaaS style webpages using AI",
+  "author": "Dustland <pagen@dustland.ai>",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
