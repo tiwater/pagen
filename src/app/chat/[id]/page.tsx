@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ChatUI } from "@/components/chat-ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PreviewFrame } from "@/components/preview-frame";
+import { NextRuntime } from "@/components/next-runtime";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/ui/icons";
@@ -38,8 +38,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   const files = chat.generatedCode?.files || [];
 
-  const PreviewPanel = () => {
+  const CodeWorkspace = () => {
     const { theme } = useTheme();
+    const logs = chat.logs || [];
     
     return (
       <div className="h-full">
@@ -48,6 +49,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             <TabsList>
               <TabsTrigger value="preview"><Icons.window className="mr-2 h-4 w-4" />Preview</TabsTrigger>
               <TabsTrigger value="code"><Icons.code className="mr-2 h-4 w-4" />Code</TabsTrigger>
+              <TabsTrigger value="console"><Icons.terminal className="mr-2 h-4 w-4" />Console</TabsTrigger>
             </TabsList>
             {isMobile && (
               <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)}>
@@ -56,7 +58,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             )}
           </div>
           <TabsContent value="preview" className="h-[calc(100vh-48px)] m-0">
-            <PreviewFrame files={files} />
+            <NextRuntime files={files} chatId={id} />
           </TabsContent>
           <TabsContent value="code" className="h-[calc(100vh-48px)] m-0 overflow-auto">
             <div className="p-4">
@@ -66,6 +68,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                   <CodeBlock code={file.content} language="tsx" />
                 </div>
               ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="console" className="h-[calc(100vh-48px)] m-0">
+            <div className="h-full bg-muted overflow-auto p-4">
+              <div className="font-mono text-xs space-y-1">
+                {logs.map((log, i) => (
+                  <div key={i} className="whitespace-pre-wrap">{log}</div>
+                ))}
+              </div>
             </div>
           </TabsContent>
         </Tabs>
@@ -87,7 +98,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           </div>
           {isPreviewOpen && (
             <div className="fixed inset-0 z-50 bg-background">
-              <PreviewPanel />
+              <CodeWorkspace />
             </div>
           )}
         </div>
@@ -102,7 +113,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 >
                   <Image src="/images/logo.svg" width={20} height={20} alt="Logo" />
                 </Link>
-                <span className="text-smfont-semibold">{chat.title}</span>
+                <span className="text-sm font-semibold">{chat.title}</span>
               </div>
               <div className="flex-1 overflow-hidden">
                 <ChatUI chatId={id} />
@@ -111,7 +122,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={60}>
-            <PreviewPanel />
+            <CodeWorkspace />
           </ResizablePanel>
         </ResizablePanelGroup>
       )}

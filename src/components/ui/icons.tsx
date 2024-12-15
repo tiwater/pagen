@@ -8,7 +8,8 @@ import {
   Bot,
   Wand,
   AppWindow,
-  Code
+  Code,
+  Terminal
 } from "lucide-react";
 
 function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -37,6 +38,7 @@ export const Icons = {
   figma: Square, // Using Square as a placeholder for Figma icon
   send: Send,
   bot: Bot,
+  terminal: Terminal,
   wand: Wand,
   window: AppWindow,
   code: Code
