@@ -7,6 +7,8 @@ import {
   Send,
   Bot,
   Wand,
+  AppWindow,
+  Code
 } from "lucide-react";
 
 function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -36,4 +38,6 @@ export const Icons = {
   send: Send,
   bot: Bot,
   wand: Wand,
+  window: AppWindow,
+  code: Code
 };

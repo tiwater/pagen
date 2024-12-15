@@ -31,6 +31,22 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  useEffect(() => {
+    if (chat?.messages.length === 1 && chat.messages[0].role === 'user') {
+      // Initial message exists but hasn't been sent to API
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: chat.messages,
+          id: id,
+        }),
+      });
+    }
+  }, [chat, id]);
   
   if (!chat) {
     return <div>Chat not found</div>
@@ -44,10 +60,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     return (
       <div className="h-full">
         <Tabs defaultValue="preview" className="h-full">
-          <div className="flex items-center justify-between border-b px-4 h-12">
+          <div className="flex items-center justify-between bg-transparent px-4 h-12 border-b">
             <TabsList>
-              <TabsTrigger value="preview">Preview</TabsTrigger>
-              <TabsTrigger value="code">Code</TabsTrigger>
+              <TabsTrigger value="preview"><Icons.window className="mr-2 h-4 w-4" />Preview</TabsTrigger>
+              <TabsTrigger value="code"><Icons.code className="mr-2 h-4 w-4" />Code</TabsTrigger>
             </TabsList>
             {isMobile && (
               <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)}>

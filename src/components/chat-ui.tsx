@@ -155,6 +155,14 @@ export function ChatUI({ chatId }: ChatUIProps) {
     }
   });
 
+  // Auto-trigger chat for initial message
+  useEffect(() => {
+    if (chat?.messages.length === 1 && chat.messages[0].role === 'user' && !messages.some(m => m.role === 'assistant')) {
+      const event = new Event('submit');
+      handleSubmit(event as any);
+    }
+  }, [chat?.messages]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };

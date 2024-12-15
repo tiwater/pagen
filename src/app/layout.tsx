@@ -17,8 +17,17 @@ export const metadata: Metadata = {
   title: "Pagen - AI Page Generator",
   description: "Generate professional-looking SaaS style webpages using AI",
   icons: {
-    icon: "/favicon.ico",
-  },
+    icon: [
+      {
+        url: "/favicon.ico",
+        sizes: "any"
+      },
+      {
+        url: "/images/logo.svg",
+        type: "image/svg+xml"
+      }
+    ]
+  }
 };
 
 export default function RootLayout({
