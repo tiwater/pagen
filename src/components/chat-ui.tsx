@@ -27,20 +27,8 @@ interface CodeProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 function PagePreview({ page }: { page: GeneratedPage }) {
-  const updateGeneratedCode = useChatStore((state) => state.updateGeneratedCode);
-  const chatId = useChatStore((state) => state.currentChatId);
-
-  const handleClick = () => {
-    if (chatId) {
-      updateGeneratedCode(chatId, [page]);
-    }
-  };
-
   return (
-    <div 
-      onClick={handleClick}
-      className="bg-muted hover:bg-muted/80 cursor-pointer rounded-lg p-4 transition-colors"
-    >
+    <div className="bg-muted rounded-lg p-4">
       <div className="flex items-center gap-2 mb-2">
         <Icons.bot className="w-4 h-4 text-muted-foreground" />
         <span className="font-medium">{page.path}</span>
@@ -144,12 +132,13 @@ export function ChatUI({ chatId }: ChatUIProps) {
       addMessage(chatId, { id: chatId + Date.now(), role: 'assistant', content: message.content });
       
       // Extract and update generated code if present
-      const codeMatch = message.content.match(/```(?:jsx|tsx)?\n([\s\S]*?)```/);
+      const codeMatch = message.content.match(/```(?:jsx|tsx|pagen)?\n([\s\S]*?)```/);
       if (codeMatch) {
         const files = [{
           path: 'app/page.tsx',
           content: codeMatch[1].trim()
         }];
+        // Update code immediately when we get it
         updateGeneratedCode(chatId, files);
       }
       
