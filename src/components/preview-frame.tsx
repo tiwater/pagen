@@ -1,50 +1,85 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { type FileContent } from '@/types/project'
+import { WebContainer } from '@webcontainer/api'
 
 interface PreviewFrameProps {
   files: FileContent[]
 }
 
 export function PreviewFrame({ files }: PreviewFrameProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [logs, setLogs] = useState<string[]>([])
+  
   useEffect(() => {
-    const iframe = iframeRef.current
-    if (!iframe) return
+    if (!containerRef.current) return
+    
+    let webcontainerInstance: WebContainer
 
-    // Create a virtual filesystem for the preview
-    const virtualFs = new Map<string, string>()
-    files.forEach(file => {
-      virtualFs.set(file.path, file.content)
-    })
+    const initWebContainer = async () => {
+      // Boot WebContainer
+      webcontainerInstance = await WebContainer.boot()
+      
+      // Mount files
+      await webcontainerInstance.mount({
+        'index.html': {
+          file: {
+            contents: `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+                  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+                  <script src="https://cdn.tailwindcss.com"></script>
+                </head>
+                <body>
+                  <div id="root"></div>
+                </body>
+              </html>
+            `
+          }
+        },
+        'index.js': {
+          file: {
+            contents: `
+              ${files.find(f => f.path === 'app/page.tsx')?.content || ''}
+            `
+          }
+        }
+      })
 
-    // Initialize preview environment
-    const previewDoc = iframe.contentDocument
-    if (!previewDoc) return
+      // Capture console output
+      webcontainerInstance.on('console', (log) => {
+        setLogs(prev => [...prev, log.message])
+      })
 
-    // Add base styles and scripts
-    previewDoc.head.innerHTML = `
-      <style>
-        @import 'https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/dist/tailwind.min.css';
-      </style>
-      <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-      <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    `
+      // Start dev server
+      const devServer = await webcontainerInstance.spawn('npx', ['serve'])
+      devServer.output.pipeTo(new WritableStream({
+        write(data) {
+          console.log(data)
+        }
+      }))
+    }
 
-    // Inject the page content
-    const pageContent = virtualFs.get('app/page.tsx')
-    if (pageContent) {
-      previewDoc.body.innerHTML = `<div id="root">${pageContent}</div>`
+    initWebContainer()
+    
+    return () => {
+      webcontainerInstance?.teardown()
     }
   }, [files])
 
   return (
-    <iframe
-      ref={iframeRef}
-      className="w-full h-full border-0"
-      sandbox="allow-scripts allow-same-origin"
-    />
+    <div className="grid grid-rows-[1fr,auto]">
+      <div ref={containerRef} className="w-full h-full" />
+      {logs.length > 0 && (
+        <div className="h-32 bg-muted overflow-auto p-2 text-sm font-mono">
+          {logs.map((log, i) => (
+            <div key={i}>{log}</div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }

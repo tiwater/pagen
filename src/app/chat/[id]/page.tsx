@@ -75,7 +75,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           <div className={`h-full ${isPreviewOpen ? 'hidden' : 'block'}`}>
             <div className="flex items-center gap-2 border-b px-4 h-12">
               <span className="font-semibold">{chat.title}</span>
-              <span className="text-xs text-muted-foreground">Private</span>
             </div>
             <div className="h-[calc(100vh-48px)] overflow-hidden">
               <ChatUI chatId={id} />
@@ -99,7 +98,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                   <Icons.logo className="w-6 h-6" />
                 </Link>
                 <span className="font-semibold">{chat.title}</span>
-                <span className="text-xs text-muted-foreground">Private</span>
               </div>
               <div className="flex-1 overflow-hidden">
                 <ChatUI chatId={id} />
