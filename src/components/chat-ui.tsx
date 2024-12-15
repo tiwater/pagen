@@ -27,8 +27,20 @@ interface CodeProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 function PagePreview({ page }: { page: GeneratedPage }) {
+  const updateGeneratedCode = useChatStore((state) => state.updateGeneratedCode);
+  const chatId = useChatStore((state) => state.currentChatId);
+
+  const handleClick = () => {
+    if (chatId) {
+      updateGeneratedCode(chatId, [page]);
+    }
+  };
+
   return (
-    <div className="bg-muted rounded-lg p-4">
+    <div 
+      onClick={handleClick}
+      className="bg-muted hover:bg-muted/80 cursor-pointer rounded-lg p-4 transition-colors"
+    >
       <div className="flex items-center gap-2 mb-2">
         <Icons.bot className="w-4 h-4 text-muted-foreground" />
         <span className="font-medium">{page.path}</span>
