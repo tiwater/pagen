@@ -170,6 +170,7 @@ export function ChatUI({ chatId }: ChatUIProps) {
         // Remove the last message from useChat state before appending
         setMessages(messages.slice(0, -1));
         append(lastMessage);
+        markChatInitialized(chatId);
       }
     }
   }, [chat, append, messages, setMessages]);
