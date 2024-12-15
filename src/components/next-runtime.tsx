@@ -1,26 +1,14 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { WebContainer } from '@webcontainer/api'
-import useChatStore from '@/store/chat'
+import { useEffect, useRef, useState } from 'react'
+import { WebContainer, FileSystemTree } from '@webcontainer/api'
 
 // Singleton instance and state
 let webcontainerInstance: WebContainer | null = null
 let isBooting = false
 let currentChatId: string | null = null
 let tearingDown = false
-
-// Simple event emitter for logs
-const logEmitter = {
-  listeners: new Set<(chatId: string, message: string) => void>(),
-  emit(chatId: string, message: string) {
-    this.listeners.forEach(listener => listener(chatId, message))
-  },
-  subscribe(listener: (chatId: string, message: string) => void) {
-    this.listeners.add(listener)
-    return () => this.listeners.delete(listener)
-  }
-}
+let setupStartedChats = new Set<string>()
 
 interface NextRuntimeProps {
   files: Array<{ path: string; content: string }>
@@ -28,40 +16,52 @@ interface NextRuntimeProps {
 }
 
 export function NextRuntime({ files, chatId }: NextRuntimeProps) {
+  console.log('NextRuntime mounted with:', { files, chatId })
+  
   const containerRef = useRef<HTMLDivElement>(null)
   const mountedRef = useRef(true)
+  const chatIdRef = useRef(chatId)
+  const serverReadyRef = useRef(false)
   const [serverUrl, setServerUrl] = useState<string>('')
-  const addLog = useChatStore(state => state.addLog)
 
-  // Subscribe to log events
+  // Mount state management
   useEffect(() => {
-    const unsubscribe = logEmitter.subscribe((id, message) => {
-      if (id === chatId) {
-        addLog(id, message)
-      }
-    })
-    return () => { unsubscribe() }
-  }, [chatId, addLog])
+    mountedRef.current = true
+    return () => {
+      console.log('Component unmounting:', { chatId, serverReady: serverReadyRef.current })
+      mountedRef.current = false
+    }
+  }, [])
 
-  const log = useCallback((message: string) => {
-    if (!mountedRef.current) return
-    console.log(message)
-    logEmitter.emit(chatId, message)
+  // Update chatIdRef when chatId prop changes
+  useEffect(() => {
+    console.log('ChatId changed:', { from: chatIdRef.current, to: chatId })
+    chatIdRef.current = chatId
   }, [chatId])
 
   // Cleanup effect
   useEffect(() => {
+    console.log('Setting up cleanup for chat:', chatId)
     currentChatId = chatId
+    
     return () => {
+      console.log('Running cleanup for chat:', { 
+        chatId,
+        currentChatId,
+        mounted: mountedRef.current,
+        serverReady: serverReadyRef.current,
+        currentChatIdRef: chatIdRef.current
+      })
+      
       if (currentChatId === chatId) {
         currentChatId = null
-        mountedRef.current = false
+        setupStartedChats.delete(chatId)
         
         const cleanup = async () => {
           if (webcontainerInstance && !tearingDown) {
             tearingDown = true
             try {
-              log('Tearing down WebContainer...')
+              console.log('Tearing down WebContainer...')
               await webcontainerInstance.teardown()
               webcontainerInstance = null
             } catch (error) {
@@ -74,85 +74,184 @@ export function NextRuntime({ files, chatId }: NextRuntimeProps) {
         cleanup()
       }
     }
-  }, [chatId, log])
+  }, [chatId])
 
   // Setup effect
   useEffect(() => {
-    if (!containerRef.current || !chatId || !mountedRef.current) return
+    console.log('Setup effect running, container:', containerRef.current)
+    
+    // Wait for container to be mounted
+    if (!containerRef.current) {
+      console.log('Container not yet mounted, waiting...')
+      return
+    }
+
+    // Check if setup is needed
+    if (!chatId || !mountedRef.current) {
+      console.log('Setup not needed:', {
+        noChatId: !chatId,
+        notMounted: !mountedRef.current
+      })
+      return
+    }
+
+    // Check if already set up
+    if (setupStartedChats.has(chatId)) {
+      console.log('Setup already started for chat:', chatId)
+      return
+    }
+
+    setupStartedChats.add(chatId)
+    console.log('Starting setup for chat:', chatId)
     
     const setupContainer = async () => {
       try {
-        // Only initialize if we don't have an instance and aren't already booting
-        if (!webcontainerInstance && !isBooting && !tearingDown) {
+        if (!webcontainerInstance && !isBooting) {
           isBooting = true
-          try {
-            log('Booting WebContainer...')
-            webcontainerInstance = await WebContainer.boot()
-            log('WebContainer booted successfully')
-          } catch (error) {
-            log(`Error booting WebContainer: ${error}`)
-            throw error
-          } finally {
-            isBooting = false
-          }
+          console.log('Booting new WebContainer instance...')
+          webcontainerInstance = await WebContainer.boot()
+          isBooting = false
+          console.log('WebContainer booted successfully')
         }
 
-        // Wait for any ongoing teardown to complete
-        while (tearingDown) {
-          await new Promise(resolve => setTimeout(resolve, 100))
-        }
-
-        if (!webcontainerInstance || !mountedRef.current || currentChatId !== chatId) {
+        if (!webcontainerInstance) {
+          console.error('WebContainer instance not available')
+          setupStartedChats.delete(chatId) // Allow retry on failure
           return
         }
 
-        log('Mounting project files...')
-        await webcontainerInstance.mount(files.reduce((acc, file) => ({
-          ...acc,
-          [file.path]: {
-            file: { contents: file.content }
-          }
-        }), {}))
-
-        // Install dependencies
-        const installProcess = await webcontainerInstance.spawn('npm', ['install'])
-        const installExitCode = await installProcess.exit
+        console.log('Mounting files:', files)
         
-        if (installExitCode !== 0) {
-          throw new Error('Failed to install dependencies')
+        // Define types for the file system structure
+        const fileSystem: FileSystemTree = {
+          'package.json': {
+            file: {
+              contents: JSON.stringify({
+                name: 'next-app',
+                private: true,
+                scripts: {
+                  dev: 'next dev',
+                  build: 'next build',
+                  start: 'next start'
+                },
+                dependencies: {
+                  'next': '^14.0.0',
+                  'react': '^18.2.0',
+                  'react-dom': '^18.2.0'
+                }
+              }, null, 2)
+            }
+          },
+          'next.config.js': {
+            file: {
+              contents: 'module.exports = {}'
+            }
+          }
         }
 
-        // Start the Next.js dev server
+        // Create directories and add files
+        for (const { path, content } of files) {
+          const parts = path.split('/')
+          let currentPath = ''
+          let currentObj: FileSystemTree = fileSystem
+
+          // Create directory structure
+          for (let i = 0; i < parts.length - 1; i++) {
+            currentPath += (currentPath ? '/' : '') + parts[i]
+            if (!currentObj[parts[i]]) {
+              console.log('Creating directory:', currentPath)
+              currentObj[parts[i]] = {
+                directory: {} as FileSystemTree
+              }
+            }
+            currentObj = currentObj[parts[i]] as { directory: FileSystemTree }
+          }
+
+          // Add file
+          const fileName = parts[parts.length - 1]
+          currentObj[fileName] = {
+            file: {
+              contents: content
+            }
+          }
+        }
+
+        console.log('File system structure:', fileSystem)
+        await webcontainerInstance.mount(fileSystem)
+        console.log('Files mounted successfully')
+
+        console.log('Installing dependencies...')
+        const installProcess = await webcontainerInstance.spawn('npm', ['install'])
+        
+        installProcess.output.pipeTo(new WritableStream({
+          write(data) {
+            console.log('[npm install]', data)
+          }
+        }))
+
+        const installExitCode = await installProcess.exit
+        if (installExitCode !== 0) {
+          console.error('npm install failed with code:', installExitCode)
+          setupStartedChats.delete(chatId) // Allow retry on failure
+          return
+        }
+        console.log('Dependencies installed successfully')
+
+        console.log('Starting development server...')
         const serverProcess = await webcontainerInstance.spawn('npm', ['run', 'dev'])
         
-        // Wait for the URL to be ready
+        serverProcess.output.pipeTo(new WritableStream({
+          write(data) {
+            console.log('[Server]', data)
+          }
+        }))
+
         webcontainerInstance.on('server-ready', (port, url) => {
-          if (mountedRef.current && currentChatId === chatId) {
+          console.log('Server ready event:', {
+            url,
+            mounted: mountedRef.current,
+            currentChatId,
+            componentChatId: chatIdRef.current
+          })
+          
+          serverReadyRef.current = true
+          
+          if (mountedRef.current && chatIdRef.current === chatId) {
+            console.log('Setting server URL:', url)
             setServerUrl(url)
-            log(`Server started at ${url}`)
+          } else {
+            console.log('Server ready but component state invalid:', {
+              mounted: mountedRef.current,
+              currentChatId,
+              componentChatId: chatIdRef.current,
+              expectedChatId: chatId,
+              serverReady: serverReadyRef.current
+            })
           }
         })
 
       } catch (error) {
-        log(`Error setting up container: ${error}`)
         console.error('Container setup error:', error)
+        setupStartedChats.delete(chatId) // Allow retry on failure
       }
     }
 
     setupContainer()
-  }, [chatId, files, log])
-
-  if (!serverUrl) {
-    return <div>Loading...</div>
-  }
+  }, [chatId, files])
 
   return (
     <div className="w-full h-full" ref={containerRef}>
-      <iframe
-        src={serverUrl}
-        className="w-full h-full border-none"
-        allow="cross-origin-isolated"
-      />
+      {!serverUrl ? (
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <iframe
+          src={serverUrl}
+          className="w-full h-full border-none"
+          allow="cross-origin-isolated"
+        />
+      )}
     </div>
   )
 }

@@ -45,6 +45,7 @@ const useChatStore = create<ChatState>()(
 
       createChat: (title, initialMessage) => {
         const chatId = nanoid(10)
+        console.log('Creating new chat:', chatId, 'with title:', title)
         set((state) => ({
           currentChatId: chatId,
           chats: {
@@ -52,8 +53,15 @@ const useChatStore = create<ChatState>()(
             [chatId]: {
               id: chatId,
               title,
-              messages: initialMessage 
-                ? [{ id: nanoid(10), role: 'user', content: initialMessage }]
+              messages: initialMessage
+                ? [
+                    {
+                      id: nanoid(),
+                      role: 'user',
+                      content: initialMessage,
+                      createdAt: new Date()
+                    }
+                  ]
                 : [],
               logs: [],
               isNew: true,
@@ -62,6 +70,7 @@ const useChatStore = create<ChatState>()(
             }
           }
         }))
+        console.log('Chat created:', chatId, 'Current store:', get().chats[chatId])
         return chatId
       },
 
@@ -105,14 +114,17 @@ const useChatStore = create<ChatState>()(
       addLog: (chatId, log) =>
         set((state) => {
           const chat = state.chats[chatId]
-          if (!chat) return state
-
+          if (!chat) {
+            console.warn('No chat found for ID:', chatId)
+            return state
+          }
+          console.log('Adding log:', log, 'to chat:', chatId, 'current logs:', chat.logs)
           return {
             chats: {
               ...state.chats,
               [chatId]: {
                 ...chat,
-                logs: [...chat.logs, log]
+                logs: [...(chat.logs || []), log]
               }
             }
           }
@@ -123,6 +135,7 @@ const useChatStore = create<ChatState>()(
           const chat = state.chats[chatId]
           if (!chat) return state
 
+          console.log('Marking chat initialized:', chatId)
           return {
             chats: {
               ...state.chats,

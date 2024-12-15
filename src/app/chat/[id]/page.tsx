@@ -40,13 +40,12 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   const CodeWorkspace = () => {
     const { theme } = useTheme();
-    const logs = chat.logs || [];
-    
+
     return (
       <div className="h-full">
-        <Tabs defaultValue="preview" className="h-full">
-          <div className="flex items-center justify-between bg-transparent px-4 h-12 border-b">
-            <TabsList>
+        <Tabs defaultValue="preview" className="h-full w-full">
+          <div className="flex items-center justify-between bg-transparent border-b">
+            <TabsList className="w-full bg-transparent justify-start">
               <TabsTrigger value="preview"><Icons.window className="mr-2 h-4 w-4" />Preview</TabsTrigger>
               <TabsTrigger value="code"><Icons.code className="mr-2 h-4 w-4" />Code</TabsTrigger>
               <TabsTrigger value="console"><Icons.terminal className="mr-2 h-4 w-4" />Console</TabsTrigger>
@@ -71,15 +70,40 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             </div>
           </TabsContent>
           <TabsContent value="console" className="h-[calc(100vh-48px)] m-0">
-            <div className="h-full bg-muted overflow-auto p-4">
-              <div className="font-mono text-xs space-y-1">
-                {logs.map((log, i) => (
-                  <div key={i} className="whitespace-pre-wrap">{log}</div>
-                ))}
-              </div>
-            </div>
+            <ConsoleView chatId={id} />
           </TabsContent>
         </Tabs>
+      </div>
+    );
+  };
+
+  const ConsoleView = ({ chatId }: { chatId: string }) => {
+    const logs = useChatStore(state => state.chats[chatId]?.logs || []);
+
+    useEffect(() => {
+      console.log('ConsoleView mounted for chat:', chatId)
+      console.log('Current logs:', logs)
+
+      return () => {
+        console.log('ConsoleView unmounted for chat:', chatId)
+      }
+    }, [chatId, logs])
+
+    if (!logs || logs.length === 0) {
+      return (
+        <div className="h-full bg-muted overflow-auto p-4">
+          <div className="font-mono text-xs text-muted-foreground">No logs yet...</div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="h-full bg-muted overflow-auto p-4">
+        <div className="font-mono text-xs space-y-1">
+          {logs.map((log, i) => (
+            <div key={i} className="whitespace-pre-wrap">{log}</div>
+          ))}
+        </div>
       </div>
     );
   };
