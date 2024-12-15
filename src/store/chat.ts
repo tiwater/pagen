@@ -14,6 +14,7 @@ interface Chat {
     }>
     lastUpdated: number
   }
+  isNew: boolean
   createdAt: number
   updatedAt: number
 }
@@ -25,6 +26,7 @@ interface ChatState {
   addMessage: (chatId: string, message: Message) => void
   updateGeneratedCode: (chatId: string, files: Array<{ path: string, content: string }>) => void
   setCurrentChat: (chatId: string) => void
+  markChatInitialized: (chatId: string) => void
 }
 
 // Type for the old state structure
@@ -51,6 +53,7 @@ const useChatStore = create<ChatState>()(
               messages: initialMessage 
                 ? [{ id: nanoid(10), role: 'user', content: initialMessage }]
                 : [],
+              isNew: true,
               createdAt: Date.now(),
               updatedAt: Date.now()
             }
@@ -91,6 +94,22 @@ const useChatStore = create<ChatState>()(
                   lastUpdated: Date.now()
                 },
                 updatedAt: Date.now()
+              }
+            }
+          }
+        }),
+
+      markChatInitialized: (chatId) =>
+        set((state) => {
+          const chat = state.chats[chatId]
+          if (!chat) return state
+
+          return {
+            chats: {
+              ...state.chats,
+              [chatId]: {
+                ...chat,
+                isNew: false
               }
             }
           }

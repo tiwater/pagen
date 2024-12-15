@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Icons } from "@/components/ui/icons";
 import { useChat } from "ai/react";
-import { cn } from "@/lib/utils";
 import useChatStore from "@/store/chat";
-import Link from "next/link";
 import { Message } from "ai";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -131,11 +129,13 @@ function ChatMessage({ message }: { message: Message }) {
 
 export function ChatUI({ chatId }: ChatUIProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
   const addMessage = useChatStore((state) => state.addMessage);
   const updateGeneratedCode = useChatStore((state) => state.updateGeneratedCode);
   const chat = useChatStore((state) => state.chats[chatId]);
+  const markChatInitialized = useChatStore((state) => state.markChatInitialized);
 
-  const { messages, input, handleInputChange, handleSubmit: onSubmit } = useChat({
+  const { messages, setMessages, input, handleInputChange, handleSubmit: onSubmit, append } = useChat({
     api: "/api/chat",
     id: chatId,
     initialMessages: chat?.messages || [],
@@ -152,16 +152,37 @@ export function ChatUI({ chatId }: ChatUIProps) {
         }];
         updateGeneratedCode(chatId, files);
       }
+      
+      // Mark chat as initialized after receiving first response
+      if (chat?.isNew) {
+        markChatInitialized(chatId);
+      }
     }
   });
 
   // Auto-trigger chat for initial message
   useEffect(() => {
-    if (chat?.messages.length === 1 && chat.messages[0].role === 'user' && !messages.some(m => m.role === 'assistant')) {
-      const event = new Event('submit');
-      handleSubmit(event as any);
+    if (chat?.isNew && chat.messages.length > 0 && !initializedRef.current) {
+      initializedRef.current = true;
+      const lastMessage = chat.messages[chat.messages.length - 1];
+      if (lastMessage.role === 'user') {
+        // Remove the last message from useChat state before appending
+        setMessages(messages.slice(0, -1));
+        append(lastMessage);
+      }
     }
-  }, [chat?.messages]);
+  }, [chat, append, messages, setMessages]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    
+    // Add message to store first
+    addMessage(chatId, { id: chatId + Date.now(), role: 'user', content: input });
+    
+    // Then submit to API
+    onSubmit(e);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -170,17 +191,6 @@ export function ChatUI({ chatId }: ChatUIProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    
-    // Add user message to store first
-    addMessage(chatId, { id: chatId + Date.now(), role: 'user', content: input });
-    
-    // Then submit to API
-    onSubmit(e);
-  };
 
   return (
     <div className="flex flex-col h-full">
