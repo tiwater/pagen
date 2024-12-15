@@ -6,6 +6,7 @@ import { Icons } from "@/components/ui/icons";
 import { useChat } from "ai/react";
 import { cn } from "@/lib/utils";
 import useChatStore from "@/store/chat";
+import Link from "next/link";
 
 interface ChatUIProps {
   chatId: string;
@@ -14,11 +15,12 @@ interface ChatUIProps {
 export function ChatUI({ chatId }: ChatUIProps) {
   const addMessage = useChatStore((state) => state.addMessage);
   const updateGeneratedCode = useChatStore((state) => state.updateGeneratedCode);
+  const chat = useChatStore((state) => state.chats[chatId]);
 
   const { messages, input, handleInputChange, handleSubmit: onSubmit } = useChat({
     api: "/api/chat",
     id: chatId,
-    initialMessages: [],
+    initialMessages: chat?.messages || [],
     onFinish: (message) => {
       console.log('onFinish:', message);
       addMessage(chatId, { id: chatId + Date.now(), role: 'assistant', content: message.content });

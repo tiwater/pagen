@@ -40,7 +40,7 @@ const useChatStore = create<ChatState>()(
       currentChatId: null,
 
       createChat: (title, initialMessage) => {
-        const chatId = nanoid()
+        const chatId = nanoid(10)
         set((state) => ({
           currentChatId: chatId,
           chats: {
@@ -49,7 +49,7 @@ const useChatStore = create<ChatState>()(
               id: chatId,
               title,
               messages: initialMessage 
-                ? [{ id: nanoid(), role: 'user', content: initialMessage }]
+                ? [{ id: nanoid(10), role: 'user', content: initialMessage }]
                 : [],
               createdAt: Date.now(),
               updatedAt: Date.now()
