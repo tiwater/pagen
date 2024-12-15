@@ -10,6 +10,8 @@ import { Icons } from "@/components/ui/icons";
 import useChatStore from "@/store/chat";
 import { use } from "react";
 import Link from "next/link";
+import { CodeBlock } from "@/components/code-block";
+import { useTheme } from 'next-themes';
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -35,38 +37,40 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   const files = chat.generatedCode?.files || [];
 
-  const PreviewPanel = () => (
-    <div className="h-full">
-      <Tabs defaultValue="preview" className="h-full">
-        <div className="flex items-center justify-between border-b px-4 h-12">
-          <TabsList>
-            <TabsTrigger value="preview">Preview</TabsTrigger>
-            <TabsTrigger value="code">Code</TabsTrigger>
-          </TabsList>
-          {isMobile && (
-            <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)}>
-              <Icons.close className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <TabsContent value="preview" className="h-[calc(100vh-48px)] m-0">
-          <PreviewFrame files={files} />
-        </TabsContent>
-        <TabsContent value="code" className="p-4 m-0">
-          <pre className="whitespace-pre-wrap text-sm">
-            {files.map((file) => (
-              <div key={file.path} className="mb-8">
-                <div className="font-medium mb-2">{file.path}</div>
-                <code className="block bg-muted p-4 rounded-lg">
-                  {file.content}
-                </code>
-              </div>
-            ))}
-          </pre>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+  const PreviewPanel = () => {
+    const { theme } = useTheme();
+    
+    return (
+      <div className="h-full">
+        <Tabs defaultValue="preview" className="h-full">
+          <div className="flex items-center justify-between border-b px-4 h-12">
+            <TabsList>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
+              <TabsTrigger value="code">Code</TabsTrigger>
+            </TabsList>
+            {isMobile && (
+              <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)}>
+                <Icons.close className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <TabsContent value="preview" className="h-[calc(100vh-48px)] m-0">
+            <PreviewFrame files={files} />
+          </TabsContent>
+          <TabsContent value="code" className="h-[calc(100vh-48px)] m-0 overflow-auto">
+            <div className="p-4">
+              {files.map((file) => (
+                <div key={file.path} className="mb-8">
+                  <div className="font-medium mb-2 text-xs">{file.path}</div>
+                  <CodeBlock code={file.content} language="tsx" />
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  };
 
   return (
     <div className="h-screen">

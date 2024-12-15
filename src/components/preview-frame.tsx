@@ -50,7 +50,7 @@ export function PreviewFrame({ files }: PreviewFrameProps) {
       })
 
       // Capture console output
-      webcontainerInstance.on('console', (log) => {
+      webcontainerInstance.on('error', (log) => {
         setLogs(prev => [...prev, log.message])
       })
 
