@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Icons } from "@/components/ui/icons";
 import useChatStore from "@/store/chat";
+import Image from "next/image";
+import { Icons } from "@/components/ui/icons";
 
 export default function Home() {
   const router = useRouter();
@@ -23,8 +24,8 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 md:p-24">
       <div className="flex flex-col items-center gap-6 mb-12">
-        <Icons.logo className="w-12 h-12" />
-        <h1 className="text-5xl font-semibold tracking-tight text-center">What can I help you ship?</h1>
+        <Image src="/images/logo.svg" width={96} height={96} alt="Logo" />
+        <h1 className="text-3xl font-semibold tracking-tight text-center">What can I help you build?</h1>
       </div>
       <div className="w-full max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">

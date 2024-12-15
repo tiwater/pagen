@@ -12,6 +12,7 @@ import { use } from "react";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { useTheme } from 'next-themes';
+import Image from "next/image";
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -99,7 +100,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                   href="/"
                   className="inline-flex items-center hover:opacity-80"
                 >
-                  <Icons.logo className="w-6 h-6" />
+                  <Image src="/images/logo.svg" width={20} height={20} alt="Logo" />
                 </Link>
                 <span className="font-semibold">{chat.title}</span>
               </div>

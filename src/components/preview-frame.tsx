@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 import { type FileContent } from '@/types/project'
 import { WebContainer } from '@webcontainer/api'
 
+// Singleton instance
+let webcontainerInstance: WebContainer | null = null
+let isBooting = false
+
 interface PreviewFrameProps {
   files: FileContent[]
 }
@@ -11,63 +15,150 @@ interface PreviewFrameProps {
 export function PreviewFrame({ files }: PreviewFrameProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [logs, setLogs] = useState<string[]>([])
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+      webcontainerInstance?.teardown()
+    }
+  }, [])
   
   useEffect(() => {
     if (!containerRef.current) return
-    
-    let webcontainerInstance: WebContainer
 
     const initWebContainer = async () => {
-      // Boot WebContainer
-      webcontainerInstance = await WebContainer.boot()
-      
-      // Mount files
-      await webcontainerInstance.mount({
-        'index.html': {
-          file: {
-            contents: `
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-                  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-                  <script src="https://cdn.tailwindcss.com"></script>
-                </head>
-                <body>
-                  <div id="root"></div>
-                </body>
-              </html>
-            `
-          }
-        },
-        'index.js': {
-          file: {
-            contents: `
-              ${files.find(f => f.path === 'app/page.tsx')?.content || ''}
-            `
-          }
+      try {
+        // Only boot if no instance exists and not currently booting
+        if (!webcontainerInstance && !isBooting) {
+          isBooting = true
+          webcontainerInstance = await WebContainer.boot()
+          isBooting = false
         }
-      })
 
-      // Capture console output
-      webcontainerInstance.on('error', (log) => {
-        setLogs(prev => [...prev, log.message])
-      })
+        if (!webcontainerInstance || !mountedRef.current) return
 
-      // Start dev server
-      const devServer = await webcontainerInstance.spawn('npx', ['serve'])
-      devServer.output.pipeTo(new WritableStream({
-        write(data) {
-          console.log(data)
+        // Mount files
+        await webcontainerInstance.mount({
+          'package.json': {
+            file: {
+              contents: `{
+                "name": "preview",
+                "type": "module",
+                "dependencies": {
+                  "react": "^18.2.0",
+                  "react-dom": "^18.2.0"
+                },
+                "devDependencies": {
+                  "@babel/core": "^7.23.7",
+                  "@babel/preset-react": "^7.23.7",
+                  "@babel/preset-typescript": "^7.23.7",
+                  "typescript": "^5.3.3"
+                }
+              }`
+            }
+          },
+          'index.html': {
+            file: {
+              contents: `
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                  </head>
+                  <body>
+                    <div id="root"></div>
+                    <script>
+                      const root = document.getElementById('root');
+                      root.innerHTML = \`${files.find(f => f.path === 'app/page.tsx')?.content || ''}\`;
+                    </script>
+                  </body>
+                </html>
+              `
+            }
+          },
+          'tsconfig.json': {
+            file: {
+              contents: `{
+                "compilerOptions": {
+                  "target": "ESNext",
+                  "module": "ESNext",
+                  "moduleResolution": "bundler",
+                  "jsx": "react",
+                  "strict": true,
+                  "outDir": "dist"
+                }
+              }`
+            }
+          },
+          'src/index.tsx': {
+            file: {
+              contents: `
+                import React from 'react';
+                import { createRoot } from 'react-dom/client';
+                import { App } from './App';
+
+                const root = createRoot(document.getElementById('root')!);
+                root.render(<App />);
+              `
+            }
+          },
+          'src/App.tsx': {
+            file: {
+              contents: files.find(f => f.path === 'app/page.tsx')?.content || ''
+            }
+          }
+        })
+
+        if (!mountedRef.current) return
+
+        // Install dependencies
+        const installProcess = await webcontainerInstance.spawn('npm', ['install'])
+        installProcess.output.pipeTo(new WritableStream({
+          write(data) {
+            if (mountedRef.current) {
+              setLogs(prev => [...prev, data])
+            }
+          }
+        }))
+
+        // Compile TypeScript
+        const buildProcess = await webcontainerInstance.spawn('npx', ['tsc'])
+        buildProcess.output.pipeTo(new WritableStream({
+          write(data) {
+            if (mountedRef.current) {
+              setLogs(prev => [...prev, data])
+            }
+          }
+        }))
+
+        // Start dev server
+        const devServer = await webcontainerInstance.spawn('npx', ['serve', 'dist'])
+        devServer.output.pipeTo(new WritableStream({
+          write(data) {
+            if (mountedRef.current) {
+              console.log(data)
+            }
+          }
+        }))
+
+        // Capture console output
+        webcontainerInstance.on('error', (log) => {
+          if (mountedRef.current) {
+            setLogs(prev => [...prev, log.message])
+          }
+        })
+      } catch (error) {
+        if (mountedRef.current) {
+          console.error('WebContainer error:', error)
+          setLogs(prev => [...prev, String(error)])
         }
-      }))
+      }
     }
 
     initWebContainer()
-    
-    return () => {
-      webcontainerInstance?.teardown()
-    }
   }, [files])
 
   return (
