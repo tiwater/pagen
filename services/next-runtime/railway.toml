@@ -1,7 +1,7 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "services/next-runtime/Dockerfile"
-watchPatterns = ["services/next-runtime/**/*"]
+dockerfilePath = "./Dockerfile"
+watchPatterns = ["./**/*"]
 
 [deploy]
 numReplicas = 1
