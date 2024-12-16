@@ -9,6 +9,9 @@ RUN npm install --production=false --legacy-peer-deps
 # Copy app files
 COPY . .
 
+# Create dynamic pages directory
+RUN mkdir -p /app/app
+
 # Set environment variables
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0

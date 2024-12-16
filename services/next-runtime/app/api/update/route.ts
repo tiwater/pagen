@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     // Write content to page.tsx
-    const pagePath = join(process.cwd(), 'app', 'pages', 'page.tsx')
+    const pagePath = join(process.cwd(), 'app', 'page.tsx')
     await writeFile(pagePath, content, 'utf-8')
 
     const responseHeaders = {
