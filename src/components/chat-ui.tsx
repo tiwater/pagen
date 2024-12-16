@@ -39,13 +39,13 @@ function PagePreview({ page }: { page: GeneratedPage }) {
   return (
     <div 
       onClick={handleClick}
-      className="bg-muted hover:bg-muted/80 cursor-pointer rounded-lg p-4 transition-colors"
+      className="group cursor-pointer border border-muted hover:border-muted/80 rounded-sm m-0.5 transition-colors"
     >
-      <div className="flex items-center gap-2 mb-2">
-        <Icons.bot className="w-4 h-4 text-muted-foreground" />
+      <div className="flex items-center gap-2 border-b bg-muted text-muted-foreground group-hover:bg-muted/90 p-2">
+        <Icons.window className="w-4 h-4" />
         <span className="font-medium">{page.path}</span>
       </div>
-      <div className="text-xs font-mono text-muted-foreground overflow-hidden text-ellipsis">
+      <div className="text-xs font-mono bg-white group-hover:bg-white/90 text-muted-foreground overflow-hidden text-ellipsis p-2">
         {page.content.split('\n').slice(0, 3).join('\n')}
         {page.content.split('\n').length > 3 && '...'}
       </div>

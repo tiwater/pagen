@@ -28,7 +28,7 @@ export function CodeBlock({ code, language = 'tsx' }: CodeBlockProps) {
 
   return (
     <div 
-      className="text-xs border border-muted rounded-md bg-muted/50 p-2"
+      className="text-xs border border-muted rounded-lg bg-muted/50 p-2"
       dangerouslySetInnerHTML={{ 
         __html: html.replace(
           '<pre class="shiki"',

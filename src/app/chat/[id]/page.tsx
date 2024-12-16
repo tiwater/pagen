@@ -60,10 +60,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             <NextRuntime files={files} chatId={id} />
           </TabsContent>
           <TabsContent value="code" className="h-[calc(100vh-48px)] m-0 overflow-auto">
-            <div className="p-4">
+            <div className="">
               {files.map((file) => (
-                <div key={file.path} className="mb-8">
-                  <div className="font-medium mb-2 text-xs">{file.path}</div>
+                <div key={file.path} className="">
                   <CodeBlock code={file.content} language="tsx" />
                 </div>
               ))}
