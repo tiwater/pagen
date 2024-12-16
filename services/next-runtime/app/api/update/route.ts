@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { writeFile } from 'fs/promises'
+import { writeFile, access, mkdir } from 'fs/promises'
 import { join } from 'path'
+import { constants } from 'fs'
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -24,9 +25,31 @@ export async function POST(request: Request) {
       )
     }
 
+    // Ensure the app directory exists
+    const appDir = join(process.cwd(), 'app')
+    try {
+      await access(appDir, constants.W_OK)
+    } catch (error) {
+      console.log('Creating app directory...')
+      await mkdir(appDir, { recursive: true })
+    }
+
     // Write content to page.tsx
     const pagePath = join(process.cwd(), 'app', 'page.tsx')
-    await writeFile(pagePath, content, 'utf-8')
+    console.log('Writing to:', pagePath)
+    
+    try {
+      await writeFile(pagePath, content, { 
+        encoding: 'utf-8',
+        mode: 0o666 // Set file permissions to read/write
+      })
+    } catch (writeError) {
+      console.error('Write error:', writeError)
+      return NextResponse.json(
+        { error: 'Failed to write file', details: writeError instanceof Error ? writeError.message : 'Unknown error' },
+        { status: 500 }
+      )
+    }
 
     const responseHeaders = {
       'Access-Control-Allow-Origin': '*',
@@ -36,14 +59,18 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ 
       success: true,
-      message: 'Page updated successfully'
+      message: 'Page updated successfully',
+      path: pagePath
     }, {
       headers: responseHeaders
     })
   } catch (error) {
     console.error('Update error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to update page' },
+      { 
+        error: 'Failed to update page',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
