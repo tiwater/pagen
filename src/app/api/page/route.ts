@@ -111,7 +111,11 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || 'Failed to update page content')
+      throw new Error(
+        errorData.error 
+          ? `${errorData.error}${errorData.details ? `: ${errorData.details}` : ''}`
+          : 'Failed to update page content'
+      )
     }
 
     const data = await response.json()

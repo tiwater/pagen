@@ -87,6 +87,22 @@ pagen/
 - Code view with syntax highlighting
 - Multiple file support
 
+### Page Screenshots
+
+```bash
+POST https://webshot.dustland.ai/screenshot
+Content-Type: application/json
+
+{
+  "url": "https://www.tiwater.com",
+  "options": {
+    "fullPage": true
+  }
+}
+```
+
+Docs: https://webshot.dustland.ai/docs
+
 ## Contributing
 
 Feel free to open issues and pull requests for any improvements you'd like to add.

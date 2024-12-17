@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { ThemeProvider } from 'next-themes'
 import useChatStore from '@/store/chat'
+import { PageProvider } from '@/contexts/page-context'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -12,7 +13,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      {children}
+      <PageProvider>
+        {children}
+      </PageProvider>
     </ThemeProvider>
   )
 }

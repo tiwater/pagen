@@ -1,18 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback } from "react";
+import { use, useEffect, useState } from "react";
 import { ChatUI } from "@/components/chat-ui";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { NextRuntime } from "@/components/next-runtime";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { Button } from "@/components/ui/button";
-import { Icons } from "@/components/ui/icons";
 import useChatStore from "@/store/chat";
-import { use } from "react";
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
-import { useTheme } from 'next-themes';
 import Image from "next/image";
+import { CodeWorkspace } from "@/components/code-workspace";
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -35,78 +29,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   if (!chat) {
     return <div>Chat not found</div>
   }
-
-  const files = chat.generatedCode?.files || [];
-
-  const CodeWorkspace = () => {
-    const { theme } = useTheme();
-
-    return (
-      <div className="h-full">
-        <Tabs defaultValue="preview" className="h-full w-full">
-          <div className="flex items-center justify-between bg-transparent border-b">
-            <TabsList className="w-full bg-transparent justify-start">
-              <TabsTrigger value="preview"><Icons.window className="mr-2 h-4 w-4" />Preview</TabsTrigger>
-              <TabsTrigger value="code"><Icons.code className="mr-2 h-4 w-4" />Code</TabsTrigger>
-              <TabsTrigger value="console"><Icons.terminal className="mr-2 h-4 w-4" />Console</TabsTrigger>
-            </TabsList>
-            {isMobile && (
-              <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)}>
-                <Icons.close className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          <TabsContent value="preview" className="h-[calc(100vh-48px)] m-0">
-            <NextRuntime files={files} chatId={id} />
-          </TabsContent>
-          <TabsContent value="code" className="h-[calc(100vh-48px)] m-0 overflow-auto">
-            <div className="">
-              {files.map((file) => (
-                <div key={file.path} className="">
-                  <CodeBlock code={file.content} language="tsx" />
-                </div>
-              ))}
-            </div>
-          </TabsContent>
-          <TabsContent value="console" className="h-[calc(100vh-48px)] m-0">
-            <ConsoleView chatId={id} />
-          </TabsContent>
-        </Tabs>
-      </div>
-    );
-  };
-
-  const ConsoleView = ({ chatId }: { chatId: string }) => {
-    const logs = useChatStore(state => state.chats[chatId]?.logs || []);
-
-    useEffect(() => {
-      console.log('ConsoleView mounted for chat:', chatId)
-      console.log('Current logs:', logs)
-
-      return () => {
-        console.log('ConsoleView unmounted for chat:', chatId)
-      }
-    }, [chatId, logs])
-
-    if (!logs || logs.length === 0) {
-      return (
-        <div className="h-full bg-muted overflow-auto p-4">
-          <div className="font-mono text-xs text-muted-foreground">No logs yet...</div>
-        </div>
-      )
-    }
-
-    return (
-      <div className="h-full bg-muted overflow-auto p-4">
-        <div className="font-mono text-xs space-y-1">
-          {logs.map((log, i) => (
-            <div key={i} className="whitespace-pre-wrap">{log}</div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
+  
   return (
     <div className="h-screen">
       {isMobile ? (
@@ -121,7 +44,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           </div>
           {isPreviewOpen && (
             <div className="fixed inset-0 z-50 bg-background">
-              <CodeWorkspace />
+              <CodeWorkspace id={id} isMobile={isMobile} setIsPreviewOpen={setIsPreviewOpen} />
             </div>
           )}
         </div>
@@ -145,7 +68,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={60}>
-            <CodeWorkspace />
+            <CodeWorkspace id={id} isMobile={isMobile} setIsPreviewOpen={setIsPreviewOpen} />
           </ResizablePanel>
         </ResizablePanelGroup>
       )}

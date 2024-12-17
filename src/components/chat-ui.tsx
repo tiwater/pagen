@@ -9,13 +9,14 @@ import { Message } from "ai";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
+import { usePage } from "@/contexts/page-context";
 
 interface ChatUIProps {
   chatId: string;
 }
 
-interface GeneratedPage {
+interface PageBlock {
   path: string;
   content: string;
 }
@@ -26,14 +27,12 @@ interface CodeProps extends React.HTMLAttributes<HTMLElement> {
   children?: React.ReactNode;
 }
 
-function PagePreview({ page }: { page: GeneratedPage }) {
-  const updateGeneratedCode = useChatStore((state) => state.updateGeneratedCode);
-  const chatId = useChatStore((state) => state.currentChatId);
+function PagePreview({ page }: { page: PageBlock }) {
+  const { updatePage, setStatus } = usePage();
 
   const handleClick = () => {
-    if (chatId) {
-      updateGeneratedCode(chatId, [page]);
-    }
+    setStatus('complete');  
+    updatePage(page);      
   };
 
   return (
@@ -100,7 +99,7 @@ function ChatMessage({ message }: { message: Message }) {
 
               if (language === 'pagen') {
                 try {
-                  const page: GeneratedPage = {
+                  const page: PageBlock = {
                     path: 'app/page.tsx',
                     content: String(children).replace(/\n$/, '')
                   };
@@ -131,34 +130,42 @@ export function ChatUI({ chatId }: ChatUIProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
   const addMessage = useChatStore((state) => state.addMessage);
-  const updateGeneratedCode = useChatStore((state) => state.updateGeneratedCode);
   const chat = useChatStore((state) => state.chats[chatId]);
   const markChatInitialized = useChatStore((state) => state.markChatInitialized);
+  const { setStatus, updatePage } = usePage();
 
   const { messages, setMessages, input, handleInputChange, handleSubmit: onSubmit, append } = useChat({
     api: "/api/chat",
     id: chatId,
     initialMessages: chat?.messages || [],
-    onFinish: (message) => {
+    onFinish: useCallback((message: Message) => {
       console.log('onFinish:', message);
+      
+      // Add both user and assistant messages to the store
+      const messages = useChat.getState().messages;
+      const lastUserMessage = messages[messages.length - 2]; // Get the last user message
+      if (lastUserMessage?.role === 'user') {
+        addMessage(chatId, { id: chatId + Date.now(), role: 'user', content: lastUserMessage.content });
+      }
       addMessage(chatId, { id: chatId + Date.now(), role: 'assistant', content: message.content });
       
       // Extract and update generated code if present
       const codeMatch = message.content.match(/```(?:jsx|tsx|pagen)?\n([\s\S]*?)```/);
       if (codeMatch) {
-        const files = [{
+        const page = {
           path: 'app/page.tsx',
           content: codeMatch[1].trim()
-        }];
-        // Update code immediately when we get it
-        updateGeneratedCode(chatId, files);
+        };
+        // Update page when we get it
+        updatePage(page);
+        setStatus('complete');
       }
       
       // Mark chat as initialized after receiving first response
       if (chat?.isNew) {
         markChatInitialized(chatId);
       }
-    }
+    }, [chatId, addMessage, chat?.isNew, markChatInitialized, updatePage, setStatus])
   });
 
   // Auto-trigger chat for initial message
@@ -179,10 +186,7 @@ export function ChatUI({ chatId }: ChatUIProps) {
     e.preventDefault();
     if (!input.trim()) return;
     
-    // Add message to store first
-    addMessage(chatId, { id: chatId + Date.now(), role: 'user', content: input });
-    
-    // Then submit to API
+    // Submit to API first, useChat will handle the state update
     onSubmit(e);
   };
 
