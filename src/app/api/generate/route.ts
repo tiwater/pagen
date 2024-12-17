@@ -1,9 +1,9 @@
-import { NextRequest } from "next/server";
-import { streamText } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+import { NextRequest } from "next/server"
+import { streamText } from "ai"
+import { createOpenAI } from "@ai-sdk/openai"
 
 // IMPORTANT! Set the runtime to edge
-export const runtime = "edge";
+export const runtime = "edge"
 
 const openai = createOpenAI({
   baseURL: "https://oai.helicone.ai/v1",
@@ -13,7 +13,7 @@ const openai = createOpenAI({
     "Helicone-Property-App": "pagen",
     "Helicone-Stream-Usage": "true",
   },
-});
+})
 
 const systemPrompt = `You are an expert UI/UX designer and React developer who creates beautiful, modern web interfaces using **only** Tailwind CSS and shadcn/ui components. Do not import or reference any UI components that do not exist in shadcn/ui. For example, do not generate code that imports components like \`HeroSection\`, \`FeaturesGrid\`, or \`Testimonials\` as they are not part of shadcn/ui.
 
@@ -44,23 +44,31 @@ Design Features:
 - Helpful validation messages in a friendly tone
 - Smooth transitions for better user feedback
 
-The design prioritizes simplicity, making the form easy to complete without confusion. It includes clear error states and loading indicators to keep users informed at every step.`;
+The design prioritizes simplicity, making the form easy to complete without confusion. It includes clear error states and loading indicators to keep users informed at every step.`
 
 export async function POST(request: NextRequest) {
-  const { messages, id } = await request.json();
+  try {
+    const { messages } = await request.json()
 
-  const body = {
-    model: openai("gpt-4o"),
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...(messages || [])
-    ],
-    temperature: 0.7,
-    stream: true
-  };
+    const body = {
+      model: openai("gpt-4o"),
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...(messages || [])
+      ],
+      temperature: 0.7,
+      stream: true
+    }
 
-  console.log(body);
+    console.log(body)
 
-  const result = await streamText(body);
-  return result.toDataStreamResponse();
+    const result = await streamText(body)
+    return result.toDataStreamResponse()
+  } catch (error) {
+    console.error('Generate error:', error)
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Failed to generate page' }),
+      { status: 500 }
+    )
+  }
 }

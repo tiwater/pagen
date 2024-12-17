@@ -7,17 +7,24 @@ import { Textarea } from "@/components/ui/textarea";
 import useChatStore from "@/store/chat";
 import Image from "next/image";
 import { Icons } from "@/components/ui/icons";
+import { nanoid } from 'nanoid';
 
 export default function Home() {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const createChat = useChatStore((state) => state.createChat);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const prompt = (e.target as HTMLFormElement).prompt.value;
     if (!prompt.trim()) return;
 
-    const chatId = createChat("New Webpage", prompt.trim());
+    const chatId = createChat(
+      "New Webpage",
+      'default-user', // We should get this from auth context if available
+      `/chats/${nanoid(10)}`,
+      prompt.trim()
+    );
     router.push(`/chat/${chatId}`);
   };
 
@@ -30,6 +37,7 @@ export default function Home() {
       <div className="w-full max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           <Textarea
+            name="prompt"
             placeholder="Describe the webpage you want to create..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

@@ -2,21 +2,12 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Message } from 'ai'
 import { nanoid } from 'nanoid'
-
-interface Chat {
-  id: string
-  title: string
-  messages: Message[]
-  logs: string[]
-  isNew: boolean
-  createdAt: number
-  updatedAt: number
-}
+import { Chat } from '@/types/chat'
 
 interface ChatState {
   chats: Record<string, Chat>
   currentChatId: string | null
-  createChat: (title: string, initialMessage?: string) => string
+  createChat: (title: string, userId: string, path: string, initialMessage?: string) => string
   addMessage: (chatId: string, message: Message) => void
   addLog: (chatId: string, log: string) => void
   setCurrentChat: (chatId: string) => void
@@ -29,7 +20,7 @@ const useChatStore = create<ChatState>()(
       chats: {},
       currentChatId: null,
 
-      createChat: (title, initialMessage) => {
+      createChat: (title, userId, path, initialMessage) => {
         const chatId = nanoid(10)
         console.log('Creating new chat:', chatId, 'with title:', title)
         set((state) => ({
@@ -38,6 +29,8 @@ const useChatStore = create<ChatState>()(
             ...state.chats,
             [chatId]: {
               id: chatId,
+              userId,
+              path,
               title,
               messages: initialMessage
                 ? [

@@ -30,9 +30,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-error.log*
 
-# env files (can opt-in for committing if needed)
-.env
-.env.local
+# local env files
+.env*.local
 
 # vercel
 .vercel
@@ -40,3 +39,10 @@ pnpm-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated files
+/src/generated/**/*
+!/src/generated/.gitkeep
+
+# preview components are not ignored
+!/src/components/preview

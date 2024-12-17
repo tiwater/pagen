@@ -3,19 +3,23 @@
 import { useEffect } from 'react'
 import { ThemeProvider } from 'next-themes'
 import useChatStore from '@/store/chat'
-import { PageProvider } from '@/contexts/page-context'
+import { usePageStore } from '@/store/page'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Rehydrate the store
+    // Rehydrate all stores when app loads
     useChatStore.persist.rehydrate()
+    usePageStore.persist.rehydrate()
   }, [])
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <PageProvider>
-        {children}
-      </PageProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      {children}
     </ThemeProvider>
   )
 }

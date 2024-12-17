@@ -7,12 +7,14 @@ import useChatStore from "@/store/chat";
 import Link from "next/link";
 import Image from "next/image";
 import { CodeWorkspace } from "@/components/code-workspace";
+import { usePageStore } from "@/store/page";
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const chat = useChatStore((state) => state.chats[id]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const { page } = usePageStore()
 
   useEffect(() => {
     const checkMobile = () => {
@@ -29,6 +31,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   if (!chat) {
     return <div>Chat not found</div>
   }
+
+  console.log('page in chat page', page)
   
   return (
     <div className="h-screen">
@@ -39,7 +43,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
               <span className="font-semibold">{chat.title}</span>
             </div>
             <div className="h-[calc(100vh-48px)] overflow-hidden">
-              <ChatUI chatId={id} />
+              <ChatUI id={id} chat={chat} />
             </div>
           </div>
           {isPreviewOpen && (
@@ -62,7 +66,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 <span className="text-sm font-semibold">{chat.title}</span>
               </div>
               <div className="flex-1 overflow-hidden">
-                <ChatUI chatId={id} />
+                <ChatUI id={id} chat={chat} />
               </div>
             </div>
           </ResizablePanel>

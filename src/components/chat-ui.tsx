@@ -1,39 +1,33 @@
-"use client";
+'use client'
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Icons } from "@/components/ui/icons";
-import { useChat } from "ai/react";
-import useChatStore from "@/store/chat";
-import { Message } from "ai";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import { useRef, useEffect, useCallback } from "react";
-import { usePage } from "@/contexts/page-context";
+import { useChat } from 'ai/react'
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Icons } from "@/components/ui/icons"
+import { usePageStore } from '@/store/page'
+import { useCallback } from 'react'
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import rehypeHighlight from "rehype-highlight"
+import { Chat } from '@/types/chat'
 
 interface ChatUIProps {
-  chatId: string;
+  id: string
+  chat: Chat | null
 }
 
 interface PageBlock {
-  path: string;
-  content: string;
-}
-
-interface CodeProps extends React.HTMLAttributes<HTMLElement> {
-  inline?: boolean;
-  className?: string;
-  children?: React.ReactNode;
+  path: string
+  content: string
 }
 
 function PagePreview({ page }: { page: PageBlock }) {
-  const { updatePage, setStatus } = usePage();
+  const { updatePage, setStatus } = usePageStore()
 
   const handleClick = () => {
-    setStatus('complete');  
-    updatePage(page);      
-  };
+    setStatus('complete')
+    updatePage(page)
+  }
 
   return (
     <div 
@@ -49,16 +43,16 @@ function PagePreview({ page }: { page: PageBlock }) {
         {page.content.split('\n').length > 3 && '...'}
       </div>
     </div>
-  );
+  )
 }
 
-function ChatMessage({ message }: { message: Message }) {
+function ChatMessage({ message }: { message: any }) {
   if (message.role === "user") {
     return (
       <div className="flex w-max max-w-[80%] ml-auto bg-primary text-primary-foreground rounded-lg px-3 py-2 text-sm">
         {message.content}
       </div>
-    );
+    )
   }
 
   return (
@@ -87,14 +81,14 @@ function ChatMessage({ message }: { message: Message }) {
               <li className="text-sm">{children}</li>
             ),
             code: ({ inline, className, children, ...props }: any) => {
-              const language = /language-(\w+)/.exec(className || '')?.[1];
+              const language = /language-(\w+)/.exec(className || '')?.[1]
 
               if (inline) {
                 return (
                   <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono" {...props}>
                     {children}
                   </code>
-                );
+                )
               }
 
               if (language === 'pagen') {
@@ -102,10 +96,10 @@ function ChatMessage({ message }: { message: Message }) {
                   const page: PageBlock = {
                     path: 'app/page.tsx',
                     content: String(children).replace(/\n$/, '')
-                  };
-                  return <PagePreview page={page} />;
+                  }
+                  return <PagePreview page={page} />
                 } catch (error) {
-                  console.error('Failed to parse pagen block:', error);
+                  console.error('Failed to parse pagen block:', error)
                 }
               }
 
@@ -115,7 +109,7 @@ function ChatMessage({ message }: { message: Message }) {
                     {children}
                   </code>
                 </pre>
-              );
+              )
             },
           }}
         >
@@ -123,69 +117,86 @@ function ChatMessage({ message }: { message: Message }) {
         </ReactMarkdown>
       </div>
     </div>
-  );
+  )
 }
 
-export function ChatUI({ chatId }: ChatUIProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const initializedRef = useRef(false);
-  const addMessage = useChatStore((state) => state.addMessage);
-  const chat = useChatStore((state) => state.chats[chatId]);
-  const markChatInitialized = useChatStore((state) => state.markChatInitialized);
-  const { setStatus, updatePage } = usePage();
+function EmptyScreen({ setInput }: { setInput: (input: string) => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4">
+      <div className="rounded-lg border bg-background p-8">
+        <h1 className="mb-2 text-lg font-semibold">
+          Welcome to Pagen!
+        </h1>
+        <p className="mb-2 leading-normal text-muted-foreground">
+          This is a web page generator powered by AI. Describe what kind of page you want to create and I'll help you build it.
+        </p>
+        <p className="leading-normal text-muted-foreground">
+          Try an example:
+        </p>
+        <div className="mt-4 flex flex-col items-start space-y-2">
+          <Button
+            variant="link"
+            className="h-auto p-0 text-base"
+            onClick={() => setInput("Create a landing page for a coffee shop with a hero section and menu")}
+          >
+            Create a landing page for a coffee shop with a hero section and menu →
+          </Button>
+          <Button
+            variant="link"
+            className="h-auto p-0 text-base"
+            onClick={() => setInput("Build a simple todo list app with React")}
+          >
+            Build a simple todo list app with React →
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
-  const { messages, setMessages, input, handleInputChange, handleSubmit: onSubmit, append } = useChat({
-    api: "/api/chat",
+export function ChatUI({ id: chatId, chat }: ChatUIProps) {
+  const { setOngoingCode, setStatus, saveGeneratedCode } = usePageStore()
+
+  const chatWithDate = chat ? {
+    ...chat,
+    createdAt: new Date(chat.createdAt)
+  } : null;
+
+  const { messages, setMessages, input, setInput, handleInputChange, handleSubmit: onSubmit, append } = useChat({
+    api: "/api/generate",
     id: chatId,
-    initialMessages: chat?.messages || [],
-    onFinish: useCallback((message: Message) => {
-      console.log('onFinish:', message);
-      
-      // Only handle the assistant's response
-      addMessage(chatId, { id: chatId + Date.now(), role: 'assistant', content: message.content });
-      
-      // Extract and update generated code if present
-      const codeMatch = message.content.match(/```(?:jsx|tsx|pagen)?\n([\s\S]*?)```/);
+    initialMessages: chatWithDate?.messages || [],
+    onFinish: useCallback((message: any) => {
+      // When generation is complete, extract code and save it
+      const codeMatch = message.content.match(/\`\`\`pagen\n([\s\S]*?)\n\`\`\`/)
       if (codeMatch) {
-        const page = {
-          path: 'app/page.tsx',
-          content: codeMatch[1].trim()
-        };
-        // Update page when we get it
-        updatePage(page);
-        setStatus('complete');
+        const extractedCode = codeMatch[1]
+        saveGeneratedCode(chatId, extractedCode)
       }
-    }, [chatId, addMessage, updatePage, setStatus])
-  });
+    }, [chatId, saveGeneratedCode]),
+    onResponse: useCallback((response: Response) => {
+      setStatus('generating')
+    }, [setStatus])
+  })
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    
-    // Add user message to store first
-    addMessage(chatId, { id: chatId + Date.now(), role: 'user', content: input });
-    
-    // Then submit to API
-    onSubmit(e);
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault()
+    setStatus('idle')
+    setOngoingCode('')
+    return onSubmit(e)
+  }, [onSubmit, setStatus, setOngoingCode])
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
-        ))}
-        <div ref={messagesEndRef} />
+        {messages.length ? (
+          messages.map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))
+        ) : (
+          <EmptyScreen setInput={setInput} />
+        )}
       </div>
-
       <form onSubmit={handleSubmit} className="border-t p-4">
         <div className="flex gap-2">
           <Textarea
@@ -195,8 +206,8 @@ export function ChatUI({ chatId }: ChatUIProps) {
             className="flex-1 min-h-[44px] resize-none"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e as any);
+                e.preventDefault()
+                handleSubmit(e as any)
               }
             }}
           />
@@ -206,5 +217,5 @@ export function ChatUI({ chatId }: ChatUIProps) {
         </div>
       </form>
     </div>
-  );
+  )
 }
