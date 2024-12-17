@@ -86,7 +86,7 @@ function ChatMessage({ message }: { message: Message }) {
             li: ({ children }) => (
               <li className="text-sm">{children}</li>
             ),
-            code: ({ inline, className, children, ...props }: CodeProps) => {
+            code: ({ inline, className, children, ...props }: any) => {
               const language = /language-(\w+)/.exec(className || '')?.[1];
 
               if (inline) {
@@ -141,12 +141,7 @@ export function ChatUI({ chatId }: ChatUIProps) {
     onFinish: useCallback((message: Message) => {
       console.log('onFinish:', message);
       
-      // Add both user and assistant messages to the store
-      const messages = useChat.getState().messages;
-      const lastUserMessage = messages[messages.length - 2]; // Get the last user message
-      if (lastUserMessage?.role === 'user') {
-        addMessage(chatId, { id: chatId + Date.now(), role: 'user', content: lastUserMessage.content });
-      }
+      // Only handle the assistant's response
       addMessage(chatId, { id: chatId + Date.now(), role: 'assistant', content: message.content });
       
       // Extract and update generated code if present
@@ -160,33 +155,17 @@ export function ChatUI({ chatId }: ChatUIProps) {
         updatePage(page);
         setStatus('complete');
       }
-      
-      // Mark chat as initialized after receiving first response
-      if (chat?.isNew) {
-        markChatInitialized(chatId);
-      }
-    }, [chatId, addMessage, chat?.isNew, markChatInitialized, updatePage, setStatus])
+    }, [chatId, addMessage, updatePage, setStatus])
   });
-
-  // Auto-trigger chat for initial message
-  useEffect(() => {
-    if (chat?.isNew && chat.messages.length > 0 && !initializedRef.current) {
-      initializedRef.current = true;
-      const lastMessage = chat.messages[chat.messages.length - 1];
-      if (lastMessage.role === 'user') {
-        // Remove the last message from useChat state before appending
-        setMessages(messages.slice(0, -1));
-        append(lastMessage);
-        markChatInitialized(chatId);
-      }
-    }
-  }, [chat, append, messages, setMessages]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim()) return;
     
-    // Submit to API first, useChat will handle the state update
+    // Add user message to store first
+    addMessage(chatId, { id: chatId + Date.now(), role: 'user', content: input });
+    
+    // Then submit to API
     onSubmit(e);
   };
 

@@ -23,12 +23,6 @@ interface ChatState {
   markChatInitialized: (chatId: string) => void
 }
 
-// Type for the old state structure
-interface OldChatState {
-  messages: Record<string, Message[]>
-  currentChatId: string | null
-}
-
 const useChatStore = create<ChatState>()(
   persist(
     (set, get) => ({
@@ -119,7 +113,7 @@ const useChatStore = create<ChatState>()(
           }
         }),
 
-      setCurrentChat: (chatId) => 
+      setCurrentChat: (chatId: string) => 
         set({ currentChatId: chatId })
     }),
     {
