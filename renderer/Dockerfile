@@ -6,7 +6,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm@latest
 
 # Copy root workspace files
 COPY pnpm-*.yaml package.json ./
@@ -25,14 +25,13 @@ FROM base AS builder
 WORKDIR /app
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm@latest
 
 # Copy all files including dependencies
 COPY --from=deps /app ./
 
 # Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN cd renderer && pnpm build
 
@@ -40,8 +39,8 @@ RUN cd renderer && pnpm build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -62,7 +61,7 @@ USER nextjs
 
 EXPOSE 3345
 
-ENV PORT 3345
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3345
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
