@@ -10,33 +10,21 @@ A monorepo containing applications and packages for generating professional-look
 - Live chat interface with AI
 - Modern UI with shadcn/ui components
 - Persistent chat history with Zustand
-- Powered by OpenAI's GPT-4
 
 ## Project Structure
 
 ```
 pagen/
-├── apps/
-│   ├── web/                    # Main web application
-│   │   ├── app/               # Next.js app directory
-│   │   ├── components/        # React components
-│   │   ├── lib/              # Utility functions
-│   │   └── store/            # State management
-│   │
-│   └── renderer/             # Preview/renderer application
-│       ├── app/              # Next.js app directory
-│       ├── components/       # React components
-│       └── lib/             # Utility functions
+├── web/                     # Main web application
+│   ├── app/                # Next.js app directory
+│   ├── components/         # React components
+│   ├── lib/               # Utility functions
+│   └── store/             # State management
 │
-├── packages/
-│   ├── ui/                   # Shared UI components
-│   │   ├── components/      # shadcn/ui components
-│   │   └── index.tsx       # Component exports
-│   │
-│   └── config/              # Shared configuration
-│       ├── tailwind.config.ts
-│       ├── postcss.config.js
-│       └── prettier.config.js
+└── renderer/              # Preview/renderer application
+    ├── app/              # Next.js app directory
+    ├── components/       # React components
+    └── lib/             # Utility functions
 ```
 
 ## Getting Started
@@ -49,12 +37,8 @@ pagen/
 
 3. Copy the example environment file and add your API keys:
    ```bash
-   cp apps/web/.env.example apps/web/.env.local
+   cp web/.env.example web/.env.local
    ```
-
-   Required environment variables:
-   - `OPENAI_API_KEY`: Your OpenAI API key
-   - `HELICONE_API_KEY`: Your Helicone API key (optional, for analytics)
 
 4. Start the development servers:
    ```bash
@@ -75,8 +59,6 @@ pagen/
 - Next.js 15 (App Router)
 - TypeScript
 - shadcn/ui components
-- Vercel AI SDK
-- OpenAI GPT-4
 - Tailwind CSS
 - Zustand for state management
 - Turborepo for monorepo management
@@ -86,7 +68,7 @@ pagen/
 
 ### Web App (@pagen/web)
 - Main application for webpage generation
-- Chat interface with GPT-4
+- Chat interface
 - Real-time preview of generated pages
 - Code editing capabilities
 
@@ -95,28 +77,7 @@ pagen/
 - Dynamic component rendering
 - Isolated environment for previews
 
-## Packages
-
-### UI (@pagen/ui)
-- Shared UI components using shadcn/ui
-- Consistent design system across applications
-- Pre-configured Tailwind CSS themes
-
-### Config (@pagen/config)
-- Shared configuration files
-- Tailwind CSS configuration
-- TypeScript configuration
-- Prettier and PostCSS settings
-
 ## Development
-
-### Adding a New Package
-```bash
-cd packages
-mkdir my-package
-cd my-package
-pnpm init
-```
 
 ### Adding Dependencies
 ```bash
