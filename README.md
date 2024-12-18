@@ -1,6 +1,6 @@
 # Pagen - AI Page Generator
 
-A Next.js application that generates professional-looking SaaS-style webpages using AI. Built with Next.js 15, TypeScript, shadcn/ui components, and the Vercel AI SDK.
+A monorepo containing applications and packages for generating professional-looking SaaS-style webpages using AI. Built with Next.js, TypeScript, shadcn/ui components, and the Vercel AI SDK.
 
 ## Features
 
@@ -12,6 +12,33 @@ A Next.js application that generates professional-looking SaaS-style webpages us
 - Persistent chat history with Zustand
 - Powered by OpenAI's GPT-4
 
+## Project Structure
+
+```
+pagen/
+├── apps/
+│   ├── web/                    # Main web application
+│   │   ├── app/               # Next.js app directory
+│   │   ├── components/        # React components
+│   │   ├── lib/              # Utility functions
+│   │   └── store/            # State management
+│   │
+│   └── renderer/             # Preview/renderer application
+│       ├── app/              # Next.js app directory
+│       ├── components/       # React components
+│       └── lib/             # Utility functions
+│
+├── packages/
+│   ├── ui/                   # Shared UI components
+│   │   ├── components/      # shadcn/ui components
+│   │   └── index.tsx       # Component exports
+│   │
+│   └── config/              # Shared configuration
+│       ├── tailwind.config.ts
+│       ├── postcss.config.js
+│       └── prettier.config.js
+```
+
 ## Getting Started
 
 1. Clone the repository
@@ -22,19 +49,26 @@ A Next.js application that generates professional-looking SaaS-style webpages us
 
 3. Copy the example environment file and add your API keys:
    ```bash
-   cp .env.example .env.local
+   cp apps/web/.env.example apps/web/.env.local
    ```
 
    Required environment variables:
    - `OPENAI_API_KEY`: Your OpenAI API key
    - `HELICONE_API_KEY`: Your Helicone API key (optional, for analytics)
 
-4. Start the development server:
+4. Start the development servers:
    ```bash
+   # Start all applications
    pnpm dev
+
+   # Start specific application
+   pnpm --filter @pagen/web dev
+   pnpm --filter @pagen/renderer dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open:
+   - Web App: [http://localhost:1578](http://localhost:1578)
+   - Renderer: [http://localhost:3345](http://localhost:3345)
 
 ## Technologies Used
 
@@ -45,63 +79,62 @@ A Next.js application that generates professional-looking SaaS-style webpages us
 - OpenAI GPT-4
 - Tailwind CSS
 - Zustand for state management
+- Turborepo for monorepo management
+- pnpm for package management
 
-## Project Structure
+## Applications
 
-```
-pagen/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── chat/
-│   │   │   │   └── route.ts     # Chat API endpoint
-│   │   │   └── generate/
-│   │   │       └── route.ts     # Page generation endpoint
-│   │   ├── chat/
-│   │   │   └── [id]/
-│   │   │       └── page.tsx     # Chat interface page
-│   │   ├── layout.tsx           # Root layout with Inter font
-│   │   ├── page.tsx            # Homepage
-│   │   └── providers.tsx       # App providers
-│   ├── components/
-│   │   ├── chat-ui.tsx         # Chat interface component
-│   │   ├── preview-frame.tsx   # Generated page preview
-│   │   └── webpage-generator.tsx # Page generation form
-│   ├── store/
-│   │   └── chat.ts            # Zustand store for chat state
-│   └── lib/
-│       └── utils.ts           # Utility functions
-```
+### Web App (@pagen/web)
+- Main application for webpage generation
+- Chat interface with GPT-4
+- Real-time preview of generated pages
+- Code editing capabilities
 
-## Features in Detail
+### Renderer (@pagen/renderer)
+- Preview service for generated components
+- Dynamic component rendering
+- Isolated environment for previews
 
-### Chat Interface
-- Real-time streaming responses from GPT-4
-- Code extraction and preview
-- Persistent chat history
-- Split view with preview pane
+## Packages
 
-### Page Generation
-- Natural language to webpage conversion
-- Real-time preview
-- Code view with syntax highlighting
-- Multiple file support
+### UI (@pagen/ui)
+- Shared UI components using shadcn/ui
+- Consistent design system across applications
+- Pre-configured Tailwind CSS themes
 
-### Page Screenshots
+### Config (@pagen/config)
+- Shared configuration files
+- Tailwind CSS configuration
+- TypeScript configuration
+- Prettier and PostCSS settings
 
+## Development
+
+### Adding a New Package
 ```bash
-POST https://webshot.dustland.ai/screenshot
-Content-Type: application/json
-
-{
-  "url": "https://www.tiwater.com",
-  "options": {
-    "fullPage": true
-  }
-}
+cd packages
+mkdir my-package
+cd my-package
+pnpm init
 ```
 
-Docs: https://webshot.dustland.ai/docs
+### Adding Dependencies
+```bash
+# Add to specific app/package
+pnpm --filter @pagen/web add <package>
+
+# Add to all apps/packages
+pnpm add -w <package>
+```
+
+### Running Commands
+```bash
+# Run in all packages
+pnpm build
+
+# Run in specific package
+pnpm --filter @pagen/web build
+```
 
 ## Contributing
 

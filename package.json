@@ -6,11 +6,13 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "dev": "next dev",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "dev:all": "concurrently \"next dev\" \"pnpm --prefix preview run dev\"",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.8",
@@ -49,16 +51,18 @@
     "@babel/preset-react": "^7.23.7",
     "@tailwindcss/typography": "^0.5.15",
     "@types/babel__core": "^7.20.5",
-    "@types/node": "^20.17.10",
-    "@types/react": "^18.3.16",
-    "@types/react-dom": "^18.3.5",
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.20",
-    "eslint": "^9.17.0",
+    "eslint": "^8.56.0",
     "eslint-config-next": "14.0.4",
     "ignore-loader": "^0.1.2",
     "postcss": "^8.4.49",
+    "prettier": "^3.1.1",
     "tailwindcss": "^3.4.16",
-    "typescript": "^5.7.2"
+    "turbo": "^1.11.2",
+    "typescript": "^5.3.3"
   },
-  "packageManager": "pnpm@9.0.0"
+  "packageManager": "pnpm@8.9.0"
 }

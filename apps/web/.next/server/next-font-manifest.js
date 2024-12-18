@@ -1,0 +1,1 @@
+self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Users/hugh/dustland/pagen/apps/web/app/layout\":[\"static/media/34ba43c981b106ea-s.p.woff2\",\"static/media/95439fb45e443721-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"
