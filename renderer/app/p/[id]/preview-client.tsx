@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import * as LucideIcons from "lucide-react";
+import { transform } from "sucrase";
 
 export function PreviewClient({ code }: { code: string }) {
   const [error, setError] = React.useState<string | null>(null);
@@ -22,7 +23,6 @@ export function PreviewClient({ code }: { code: string }) {
       // Make all components available in the scope
       const components = {
         React,
-        createElement: React.createElement,
         Button,
         Card,
         CardHeader,
@@ -39,32 +39,19 @@ export function PreviewClient({ code }: { code: string }) {
         .replace(/import\s*{[\s\S]*?}\s*from\s*['"].*?['"];?/g, "")
         .trim();
 
-      // Transform JSX to React.createElement calls
-      const jsCode = cleanCode.replace(
-        /<(\w+)([^>]*)>(.*?)<\/\1>/g,
-        (_, tag, props, children) => {
-          const propsObj = props
-            ? `{${props
-                .trim()
-                .split(/\s+/)
-                .map((prop: { split: (arg0: string) => [any, any] }) => {
-                  const [key, value] = prop.split("=");
-                  return `${key}: ${value}`;
-                })
-                .join(",")}}`
-            : "null";
-          return `React.createElement("${tag}", ${propsObj}, "${children}")`;
-        }
-      );
+      // Transform TSX to JS using Sucrase
+      const { code: transformedCode } = transform(cleanCode, {
+        transforms: ["typescript", "jsx"],
+        production: true,
+      });
 
       const functionBody = `
         with (components) {
-          return ${jsCode};
+          return ${transformedCode};
         }
       `;
 
       const ComponentFunction = new Function("components", functionBody);
-
       const PreviewComponent = ComponentFunction(components);
       setComponent(() => PreviewComponent);
     } catch (error) {
