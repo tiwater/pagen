@@ -1,25 +1,17 @@
 {
   "name": "pagen",
-  "description": "Generate professional-looking SaaS style webpages using AI",
-  "author": "Dustland <pagen@dustland.ai>",
-  "version": "0.1.0",
   "private": true,
-  "license": "MIT",
+  "workspaces": [
+    "web",
+    "renderer"
+  ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "clean": "turbo run clean",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
-  },
-  "dependencies": {
-    "concurrently": "^7.5.0"
+    "lint": "turbo run lint"
   },
   "devDependencies": {
-    "@types/node": "^20.10.5",
-    "prettier": "^3.1.1",
-    "turbo": "latest",
-    "typescript": "^5.3.3"
+    "turbo": "latest"
   },
   "packageManager": "pnpm@9.0.0"
 }

@@ -1,0 +1,23 @@
+
+> @pagen/web@0.1.0 build /Users/hugh/dustland/pagen/web
+> next build
+
+   ▲ Next.js 15.1.1
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/components/ui/label.tsx:4:33
+Type error: Cannot find module '@radix-ui/react-label' or its corresponding type declarations.
+
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m [33m*[39m [36mas[39m [33mReact[39m [36mfrom[39m [32m"react"[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m [33m*[39m [36mas[39m [33mLabelPrimitive[39m [36mfrom[39m [32m"@radix-ui/react-label"[39m[0m
+[0m [90m   |[39m                                 [31m[1m^[22m[39m[0m
+[0m [90m 5 |[39m [36mimport[39m { cva[33m,[39m type [33mVariantProps[39m } [36mfrom[39m [32m"class-variance-authority"[39m[0m
+[0m [90m 6 |[39m[0m
+[0m [90m 7 |[39m [36mimport[39m { cn } [36mfrom[39m [32m"@/lib/utils"[39m[0m
+ ELIFECYCLE  Command failed with exit code 1.
