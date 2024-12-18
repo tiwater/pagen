@@ -142,7 +142,7 @@ function EmptyScreen({ setInput }: { setInput: (input: string) => void }) {
         <h1 className="mb-2 text-lg font-semibold">Welcome to Pagen AI</h1>
         <p className="mb-2 leading-normal text-muted-foreground">
           This is an AI-powered web page generator. Describe what you want to
-          create and I'll help you build it.
+          create and I&apos;ll help you build it.
         </p>
         <div className="mt-4 flex flex-col items-start space-y-2">
           {[

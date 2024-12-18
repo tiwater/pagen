@@ -42,12 +42,15 @@ export const usePageStore = create<PageState>()(
           pages: {
             ...state.pages,
             [updates.messageId]: {
-              content: '',
-              status: 'generating',
-              path: 'app/page.tsx',
-              metadata: {},
               ...state.pages[updates.messageId],
               ...updates,
+              content: updates.content || '',
+              status: updates.status || 'generating',
+              metadata: {
+                ...state.pages[updates.messageId]?.metadata,
+                ...updates.metadata,
+                title: updates.metadata?.title || state.pages[updates.messageId]?.metadata?.title || 'Generated Page'
+              },
             },
           },
           activePage: state.activePage || updates.messageId
