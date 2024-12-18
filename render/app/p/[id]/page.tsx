@@ -1,38 +1,22 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { getPreview } from '../../store';
-import React from 'react';
+import * as fs from 'fs';
+import * as path from 'path';
+import { PreviewClient } from './preview-client';
 
 export default function PreviewPage({ params }: { params: { id: string } }) {
-  const [error, setError] = useState<string | null>(null);
-  const [Component, setComponent] = useState<React.ComponentType | null>(null);
-
-  useEffect(() => {
-    try {
-      const code = getPreview(params.id);
-      if (!code) {
-        setError('Preview not found');
-        return;
-      }
-
-      // Create a new Function from the code string
-      const ComponentFunction = new Function('React', `return ${code}`)
-      const PreviewComponent = ComponentFunction(React);
-      setComponent(() => PreviewComponent);
-    } catch (error) {
-      console.error('Error rendering preview:', error);
-      setError('Error rendering preview');
+  try {
+    // Read the component file
+    const filePath = path.join(process.cwd(), 'app', 'p', params.id, 'page.tsx');
+    if (!fs.existsSync(filePath)) {
+      return <div className="p-4 text-red-500">Preview not found</div>;
     }
-  }, [params.id]);
 
-  if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+    const code = fs.readFileSync(filePath, 'utf-8');
+    // Extract the component code from the file (skip the imports and 'use client')
+    const componentCode = code.split('${code}')[1];
+    
+    return <PreviewClient code={componentCode} />;
+  } catch (error) {
+    console.error('Error rendering preview:', error);
+    return <div className="p-4 text-red-500">Error rendering preview</div>;
   }
-
-  if (!Component) {
-    return <div className="p-4">Loading...</div>;
-  }
-
-  return <Component />;
 }
