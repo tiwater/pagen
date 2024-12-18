@@ -11,13 +11,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing id or code' }, { status: 400 });
     }
 
-    // Create the directory if it doesn't exist
+    // Create the directory in the app directory
     const previewDir = path.join(process.cwd(), 'app', 'p', id);
     fs.mkdirSync(previewDir, { recursive: true });
 
-    // Write the component file
+    // Write the component file with proper Next.js page structure
     const filePath = path.join(previewDir, 'page.tsx');
-    fs.writeFileSync(filePath, code);
+    const pageContent = `
+'use client';
+import React from 'react';
+
+${code}
+`;
+    fs.writeFileSync(filePath, pageContent);
 
     return NextResponse.json({ success: true, url: `/p/${id}` });
   } catch (error) {
