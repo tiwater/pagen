@@ -1,23 +1,15 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { use, useEffect, useState } from "react";
-import * as React from "react";
-import "./page.css";
-
-// Import all the UI components that might be used in dynamic content
+import React, { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardHeader,
-  CardTitle,
-  CardDescription,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PreviewPageProps {
   params: Promise<{
@@ -39,7 +31,7 @@ export default function PreviewPage({ params }: PreviewPageProps) {
         return res.json();
       })
       .then((data) => {
-        setContent(data.content);
+        setContent(data.code);
       })
       .catch((e) => {
         setError(e.message);
@@ -59,38 +51,27 @@ export default function PreviewPage({ params }: PreviewPageProps) {
     Button,
     Card,
     CardHeader,
-    CardTitle,
-    CardDescription,
     CardContent,
     CardFooter,
     Input,
-    Label,
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
+    React,
   };
 
   try {
-    // Create a React component function that returns the JSX
-    const DynamicComponent = () => {
-      const element = new Function(
-        ...Object.keys(components),
-        "React",
-        `const {createElement: h} = React;
-         return ${content}`
-      )(...Object.values(components), React);
+    // Evaluate the code in the context of available components
+    const code = `
+      ${content}
+      const Page = ${
+        content.includes("export default") ? content : `() => {${content}}`
+      };
+      return React.createElement(Page);
+    `;
 
-      return element;
-    };
-
-    return (
-      <div className="preview-container">
-        <DynamicComponent />
-      </div>
-    );
-  } catch (e) {
-    console.error("Error rendering component:", e);
-    return <div className="error">Failed to render component</div>;
+    // eslint-disable-next-line no-new-func
+    const Component = new Function(...Object.keys(components), code);
+    return Component(...Object.values(components));
+  } catch (error) {
+    console.error("Error rendering component:", error);
+    return <div>Error rendering component</div>;
   }
 }

@@ -10,7 +10,8 @@ import {
   AppWindow,
   Code,
   Terminal,
-  Camera
+  Camera,
+  User,
 } from "lucide-react";
 
 function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -43,5 +44,6 @@ export const Icons = {
   wand: Wand,
   window: AppWindow,
   code: Code,
-  camera: Camera
+  camera: Camera,
+  user: User,
 };

@@ -4,9 +4,9 @@ import { useTheme } from "next-themes";
 import { useCallback } from "react";
 import { usePageStore } from "@/store/page";
 import { CodeBlock } from "@/components/code-block";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, Code2, Loader2 } from "lucide-react";
+import { PagePreview } from "@/components/page-preview"; 
+import { Icons } from "./ui/icons";
 
 interface CodeWorkspaceProps {
   id: string;
@@ -17,11 +17,9 @@ interface CodeWorkspaceProps {
 export function CodeWorkspace({
   id,
   isMobile,
-  setIsPreviewOpen,
 }: CodeWorkspaceProps) {
-  const { theme } = useTheme();
-  const { page, status } = usePageStore();
-  const files = page ? [page] : [];
+  const { pages, activePage } = usePageStore();
+  const activePageData = activePage ? pages[activePage] : null;
 
   const handleScreenshot = useCallback(async () => {
     // TODO: Implement screenshot functionality
@@ -29,41 +27,31 @@ export function CodeWorkspace({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b px-4 h-12">
-        <div className="flex items-center gap-2">
-          <Code2 className="h-4 w-4" />
-          <span className="text-sm font-medium">Code Editor</span>
-        </div>
-        {isMobile && setIsPreviewOpen && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsPreviewOpen(false)}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-
-      <div className="flex-1 overflow-hidden">
-        <Tabs defaultValue="editor" className="h-full">
-          <div className="flex items-center justify-between border-b px-4">
-            <TabsList>
-              <TabsTrigger value="editor">Editor</TabsTrigger>
+      <div className="flex-1">
+        <Tabs defaultValue="code" className="h-full">
+          <div className="flex items-center justify-between border-b">
+            <TabsList className="grid grid-cols-2 bg-transparent">
+              <TabsTrigger value="code">
+                <Icons.code className="mr-2 h-4 w-4" />
+                Code
+              </TabsTrigger>
+              <TabsTrigger value="preview">
+                <Icons.window className="mr-2 h-4 w-4" />
+                Preview
+              </TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent value="editor" className="h-[calc(100%-41px)]">
-            {status === "generating" ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-4 w-4 animate-spin" />
+          <TabsContent value="code" className="mt-0 flex-1">
+            {!activePageData ? (
+              <div className="flex h-full items-center justify-center text-muted-foreground">
+                No page selected
               </div>
             ) : (
-              files.map((file) => (
-                <div key={file.path} className="p-4">
-                  <CodeBlock code={file.content} language="tsx" />
-                </div>
-              ))
+              <CodeBlock code={activePageData.content} />
             )}
+          </TabsContent>
+          <TabsContent value="preview" className="mt-0 flex-1">
+            {activePageData && <PagePreview messageId={activePageData.messageId} />}
           </TabsContent>
         </Tabs>
       </div>

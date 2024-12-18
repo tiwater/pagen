@@ -21,7 +21,6 @@ export default function ChatPage({
   const { id } = use(params);
   const chat = useChatStore((state) => state.chats[id]);
   const [isMobile, setIsMobile] = useState(false);
-  const { page } = usePageStore();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -36,27 +35,28 @@ export default function ChatPage({
     return <div>Chat not found</div>;
   }
 
-  console.log("page in chat page", page);
-
   return (
     <div className="flex h-screen flex-col">
-      <div className="flex h-12 items-center justify-between border-b px-4">
+      <div className="flex h-14 items-center justify-between border-b px-4">
         <div className="flex items-center gap-2">
-          <Link href="/">
-            <Image src="/logo.svg" alt="Logo" width={24} height={24} />
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/images/logo.svg" alt="Logo" width={24} height={24} />
+            <span className="font-semibold">Pagen</span>
           </Link>
-          <div className="text-sm font-medium">
+          <span className="text-sm text-muted-foreground">
             {chat.title || "New Chat"}
-          </div>
+          </span>
         </div>
       </div>
-
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={50} minSize={30}>
+      <ResizablePanelGroup
+        direction={isMobile ? "vertical" : "horizontal"}
+        className="flex-1"
+      >
+        <ResizablePanel defaultSize={40} minSize={30}>
           <ChatUI id={id} chat={chat} />
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={50} minSize={30}>
+        <ResizablePanel defaultSize={60} minSize={30}>
           <CodeWorkspace id={id} isMobile={isMobile} />
         </ResizablePanel>
       </ResizablePanelGroup>

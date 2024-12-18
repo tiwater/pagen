@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "./providers";
-
-const inter = localFont({
-  src: "../assets/fonts/Inter-Regular.woff2",
-  variable: "--font-inter",
-});
-const fontHeading = localFont({
-  src: "../assets/fonts/Inter-SemiBold.woff2",
-  variable: "--font-heading",
-});
 
 export const metadata: Metadata = {
   title: "Pagen - AI Page Generator",
@@ -20,14 +10,14 @@ export const metadata: Metadata = {
     icon: [
       {
         url: "/favicon.ico",
-        sizes: "any"
+        sizes: "any",
       },
       {
         url: "/images/logo.svg",
-        type: "image/svg+xml"
-      }
-    ]
-  }
+        type: "image/svg+xml",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -36,18 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head />
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          inter.variable,
-          fontHeading.variable
-        )}
-      >
-        <Providers>
-          {children}
-        </Providers>
+    <html lang="zh-CN" suppressHydrationWarning style={{ '--header-height': '3rem' } as React.CSSProperties}>
+      <body className={cn("min-h-screen bg-background font-sans antialiased")}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

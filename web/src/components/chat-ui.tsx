@@ -1,196 +1,246 @@
-'use client'
+"use client";
 
-import { useChat } from 'ai/react'
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { SendIcon, Loader2 } from "lucide-react"
-import { usePageStore } from '@/store/page'
-import { useCallback } from 'react'
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
-import rehypeHighlight from "rehype-highlight"
-import { Chat } from '@/types/chat'
-import { cn } from "@/lib/utils"
+import { useChat } from "ai/react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { usePageStore } from "@/store/page";
+import { useCallback } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import { Chat } from "@/types/chat";
+import { cn } from "@/lib/utils";
+import useChatStore from "@/store/chat";
+import { useState, useEffect, useRef } from "react";
+import { Icons } from "./ui/icons";
 
 interface ChatUIProps {
-  id: string
-  chat: Chat | null
+  id: string;
+  chat: Chat | null;
 }
 
 interface PageBlock {
-  path: string
-  content: string
+  path: string;
+  content: string;
+  status: string;
+  id: string;
+  metadata: {
+    title: string;
+    version?: string;
+    description?: string;
+  };
 }
 
-function PageBlock({ page }: { page: PageBlock }) {
+function PageBlock({ messageId }: { messageId: string }) {
+  const { pages, setActivePage } = usePageStore();
+  const page = pages[messageId];
+  if (!page) return null;
+
   return (
     <div
-      className={cn(
-        "group cursor-pointer border border-input hover:border-input/80 rounded-md m-0.5 transition-colors"
-      )}
+      className="my-2 rounded border p-2 hover:bg-muted/50 cursor-pointer"
+      onClick={() => setActivePage(messageId)}
     >
-      <div className="flex items-center gap-2 border-b bg-muted text-muted-foreground group-hover:bg-muted/90 p-2">
-        <Loader2 className="w-4 h-4" />
-        <span className="font-medium">{page.path}</span>
-      </div>
-      <div className="text-xs font-mono bg-background group-hover:bg-background/90 text-muted-foreground overflow-hidden text-ellipsis p-2">
-        {page.content}
+      <div className="flex items-center gap-2">
+        <Icons.code className="h-4 w-4" />
+        <span className="font-mono text-sm">{page.metadata.title}</span>
+        {page.status === 'generating' && (
+          <Icons.spinner className="h-3 w-3 animate-spin" />
+        )}
       </div>
     </div>
-  )
+  );
 }
 
-function ChatMessage({ message }: { message: any }) {
-  const { pages } = usePageStore()
+function ChatMessage({ message, className, ...props }: { message: any; className?: string; [key: string]: any }) {
+  const { updatePage } = usePageStore();
+
+  // Process page code blocks when receiving assistant message
+  useEffect(() => {
+    if (message.role !== 'assistant') return;
+
+    // Find page code block start
+    const startMatch = message.content.match(/```pagen\s*(\S+)\s+/);
+    if (!startMatch) return;
+
+    const [fullMatch, path] = startMatch;
+    const startIdx = startMatch.index! + fullMatch.length;
+    const title = path.split('/').pop()?.replace(/\.tsx$/, '') || 'Generated Page';
+    
+    // Check if code block is complete
+    const endMatch = message.content.slice(startIdx).match(/```/);
+    const content = endMatch 
+      ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
+      : message.content.slice(startIdx).trim();
+    
+    updatePage({
+      messageId: message.id,
+      content,
+      status: endMatch ? 'complete' : 'generating',
+      metadata: {
+        title
+      }
+    });
+  }, [message.id, message.content, message.role, updatePage]);
+
   return (
-    <div className={cn("group relative mb-4 flex items-start md:mb-6", {
-      "justify-end": message.role === "user"
-    })}>
-      <div className="flex-1 space-y-2 overflow-hidden px-1">
-        <div className={cn("flex items-center", {
-          "justify-end": message.role === "user"
-        })}>
-          <div className="rounded-lg px-3 py-2 ring-1 ring-inset ring-gray-200">
-            {message.content && (
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight]}
-                components={{
-                  pre({ node, ...props }) {
-                    return (
-                      <pre {...props} className="overflow-auto rounded-lg bg-muted p-4" />
-                    )
-                  },
-                  code({ node, ...props }) {
-                    return (
-                      <code {...props} className="rounded bg-muted px-1 py-0.5" />
-                    )
-                  }
-                }}
-              >
-                {message.content}
-              </ReactMarkdown>
-            )}
-            {message.pages && message.pages.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {message.pages.map((page: string) => {
-                  const pageData = pages[page]
-                  if (!pageData) return null
-                  return <PageBlock key={page} page={pageData} />
-                })}
-              </div>
-            )}
+    <div
+      className={cn("group relative flex items-start", className)}
+      {...props}
+    >
+        <div
+          className="inline-flex items-start gap-2 rounded-lg text-sm font-medium"
+        >
+          <div className="p-2 rounded-full bg-muted">
+          {message.role === "user" ? <Icons.user className="h-4 w-4 shrink-0" /> : <Icons.bot className="h-4 w-4 shrink-0" />}
           </div>
-        </div>
+          <div className={cn("flex flex-col space-y-1 leading-normal p-2 rounded-lg", message.role === "user"
+            ? "bg-primary text-primary-foreground"
+            : "bg-muted text-muted-foreground"
+        )}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHighlight]}
+            components={{
+              code({
+                node,
+                className,
+                children,
+                ...props
+              }) {
+                const language = /language-(\w+)/.exec(className || '')?.[1];
+                if (language === 'pagen') {
+                  const match = /```pagen\s*(\S+)\s+/g.exec(children.toString());
+                  if (match) {
+                    return <PageBlock messageId={message.id} />;
+                  }
+                  return null;
+                }
+                return (
+                  <code
+                    className={className}
+                    {...props}
+                  >
+                    {children}
+                  </code>
+                );
+              },
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
+      </div>
       </div>
     </div>
-  )
+  );
 }
 
-function EmptyScreen({ setInput }: { setInput: (e: React.ChangeEvent<HTMLTextAreaElement>) => void }) {
-  const exampleMessages = [
-    {
-      heading: "Create a new React component",
-      message: "Create a button component with hover and focus states"
-    },
-    {
-      heading: "Add TypeScript types",
-      message: "Add TypeScript types to my component"
-    },
-    {
-      heading: "Fix a bug",
-      message: "My component is not updating when props change"
-    }
-  ]
-
+function EmptyScreen({ setInput }: { setInput: (input: string) => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4">
       <div className="rounded-lg border bg-background p-8">
-        <h1 className="mb-2 text-lg font-semibold">
-          Welcome to Pagen AI
-        </h1>
+        <h1 className="mb-2 text-lg font-semibold">Welcome to Pagen AI</h1>
         <p className="mb-2 leading-normal text-muted-foreground">
-          I can help you write, debug, and understand code.
+          This is an AI-powered web page generator. Describe what you want to
+          create and I'll help you build it.
         </p>
         <div className="mt-4 flex flex-col items-start space-y-2">
-          {exampleMessages.map((message, index) => (
+          {[
+            "Create a login form with a modern design",
+            "Build a pricing page with three tiers",
+            "Design a hero section with a call-to-action",
+          ].map((example) => (
             <Button
-              key={index}
-              variant="ghost"
+              key={example}
+              variant="link"
               className="h-auto p-0 text-base"
-              onClick={() => {
-                const fakeEvent = {
-                  target: { value: message.message },
-                  preventDefault: () => {},
-                } as React.ChangeEvent<HTMLTextAreaElement>
-                setInput(fakeEvent)
-              }}
+              onClick={() => setInput(example)}
             >
-              <span className="text-xs">{message.heading}</span>
+              <span className="text-muted-foreground">&rarr;</span> {example}
             </Button>
           ))}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function ChatUI({ id: chatId, chat }: ChatUIProps) {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { addMessage, addLog, markChatInitialized } = useChatStore();
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit: onSubmit,
+    isLoading,
+    setInput,
+  } = useChat({
+    api: "/api/generate",
     id: chatId,
+    initialMessages: chat?.messages || [],
     body: {
       id: chatId,
+      title: chat?.title,
     },
-    onResponse(response) {
-      if (response.status === 401) {
-        // handle unauthorized
-      }
-    },
-  })
+    onFinish: response => {
+      console.log('Chat finished:', response)
+      addMessage(chatId, {
+        id: response.id,
+        role: response.role,
+        content: response.content,
+        createdAt: response.createdAt,
+      });
+      markChatInitialized(chatId);
+    }
+  });
 
-  const onSubmit = useCallback(
+  const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-      handleSubmit(e)
+      e.preventDefault();
+      if (!input?.trim()) {
+        return;
+      }
+      onSubmit(e);
     },
-    [handleSubmit]
-  )
+    [input, onSubmit]
+  );
 
   return (
-    <div className="flex-1 space-y-4 pt-4 md:pt-6">
-      <div className="space-y-4">
+    <div className="flex h-full flex-col justify-between">
+      <div className="flex flex-col flex-1 overflow-y-auto px-2 gap-4">
         {messages.length ? (
           messages.map((message, i) => (
-            <ChatMessage key={message.id} message={message} />
+            <ChatMessage key={message.id || i} message={message} />
           ))
         ) : (
-          <EmptyScreen setInput={handleInputChange} />
+          <EmptyScreen setInput={setInput} />
         )}
       </div>
-
-      <form onSubmit={onSubmit} className="sticky bottom-0 bg-background">
-        <div className="flex items-center gap-2">
+      <form onSubmit={handleSubmit} className="border-t bg-background p-4">
+        <div className="relative flex w-full overflow-hidden bg-background gap-2">
           <Textarea
-            placeholder="Send a message..."
+            tabIndex={0}
+            rows={1}
             value={input}
             onChange={handleInputChange}
-            rows={1}
-            className="min-h-[52px] resize-none"
-            disabled={isLoading}
+            placeholder="Send a message"
+            spellCheck={false}
+            className="w-full sm:text-sm"
           />
-          <Button 
-            type="submit" 
-            size="icon" 
-            disabled={isLoading || input.trim().length === 0}
+          <Button
+            type="submit"
+            size="icon"
+            disabled={isLoading || input === ""}
+            className="shrink-0"
           >
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Icons.spinner className="h-4 w-4 animate-spin" />
             ) : (
-              <SendIcon className="h-4 w-4" />
+              <Icons.send className="h-4 w-4" />
             )}
           </Button>
         </div>
       </form>
     </div>
-  )
+  );
 }

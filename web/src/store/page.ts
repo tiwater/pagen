@@ -1,47 +1,62 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { nanoid } from "nanoid";
 
-interface PageBlock {
+interface Page {
   path: string;
   content: string;
-  styles?: string;
+  status: 'generating' | 'complete';
+  messageId: string;
+  metadata: {
+    title: string;
+    version?: string;
+    description?: string;
+  };
 }
-
-type Status = "idle" | "generating" | "complete" | "error";
 
 interface PageState {
   // State
-  page: PageBlock | null;
-  pages: Record<string, PageBlock>;
-  status: Status;
-  error?: string;
+  pages: Record<string, Page>;
+  activePage: string | null;
   
   // Actions
-  setPage: (page: PageBlock | null) => void;
-  setStatus: (status: Status) => void;
-  setError: (error?: string) => void;
-  addPage: (pageId: string, page: PageBlock) => void;
+  updatePage: (updates: Partial<Page> & Pick<Page, 'messageId'>) => void;
+  setActivePage: (messageId: string) => void;
+  getPagesByMessageId: (messageId: string) => Page[];
 }
 
 export const usePageStore = create<PageState>()(
   persist(
     (set, get) => ({
       // Initial State
-      page: null,
       pages: {},
-      status: "idle",
-      error: undefined,
+      activePage: null,
 
       // Synchronous Actions
-      setPage: (page) => set({ page }),
-      setStatus: (status) => set({ status }),
-      setError: (error) => set({ error }),
-      addPage: (pageId, page) => set((state) => ({
-        pages: {
-          ...state.pages,
-          [pageId]: page
-        }
-      }))
+      getPagesByMessageId: (messageId) => {
+        const state = get();
+        return Object.values(state.pages).filter(page => page.messageId === messageId);
+      },
+      updatePage: (updates) => {
+        set((state) => ({
+          pages: {
+            ...state.pages,
+            [updates.messageId]: {
+              content: '',
+              status: 'generating',
+              path: 'app/page.tsx',
+              metadata: {},
+              ...state.pages[updates.messageId],
+              ...updates,
+            },
+          },
+          activePage: state.activePage || updates.messageId
+        }));
+      },
+      setActivePage: (messageId) =>
+        set(() => ({
+          activePage: messageId
+        })),
     }),
     {
       name: "page-storage",
