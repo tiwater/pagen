@@ -11,4 +11,5 @@ export interface Chat {
   createdAt: number
   updatedAt: number
   sharePath?: string
+  latestCode?: string
 }

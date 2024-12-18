@@ -1,9 +1,11 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { renderPreview } from '@/lib/preview-server'
 
 interface PageBlock {
   path: string
   content: string
+  styles?: string
 }
 
 interface PageState {
@@ -15,7 +17,7 @@ interface PageState {
   updatePage: (page: PageBlock) => void
   setStatus: (status: 'idle' | 'generating' | 'complete' | 'error') => void
   setError: (error?: string) => void
-  saveGeneratedCode: (pageId: string, code: string) => Promise<void>
+  previewPage: (pageId: string, code: string, styles?: string) => Promise<void>
 }
 
 export const usePageStore = create<PageState>()(
@@ -34,41 +36,33 @@ export const usePageStore = create<PageState>()(
       
       setError: (error) => set({ error }),
 
-      saveGeneratedCode: async (pageId: string, code: string) => {
+      previewPage: async (pageId: string, code: string, styles?: string) => {
         try {
-          const response = await fetch('/api/render', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ code, pageId }),
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to save generated code')
-          }
-
-          const { previewUrl } = await response.json()
-          const newPage = {
-            path: previewUrl,
-            content: code
-          }
+          set({ status: 'generating' })
           
+          // Send to preview server
+          const html = await renderPreview(code, styles)
+          
+          // Update local state
           set({ 
-            page: newPage,
+            page: { 
+              path: `/preview/${pageId}`,
+              content: html,
+              styles 
+            },
             status: 'complete'
           })
-        } catch (err) {
+        } catch (error) {
           set({ 
-            error: err instanceof Error ? err.message : 'Failed to save code',
-            status: 'error'
+            status: 'error',
+            error: error instanceof Error ? error.message : 'Failed to generate preview'
           })
         }
       }
     }),
     {
       name: 'page-storage',
-      skipHydration: true // Important for Next.js to avoid hydration mismatch
+      skipHydration: true
     }
   )
 )

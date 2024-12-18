@@ -18,6 +18,28 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  onDemandEntries: {
+    maxInactiveAge: 60 * 60 * 1000,
+    pagesBufferLength: 5,
+  },
+  experimental: {
+    externalDir: true,
+  },
+  webpack: (config, { isServer }) => {
+    // Make webpack ignore dynamic imports from @/generated
+    config.module.rules.push({
+      test: /generated[\/\\][^\/\\]+\.tsx?$/,
+      loader: 'null-loader'
+    });
+    
+    // Add path alias for generated files
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@/generated': '/src/generated'
+    };
+    
+    return config;
+  }
 };
 
 export default nextConfig;

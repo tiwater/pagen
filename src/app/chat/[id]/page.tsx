@@ -14,7 +14,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const chat = useChatStore((state) => state.chats[id]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const { page } = usePageStore()
+  const { page, previewPage } = usePageStore()
 
   useEffect(() => {
     const checkMobile = () => {
@@ -27,6 +27,13 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Auto-preview when code is updated
+  useEffect(() => {
+    if (chat?.latestCode) {
+      previewPage(id, chat.latestCode);
+    }
+  }, [chat?.latestCode, id, previewPage]);
 
   if (!chat) {
     return <div>Chat not found</div>

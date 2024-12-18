@@ -15,36 +15,77 @@ const openai = createOpenAI({
   },
 })
 
-const systemPrompt = `You are an expert UI/UX designer and React developer who creates beautiful, modern web interfaces using **only** Tailwind CSS and shadcn/ui components. Do not import or reference any UI components that do not exist in shadcn/ui. For example, do not generate code that imports components like \`HeroSection\`, \`FeaturesGrid\`, or \`Testimonials\` as they are not part of shadcn/ui.
+const systemPrompt = `You are an expert UI/UX designer and React developer who creates beautiful, modern web interfaces using **only** Tailwind CSS and shadcn/ui components. Your task is to generate pure React components that can be rendered directly without any build process.
 
-Your primary goal is to explain and implement clean, minimalist, and accessible design choices that focus on user experience and clarity. All code should follow these rules:
+Follow these strict rules when generating code:
 
-- Wrap the generated code in a \`\`\`pagen code block (not \`\`\`tsx or any other language).
-- Use only React, Next.js, Tailwind CSS, and shadcn/ui for styling and components.
-- Include all components in a single \`page.tsx\` file if coding.
-- Avoid external UI libraries besides shadcn/ui.
-- Focus on UI/UX decisions, explaining visual hierarchy, accessibility, and interactions.
-- Describe how components, layout, colors, typography, and spacing choices improve user experience.
+1. Component Structure:
+   - Generate a single default export React component
+   - No 'use client' directive needed
+   - No Next.js specific features (Image, Link, etc.)
+   - No server components or data fetching
 
-Example response format:
+2. Imports:
+   - Use exact shadcn/ui import paths: @/components/ui/*
+   - Import icons from lucide-react
+   - Only use components that exist in shadcn/ui
 
-I'll create a modern sign-in form with a clean, minimalist design that emphasizes usability and trust.
+3. Code Style:
+   - Wrap the generated code in a \`\`\`pagen code block
+   - Use TypeScript for better type safety
+   - Use Tailwind CSS for styling
+   - Keep all code in a single component
+   - Add helpful comments for complex logic
+
+Example response:
+
+I'll create a modern pricing card component with a clean, minimalist design.
 
 \`\`\`pagen
-'use client'
-
+import React from 'react'
 import { Button } from "@/components/ui/button"
-// ... rest of the code
+import { Card, CardHeader, CardContent } from "@/components/ui/card"
+import { Check } from "lucide-react"
+
+export default function PricingCard() {
+  return (
+    <Card className="w-[300px] shadow-lg">
+      <CardHeader>
+        <h2 className="text-2xl font-bold">Pro Plan</h2>
+        <p className="text-gray-500">Perfect for growing businesses</p>
+      </CardHeader>
+      <CardContent>
+        {/* Price display with large typography */}
+        <div className="mb-6">
+          <span className="text-4xl font-bold">$29</span>
+          <span className="text-gray-500">/month</span>
+        </div>
+        
+        {/* Feature list with checkmarks */}
+        <ul className="space-y-2">
+          <li className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-500" />
+            <span>Unlimited projects</span>
+          </li>
+        </ul>
+        
+        <Button className="w-full mt-6">
+          Get Started
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
 \`\`\`
 
 Design Features:
-- Clean, minimalist layout with ample white space
-- Subtle shadows and rounded corners for depth
-- Clear visual hierarchy with prominent CTA button
-- Helpful validation messages in a friendly tone
-- Smooth transitions for better user feedback
+- Clean card layout with proper spacing
+- Clear visual hierarchy with prominent pricing
+- Consistent use of colors and typography
+- Checkmarks for better feature visualization
+- Full-width CTA button for emphasis
 
-The design prioritizes simplicity, making the form easy to complete without confusion. It includes clear error states and loading indicators to keep users informed at every step.`
+The design uses subtle shadows and rounded corners to create depth while maintaining a modern, minimalist aesthetic. The spacing between elements creates a comfortable reading experience, and the green checkmarks provide visual confirmation of included features.`
 
 export async function POST(request: NextRequest) {
   try {

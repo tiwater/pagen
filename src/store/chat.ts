@@ -45,7 +45,8 @@ const useChatStore = create<ChatState>()(
               logs: [],
               isNew: true,
               createdAt: Date.now(),
-              updatedAt: Date.now()
+              updatedAt: Date.now(),
+              latestCode: ''
             }
           }
         }))
@@ -53,10 +54,21 @@ const useChatStore = create<ChatState>()(
         return chatId
       },
 
-      addMessage: (chatId, message) => 
+      addMessage: (chatId: string, message: Message) => {
         set((state) => {
           const chat = state.chats[chatId]
           if (!chat) return state
+
+          // Extract code from assistant messages
+          let latestCode = chat.latestCode
+          if (message.role === 'assistant') {
+            console.log('Processing assistant message:', message.content);
+            const codeMatch = message.content.match(/```(?:pagen|tsx|jsx)\n([\s\S]*?)```/);
+            if (codeMatch) {
+              latestCode = codeMatch[1].trim();
+              console.log('Extracted code:', latestCode);
+            }
+          }
 
           return {
             chats: {
@@ -64,11 +76,13 @@ const useChatStore = create<ChatState>()(
               [chatId]: {
                 ...chat,
                 messages: [...chat.messages, message],
+                latestCode,
                 updatedAt: Date.now()
               }
             }
           }
-        }),
+        })
+      },
 
       addLog: (chatId, log) =>
         set((state) => {
