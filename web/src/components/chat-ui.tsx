@@ -110,7 +110,7 @@ function ChatMessage({ message, className, ...props }: { message: any; className
               }) {
                 const language = /language-(\w+)/.exec(className || '')?.[1];
                 if (language === 'pagen') {
-                  const match = /```pagen\s*(\S+)\s+/g.exec(children.toString());
+                  const match = /```pagen\s*(\S+)\s+/g.exec(children?.toString() || '');
                   if (match) {
                     return <PageBlock messageId={message.id} />;
                   }

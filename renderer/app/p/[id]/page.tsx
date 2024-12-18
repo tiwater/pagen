@@ -2,14 +2,7 @@
 
 import { notFound } from "next/navigation";
 import React, { use, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { PreviewClient } from "./preview-client";
 
 interface PreviewPageProps {
   params: Promise<{
@@ -42,36 +35,19 @@ export default function PreviewPage({ params }: PreviewPageProps) {
     notFound();
   }
 
-  if (!content) {
-    return null;
-  }
-
-  // Create a component with all the required dependencies in scope
-  const components = {
-    Button,
-    Card,
-    CardHeader,
-    CardContent,
-    CardFooter,
-    Input,
-    React,
-  };
-
   try {
-    // Evaluate the code in the context of available components
-    const code = `
-      ${content}
-      const Page = ${
-        content.includes("export default") ? content : `() => {${content}}`
-      };
-      return React.createElement(Page);
-    `;
+    if (!content) {
+      return <div>Loading...</div>;
+    }
 
-    // eslint-disable-next-line no-new-func
-    const Component = new Function(...Object.keys(components), code);
-    return Component(...Object.values(components));
+    return <PreviewClient code={content} />;
   } catch (error) {
     console.error("Error rendering component:", error);
-    return <div>Error rendering component</div>;
+    return (
+      <div>
+        Error rendering component:{" "}
+        {error instanceof Error ? error.message : "Unknown error occurred"}
+      </div>
+    );
   }
 }
