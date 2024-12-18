@@ -11,24 +11,22 @@ export async function POST(req: NextRequest) {
     // Generate a random id
     const id = Math.random().toString(36).substring(2, 15);
     
-    // Get the store instance
-    const store = usePageStore.getState();
-    
     // Store the code
-    store.setPage(id, code);
+    usePageStore.getState().setPage(id, code);
 
     return NextResponse.json({ id });
   } catch (error) {
+    console.error("Error storing page:", error);
     return NextResponse.json(
-      { error: "Failed to process request" },
+      { error: "Failed to store page" },
       { status: 500 }
     );
   }
 }
 
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const id = url.searchParams.get("id");
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
 
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });

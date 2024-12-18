@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 interface PageStore {
   pages: Record<string, string>;
@@ -7,19 +6,16 @@ interface PageStore {
   setPage: (id: string, code: string) => void;
 }
 
-export const usePageStore = create<PageStore>()(
-  persist(
-    (set, get) => ({
-      pages: {},
-      getPage: (id) => get().pages[id],
-      setPage: (id, code) => {
-        set((state) => ({
-          pages: { ...state.pages, [id]: code },
-        }));
-      },
-    }),
-    {
-      name: "page-storage",
-    }
-  )
-);
+// Server-side store instance
+const memoryStore: Record<string, string> = {};
+
+export const usePageStore = create<PageStore>()((set, get) => ({
+  pages: memoryStore,
+  getPage: (id) => get().pages[id],
+  setPage: (id, code) => {
+    memoryStore[id] = code; // Update memory store
+    set((state) => ({
+      pages: { ...memoryStore }, // Use the memory store as source of truth
+    }));
+  },
+}));
