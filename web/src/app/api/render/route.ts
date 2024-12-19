@@ -1,15 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
-const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || "https://render.dustland.ai";
+const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://render.dustland.ai';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
+
     const response = await fetch(`${RENDERER_URL}/api/render`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     });
@@ -18,17 +18,14 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: data.error || "Failed to render page" },
+        { error: data.error || 'Failed to render page' },
         { status: response.status }
       );
     }
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error proxying to renderer:", error);
-    return NextResponse.json(
-      { error: "Failed to proxy request to renderer" },
-      { status: 500 }
-    );
+    console.error('Error proxying to renderer:', error);
+    return NextResponse.json({ error: 'Failed to proxy request to renderer' }, { status: 500 });
   }
 }

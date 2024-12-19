@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useTheme } from "next-themes";
-import { useCallback, useState } from "react";
-import { usePageStore } from "@/store/page";
-import { CodeBlock } from "@/components/code-block";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PagePreview } from "@/components/page-preview"; 
-import { Icons } from "./ui/icons";
-import { Button } from "./ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCallback, useState } from 'react';
+import { useTheme } from 'next-themes';
+import { usePageStore } from '@/store/page';
+import { CodeBlock } from '@/components/code-block';
+import { PagePreview } from '@/components/page-preview';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from './ui/button';
+import { Icons } from './ui/icons';
 
 interface CodeWorkspaceProps {
   id: string;
@@ -16,10 +16,7 @@ interface CodeWorkspaceProps {
   setIsPreviewOpen?: (open: boolean) => void;
 }
 
-export function CodeWorkspace({
-  id,
-  isMobile,
-}: CodeWorkspaceProps) {
+export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
   const { pages, activePage } = usePageStore();
   const activePageData = activePage ? pages[activePage] : null;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
@@ -35,8 +32,8 @@ export function CodeWorkspace({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: activePage
-        })
+          id: activePage,
+        }),
       });
 
       if (!response.ok) {
@@ -45,17 +42,17 @@ export function CodeWorkspace({
 
       // Get the blob from response
       const blob = await response.blob();
-      
+
       // Create a URL for the blob
       const url = window.URL.createObjectURL(blob);
-      
+
       // Create a temporary link and trigger download
       const link = document.createElement('a');
       link.href = url;
       link.download = `screenshot-${activePage}.png`;
       document.body.appendChild(link);
       link.click();
-      
+
       // Clean up
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
@@ -80,22 +77,24 @@ export function CodeWorkspace({
               Preview
             </TabsTrigger>
             {activePageData && (
-            <div className="flex items-center gap-2 p-2">
-              {activePageData.status === "generating" && (
-                <Icons.spinner className="h-4 w-4 animate-spin" />
-              )}
-              {activePageData.status === "complete" && (
-                <Icons.checkCircle className="h-4 w-4 text-green-500" />
-              )}
-            </div>
-          )}
+              <div className="flex items-center gap-2 p-2">
+                {activePageData.status === 'generating' && (
+                  <Icons.spinner className="h-4 w-4 animate-spin" />
+                )}
+                {activePageData.status === 'complete' && (
+                  <Icons.checkCircle className="h-4 w-4 text-green-500" />
+                )}
+              </div>
+            )}
           </TabsList>
           {activePageData && (
             <div className="flex items-center gap-2 p-2">
               <Button
                 variant="ghost"
                 onClick={handleScreenshot}
-                disabled={!activePageData || activePageData.status !== "complete" || isScreenshotting}
+                disabled={
+                  !activePageData || activePageData.status !== 'complete' || isScreenshotting
+                }
                 className="flex items-center h-6 w-6"
               >
                 {isScreenshotting ? (
@@ -111,10 +110,7 @@ export function CodeWorkspace({
           <TabsContent value="code" className="h-full m-0 bg-muted/20">
             {activePageData ? (
               <ScrollArea className="h-full">
-                  <CodeBlock
-                    code={activePageData.content || ""}
-                    language="tsx"
-                  />
+                <CodeBlock code={activePageData.content || ''} language="tsx" />
               </ScrollArea>
             ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground">

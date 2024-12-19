@@ -1,22 +1,22 @@
 import {
-  X,
-  Link,
-  Plus,
-  Loader2,
-  Square,
-  Send,
-  Bot,
-  Wand,
   AppWindow,
-  Code,
-  Terminal,
+  Bot,
   Camera,
-  User,
   Check,
-  UserRound,
   CheckCircle,
   CheckCircle2,
-} from "lucide-react";
+  Code,
+  Link,
+  Loader2,
+  Plus,
+  Send,
+  Square,
+  Terminal,
+  User,
+  UserRound,
+  Wand,
+  X,
+} from 'lucide-react';
 
 function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
   return (

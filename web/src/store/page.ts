@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { nanoid } from "nanoid";
+import { nanoid } from 'nanoid';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface Page {
   path: string;
@@ -18,7 +18,7 @@ interface PageState {
   // State
   pages: Record<string, Page>;
   activePage: string | null;
-  
+
   // Actions
   updatePage: (updates: Partial<Page> & Pick<Page, 'messageId'>) => void;
   setActivePage: (messageId: string) => void;
@@ -33,12 +33,12 @@ export const usePageStore = create<PageState>()(
       activePage: null,
 
       // Synchronous Actions
-      getPagesByMessageId: (messageId) => {
+      getPagesByMessageId: messageId => {
         const state = get();
         return Object.values(state.pages).filter(page => page.messageId === messageId);
       },
-      updatePage: (updates) => {
-        set((state) => ({
+      updatePage: updates => {
+        set(state => ({
           pages: {
             ...state.pages,
             [updates.messageId]: {
@@ -50,16 +50,16 @@ export const usePageStore = create<PageState>()(
               },
             },
           },
-          activePage: state.activePage || updates.messageId
+          activePage: state.activePage || updates.messageId,
         }));
       },
-      setActivePage: (messageId) =>
+      setActivePage: messageId =>
         set(() => ({
-          activePage: messageId
+          activePage: messageId,
         })),
     }),
     {
-      name: "page-storage",
+      name: 'page-storage',
       skipHydration: true,
     }
   )

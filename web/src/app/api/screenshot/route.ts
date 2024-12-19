@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { id } = await request.json()
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://render.dustland.ai'
-    const pageUrl = `${baseUrl}/p/${id}`
+    const { id } = await request.json();
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://render.dustland.ai';
+    const pageUrl = `${baseUrl}/p/${id}`;
 
     const response = await fetch('https://webshot.dustland.ai/screenshot', {
       method: 'POST',
@@ -14,9 +14,9 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         url: pageUrl,
         options: {
-          fullPage: true
-        }
-      })
+          fullPage: true,
+        },
+      }),
     });
 
     if (!response.ok) {
@@ -29,8 +29,8 @@ export async function POST(request: Request) {
     return new NextResponse(imageBlob, {
       headers: {
         'Content-Type': 'image/png',
-        'Content-Disposition': `attachment; filename=screenshot-${id}.png`
-      }
+        'Content-Disposition': `attachment; filename=screenshot-${id}.png`,
+      },
     });
   } catch (error) {
     console.error('Screenshot error:', error);

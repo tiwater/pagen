@@ -1,19 +1,19 @@
-import { NextRequest } from "next/server"
-import { streamText } from "ai"
-import { createOpenAI } from "@ai-sdk/openai"
+import { NextRequest } from 'next/server';
+import { createOpenAI } from '@ai-sdk/openai';
+import { streamText } from 'ai';
 
 // IMPORTANT! Set the runtime to edge
-export const runtime = "edge"
+export const runtime = 'edge';
 
 const openai = createOpenAI({
-  baseURL: "https://oai.helicone.ai/v1",
+  baseURL: 'https://oai.helicone.ai/v1',
   headers: {
-    "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
-    "Helicone-User-Id": "pagen@tiwater.com",
-    "Helicone-Property-App": "pagen",
-    "Helicone-Stream-Usage": "true",
+    'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
+    'Helicone-User-Id': 'pagen@tiwater.com',
+    'Helicone-Property-App': 'pagen',
+    'Helicone-Stream-Usage': 'true',
   },
-})
+});
 
 const systemPrompt = `You are an expert UI/UX designer and React developer who creates beautiful, modern web interfaces using **only** Tailwind CSS and shadcn/ui components. Your task is to generate pure React components that can be rendered directly without any build process.
 
@@ -85,31 +85,28 @@ Design Features:
 - Checkmarks for better feature visualization
 - Full-width CTA button for emphasis
 
-The design uses subtle shadows and rounded corners to create depth while maintaining a modern, minimalist aesthetic. The spacing between elements creates a comfortable reading experience, and the green checkmarks provide visual confirmation of included features.`
+The design uses subtle shadows and rounded corners to create depth while maintaining a modern, minimalist aesthetic. The spacing between elements creates a comfortable reading experience, and the green checkmarks provide visual confirmation of included features.`;
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages } = await request.json()
+    const { messages } = await request.json();
 
     const body = {
-      model: openai("gpt-4o"),
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...(messages || [])
-      ],
+      model: openai('gpt-4o'),
+      messages: [{ role: 'system', content: systemPrompt }, ...(messages || [])],
       temperature: 0.7,
-      stream: true
-    }
+      stream: true,
+    };
 
-    console.log(body)
+    console.log(body);
 
-    const result = await streamText(body)
-    return result.toDataStreamResponse()
+    const result = await streamText(body);
+    return result.toDataStreamResponse();
   } catch (error) {
-    console.error('Generate error:', error)
+    console.error('Generate error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Failed to generate page' }),
       { status: 500 }
-    )
+    );
   }
 }

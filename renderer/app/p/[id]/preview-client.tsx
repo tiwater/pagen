@@ -16,7 +16,7 @@ import { Loader2 } from "lucide-react";
 export function PreviewClient({ code }: { code: string }) {
   const [error, setError] = React.useState<string | null>(null);
   const [Component, setComponent] = React.useState<React.ComponentType | null>(
-    null
+    null,
   );
 
   // Create a stable reference to our components
@@ -31,7 +31,7 @@ export function PreviewClient({ code }: { code: string }) {
       Input,
       ...LucideIcons,
     }),
-    []
+    [],
   );
 
   React.useEffect(() => {
@@ -39,12 +39,14 @@ export function PreviewClient({ code }: { code: string }) {
       console.log("Original code:", code);
 
       // Extract component name and definition
-      const exportMatch = code.match(/export\s+(default\s+)?(?:function|const)\s+(\w+)/);
+      const exportMatch = code.match(
+        /export\s+(default\s+)?(?:function|const)\s+(\w+)/,
+      );
       if (!exportMatch) {
-        throw new Error('No exported component found in the code');
+        throw new Error("No exported component found in the code");
       }
       const componentName = exportMatch[2];
-      
+
       // Remove imports and exports
       const cleanCode = code
         .split("\n")
@@ -70,7 +72,7 @@ export function PreviewClient({ code }: { code: string }) {
         `
         ${transformedCode}
         return ${componentName};
-        `
+        `,
       );
 
       // Create the component with all dependencies

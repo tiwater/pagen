@@ -24,7 +24,7 @@ export async function POST(request: Request) {
           headers: {
             "Access-Control-Allow-Origin": "*",
           },
-        }
+        },
       );
     }
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
         headers: {
           "Access-Control-Allow-Origin": "*",
         },
-      }
+      },
     );
   } catch (error) {
     console.error("Error storing page:", error);
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         headers: {
           "Access-Control-Allow-Origin": "*",
         },
-      }
+      },
     );
   }
 }

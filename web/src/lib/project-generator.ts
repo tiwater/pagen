@@ -1,10 +1,10 @@
-import { type FileContent } from '@/types/project'
-import * as fs from 'fs/promises'
-import * as path from 'path'
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { type FileContent } from '@/types/project';
 
 const copyTemplateFiles = async (targetDir: string) => {
   const templateDir = path.join(process.cwd(), 'src/project-template');
-  
+
   // Function to recursively copy directory
   const copyDir = async (src: string, dest: string) => {
     await fs.mkdir(dest, { recursive: true });
@@ -28,19 +28,13 @@ const copyTemplateFiles = async (targetDir: string) => {
 export function generateNextProject(content: string): FileContent[] {
   // First ensure the content uses relative paths for imports
   const processedContent = content
-    .replace(
-      /from ["']@\/components\/ui\/(.*?)["']/g,
-      'from "../components/ui/$1"'
-    )
-    .replace(
-      /from ["']@\/lib\/(.*?)["']/g,
-      'from "../lib/$1"'
-    );
+    .replace(/from ["']@\/components\/ui\/(.*?)["']/g, 'from "../components/ui/$1"')
+    .replace(/from ["']@\/lib\/(.*?)["']/g, 'from "../lib/$1"');
 
   return [
     {
       path: 'app/page.tsx',
-      content: processedContent
+      content: processedContent,
     },
     {
       path: 'app/layout.tsx',
@@ -63,9 +57,9 @@ export default function RootLayout({
       <body>{children}</body>
     </html>
   )
-}`
-    }
-  ]
+}`,
+    },
+  ];
 }
 
 interface GenerateProjectOptions {
@@ -81,7 +75,7 @@ export const generateProject = async (
   if (!options.skipTemplate) {
     await copyTemplateFiles(outputDir);
   }
-  
+
   // Then generate the rest of the project files
   const projectFiles = generateNextProject(page.content);
   for (const file of projectFiles) {

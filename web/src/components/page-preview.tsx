@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { usePageStore } from "@/store/page";
-import { Icons } from "./ui/icons";
-import { Loading } from "./loading";
+import { useEffect, useState } from 'react';
+import { usePageStore } from '@/store/page';
+import { Loading } from './loading';
+import { Icons } from './ui/icons';
 
-const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || "https://render.dustland.ai";
+const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://render.dustland.ai';
 
 interface PagePreviewProps {
   messageId?: string;
@@ -22,30 +22,30 @@ export function PagePreview({ messageId }: PagePreviewProps) {
       if (!page?.content) return;
 
       try {
-        console.log("Sending preview request to:", "/api/render");
-        console.log("Preview content:", page.content);
-        
-        const response = await fetch("/api/render", {
-          method: "POST",
+        console.log('Sending preview request to:', '/api/render');
+        console.log('Preview content:', page.content);
+
+        const response = await fetch('/api/render', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({ id: messageId, code: page.content }),
         });
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error("Preview response not OK:", response.status, errorText);
-          throw new Error("Failed to create preview page");
+          console.error('Preview response not OK:', response.status, errorText);
+          throw new Error('Failed to create preview page');
         }
 
         const data = await response.json();
-        console.log("Preview response:", data);
-        console.log("RENDERER_URL:", RENDERER_URL);
-        console.log("Final Preview URL:", `${RENDERER_URL}${data.url}`);
+        console.log('Preview response:', data);
+        console.log('RENDERER_URL:', RENDERER_URL);
+        console.log('Final Preview URL:', `${RENDERER_URL}${data.url}`);
         setPreviewUrl(`${RENDERER_URL}${data.url}`);
       } catch (error) {
-        console.error("Failed to create preview:", error);
+        console.error('Failed to create preview:', error);
       } finally {
         setIsLoading(false);
       }
