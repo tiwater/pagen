@@ -29,47 +29,45 @@ export function CodeWorkspace({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1">
-        <Tabs defaultValue="code" className="h-full">
-          <div className="flex items-center justify-between border-b">
-            <TabsList className="grid grid-cols-2 bg-transparent">
-              <TabsTrigger value="code">
-                <Icons.code className="mr-2 h-4 w-4" />
-                Code
-              </TabsTrigger>
-              <TabsTrigger value="preview">
-                <Icons.window className="mr-2 h-4 w-4" />
-                Preview
-              </TabsTrigger>
-            </TabsList>
-            {activePageData && (
-              <div className="flex items-center gap-2 p-2">
-                {activePageData.status === "generating" && (
-                  <Icons.spinner className="h-4 w-4 animate-spin" />
-                )}
-                {activePageData.status === "complete" && (
-                  <Icons.check className="h-4 w-4" />
-                )}
-                <Button
-                  variant="ghost"
-                  onClick={handleScreenshot}
-                  size={'icon'}
-                  className="flex items-center"
-                >
-                  <Icons.camera className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-          <TabsContent value="code" className="mt-0 flex-1 relative">
+      <Tabs defaultValue="code" className="flex-1 h-full flex flex-col">
+        <div className="flex items-center justify-between border-b px-4">
+          <TabsList>
+            <TabsTrigger value="code" className="flex items-center gap-2">
+              <Icons.terminal className="h-4 w-4" />
+              Code
+            </TabsTrigger>
+            <TabsTrigger value="preview" className="flex items-center gap-2">
+              <Icons.window className="h-4 w-4" />
+              Preview
+            </TabsTrigger>
+          </TabsList>
+          {activePageData && (
+            <div className="flex items-center gap-2 p-2">
+              {activePageData.status === "generating" && (
+                <Icons.spinner className="h-4 w-4 animate-spin" />
+              )}
+              {activePageData.status === "complete" && (
+                <Icons.check className="h-4 w-4" />
+              )}
+              <Button
+                variant="ghost"
+                onClick={handleScreenshot}
+                size={'icon'}
+                className="flex items-center"
+              >
+                <Icons.camera className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+        <div className="flex-1 h-[calc(100%-4rem)] overflow-hidden">
+          <TabsContent value="code" className="h-full m-0">
             {activePageData ? (
-              <ScrollArea className="absolute inset-0">
-                <div className="p-4">
+              <ScrollArea className="h-full">
                   <CodeBlock
                     code={activePageData.content || ""}
                     language="tsx"
                   />
-                </div>
               </ScrollArea>
             ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -77,11 +75,11 @@ export function CodeWorkspace({
               </div>
             )}
           </TabsContent>
-          <TabsContent value="preview" className="mt-0 flex-1">
+          <TabsContent value="preview" className="h-full m-0">
             {activePageData && <PagePreview messageId={activePageData.messageId} />}
           </TabsContent>
-        </Tabs>
-      </div>
+        </div>
+      </Tabs>
     </div>
   );
 }
