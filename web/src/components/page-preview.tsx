@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePageStore } from "@/store/page";
 import { Icons } from "./ui/icons";
 
-const RENDERER_URL = "https://webrender.dustland.ai";
+const RENDERER_URL = "https://render.dustland.ai";
 
 interface PagePreviewProps {
   messageId?: string;

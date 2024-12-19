@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const RENDERER_URL = "https://webrender.dustland.ai";
+const RENDERER_URL = "https://render.dustland.ai";
 
 export async function POST(request: Request) {
   try {
