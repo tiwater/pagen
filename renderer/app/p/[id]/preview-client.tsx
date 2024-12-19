@@ -11,22 +11,28 @@ import {
 import { Input } from "@/components/ui/input";
 import * as LucideIcons from "lucide-react";
 import { transform } from "sucrase";
+import { Loader2 } from "lucide-react";
 
 export function PreviewClient({ code }: { code: string }) {
   const [error, setError] = React.useState<string | null>(null);
-  const [Component, setComponent] = React.useState<React.ComponentType | null>(null);
+  const [Component, setComponent] = React.useState<React.ComponentType | null>(
+    null
+  );
 
   // Create a stable reference to our components
-  const components = React.useMemo(() => ({
-    React,
-    Button,
-    Card,
-    CardHeader,
-    CardContent,
-    CardFooter,
-    Input,
-    ...LucideIcons,
-  }), []);
+  const components = React.useMemo(
+    () => ({
+      React,
+      Button,
+      Card,
+      CardHeader,
+      CardContent,
+      CardFooter,
+      Input,
+      ...LucideIcons,
+    }),
+    []
+  );
 
   React.useEffect(() => {
     try {
@@ -35,7 +41,7 @@ export function PreviewClient({ code }: { code: string }) {
       // Remove imports
       const cleanCode = code
         .split("\n")
-        .filter(line => !line.trim().startsWith("import"))
+        .filter((line) => !line.trim().startsWith("import"))
         .join("\n")
         .replace(/export\s+default\s+/, "")
         .replace(/export\s+/, "")
@@ -62,9 +68,9 @@ export function PreviewClient({ code }: { code: string }) {
 
       // Create the component with all dependencies
       const PreviewComponent = createComponent(...Object.values(components));
-      
-      if (typeof PreviewComponent !== 'function') {
-        throw new Error('Failed to create component');
+
+      if (typeof PreviewComponent !== "function") {
+        throw new Error("Failed to create component");
       }
 
       setComponent(() => PreviewComponent);
@@ -84,7 +90,14 @@ export function PreviewClient({ code }: { code: string }) {
   }
 
   if (!Component) {
-    return <div className="p-4">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <p className="text-sm text-muted-foreground">Loading preview...</p>
+        </div>
+      </div>
+    );
   }
 
   try {

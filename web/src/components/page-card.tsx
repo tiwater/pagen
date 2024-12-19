@@ -17,10 +17,10 @@ export function PageCard({ messageId }: PageCardProps) {
   const { resolvedTheme } = useTheme();
   const [html, setHtml] = useState('');
   const page = pages[messageId];
-  
-  if (!page) return null;
 
   useEffect(() => {
+    if (!page) return;
+
     const highlight = async () => {
       const highlighted = await codeToHtml(page.content.split('\n').slice(0, 3).join('\n'), {
         lang: 'tsx',
@@ -36,7 +36,9 @@ export function PageCard({ messageId }: PageCardProps) {
     };
 
     highlight();
-  }, [page.content, resolvedTheme]);
+  }, [page?.content, resolvedTheme]);
+  
+  if (!page) return null;
 
   const handleClick = () => {
     if (page.status === 'complete') {
