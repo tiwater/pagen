@@ -28,7 +28,7 @@ export function CodeBlock({ code, language = 'tsx' }: CodeBlockProps) {
 
   return (
     <div 
-      className="flex w-full h-full overflow-auto text-xs bg-muted/50 p-2"
+      className="flex w-full h-full overflow-auto text-xs p-2"
       dangerouslySetInnerHTML={{ 
         __html: html.replace(
           '<pre class="shiki"',

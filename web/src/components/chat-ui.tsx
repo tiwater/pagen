@@ -69,16 +69,16 @@ function ChatMessage({ message, className, ...props }: { message: any; className
       {...props}
     >
         <div
-          className="inline-flex items-start gap-2 rounded-lg text-sm font-medium"
+          className="inline-flex items-start gap-1 rounded-lg text-sm font-medium"
         >
-          <div className="p-2 rounded-full bg-muted">
+          <div className="p-1 rounded-full bg-muted">
           {message.role === "user" ? <Icons.user className="h-4 w-4 shrink-0" /> : <Icons.bot className="h-4 w-4 shrink-0" />}
           </div>
           <div className={cn(
             "flex-1 flex flex-col space-y-1 leading-normal p-2 rounded-lg min-w-0",
             message.role === "user"
               ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground"
+              : "bg-muted/50 text-muted-foreground"
           )}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
@@ -197,7 +197,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
 
   return (
     <div className="flex h-full flex-col justify-between">
-      <div className="flex flex-col flex-1 overflow-y-auto px-2 gap-4">
+      <div className="flex flex-col flex-1 overflow-y-auto p-2 gap-4">
         {messages.length ? (
           messages.map((message, i) => (
             <ChatMessage key={message.id || i} message={message} />

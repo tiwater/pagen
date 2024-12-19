@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server'
 export async function POST(request: Request) {
   try {
     const { id } = await request.json()
-    const baseUrl = new URL(request.url).origin
-    const pageUrl = `${baseUrl}/render/${id}`
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://render.dustland.ai'
+    const pageUrl = `${baseUrl}/p/${id}`
 
     const response = await fetch('https://webshot.dustland.ai/screenshot', {
       method: 'POST',
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to capture screenshot');
+      throw new Error(`Failed to capture screenshot ${response.status}`);
     }
 
     // Get the image blob

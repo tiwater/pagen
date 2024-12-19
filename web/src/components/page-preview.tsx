@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePageStore } from "@/store/page";
 import { Icons } from "./ui/icons";
+import { Loading } from "./loading";
 
 const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || "https://render.dustland.ai";
 
@@ -54,11 +55,7 @@ export function PagePreview({ messageId }: PagePreviewProps) {
   }, [messageId, page?.status]);
 
   if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Icons.spinner className="h-4 w-4 animate-spin" />
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!previewUrl) {

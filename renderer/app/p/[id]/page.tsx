@@ -3,6 +3,7 @@
 import { notFound } from "next/navigation";
 import React, { use, useEffect, useState } from "react";
 import { PreviewClient } from "./preview-client";
+import { Loading } from "@/components/loading";
 
 interface PreviewPageProps {
   params: Promise<{
@@ -37,7 +38,7 @@ export default function PreviewPage({ params }: PreviewPageProps) {
 
   try {
     if (!content) {
-      return <div>Loading...</div>;
+      return <Loading />;
     }
 
     return <PreviewClient code={content} />;
