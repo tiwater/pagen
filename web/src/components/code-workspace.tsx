@@ -7,6 +7,7 @@ import { CodeBlock } from "@/components/code-block";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PagePreview } from "@/components/page-preview"; 
 import { Icons } from "./ui/icons";
+import { Button } from "./ui/button";
 
 interface CodeWorkspaceProps {
   id: string;
@@ -40,6 +41,24 @@ export function CodeWorkspace({
                 Preview
               </TabsTrigger>
             </TabsList>
+            {activePageData && (
+              <div className="flex items-center gap-2 p-2">
+                {activePageData.status === "generating" && (
+                  <Icons.spinner className="h-4 w-4 animate-spin" />
+                )}
+                {activePageData.status === "complete" && (
+                  <Icons.check className="h-4 w-4" />
+                )}
+                <Button
+                  variant="ghost"
+                  onClick={handleScreenshot}
+                  size={'icon'}
+                  className="flex items-center"
+                >
+                  <Icons.camera className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
           <TabsContent value="code" className="mt-0 flex-1">
             {!activePageData ? (

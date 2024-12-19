@@ -166,7 +166,7 @@ function EmptyScreen({ setInput }: { setInput: (input: string) => void }) {
 }
 
 export function ChatUI({ id: chatId, chat }: ChatUIProps) {
-  const { addMessage, addLog, markChatInitialized } = useChatStore();
+  const { addMessage, markChatInitialized } = useChatStore();
   const {
     messages,
     input,
