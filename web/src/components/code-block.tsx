@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { nord, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
-import { codeToHtml } from 'shiki/bundle/web';
-import '@/styles/code-block.css';
+import { cn } from '@/lib/utils';
 
 interface CodeBlockProps {
   code: string;
@@ -12,26 +13,30 @@ interface CodeBlockProps {
 
 export function CodeBlock({ code, language = 'tsx' }: CodeBlockProps) {
   const { resolvedTheme } = useTheme();
-  const [html, setHtml] = useState('');
-
-  useEffect(() => {
-    const highlight = async () => {
-      const highlighted = await codeToHtml(code, {
-        lang: language,
-        theme: resolvedTheme === 'dark' ? 'nord' : 'github-light',
-      });
-      setHtml(highlighted);
-    };
-
-    highlight();
-  }, [code, language, resolvedTheme]);
+  const theme = resolvedTheme === 'dark' ? nord : oneLight;
 
   return (
-    <div
-      className="flex w-full h-full overflow-auto text-xs p-2"
-      dangerouslySetInnerHTML={{
-        __html: html.replace('<pre class="shiki"', '<pre class="shiki p-4"'),
-      }}
-    />
+    <div className="overflow-x-auto overflow-y-hidden text-xs">
+      <ReactMarkdown
+        components={{
+          code: ({ className, children }) => (
+            <SyntaxHighlighter
+              language={language}
+              style={theme}
+              customStyle={{
+                margin: 0,
+                padding: '1rem',
+              }}
+              className={cn('min-w-max', className)}
+            >
+              {String(children).replace(/\n$/, '')}
+            </SyntaxHighlighter>
+          ),
+        }}
+        className="overflow-auto"
+      >
+        {`\`\`\`${language}\n${code}\n\`\`\``}
+      </ReactMarkdown>
+    </div>
   );
 }
