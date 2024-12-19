@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import Image from 'next/image';
+import Link from 'next/link';
 import useChatStore from '@/store/chat';
 import { usePageStore } from '@/store/page';
 import { Chat } from '@/types/chat';
-import { useChat } from 'ai/react';
+import { Message, useChat } from 'ai/react';
 import { nanoid } from 'nanoid';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
@@ -15,51 +17,76 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Icons } from './ui/icons';
 
-interface ChatUIProps {
-  id: string;
-  chat: Chat | null;
+interface ChatMessageProps {
+  message: Message;
+  className?: string;
 }
 
-function ChatMessage({
-  message,
-  className,
-  ...props
-}: {
-  message: any;
-  className?: string;
-  [key: string]: any;
-}) {
+function ChatMessage({ message, className }: ChatMessageProps) {
   const { updatePage, setActivePage } = usePageStore();
+  const lastContentRef = useRef<string>();
+  const updateTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Process page code blocks when receiving assistant message
   useEffect(() => {
     if (message.role !== 'assistant') return;
 
-    // Find the start of the code block
     const startMatch = message.content.match(/```(?:pagen|tsx|jsx)\n/);
     if (!startMatch) return;
 
     const startIdx = startMatch.index! + startMatch[0].length;
-
-    // Find the end of the code block
     const endMatch = message.content.slice(startIdx).match(/```/);
-    const content = endMatch
-      ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
-      : message.content.slice(startIdx).trim();
+    const content =
+      endMatch && typeof endMatch.index !== 'undefined'
+        ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
+        : message.content.slice(startIdx).trim();
 
-    updatePage({
-      messageId: message.id,
-      content,
-      status: endMatch ? 'complete' : 'generating',
-      metadata: {
-        title: 'Generated Page',
-      },
-    });
-    setActivePage(message.id);
-  }, [message.id, message.content, message.role, updatePage]);
+    if (content === lastContentRef.current) return;
+    
+    // Clear any pending update
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+
+    // Debounce the update
+    updateTimeoutRef.current = setTimeout(() => {
+      lastContentRef.current = content;
+      updatePage({
+        messageId: message.id,
+        content,
+        status: endMatch ? 'complete' : 'generating',
+        metadata: {
+          title: 'Generated Page',
+        },
+      });
+
+      if (!lastContentRef.current || endMatch) {
+        setActivePage(message.id);
+      }
+    }, 300); // 300ms debounce
+
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, [message.content, message.role, message.id, updatePage, setActivePage]);
+
+  const renderCodeBlock = ({
+    className,
+    children,
+  }: {
+    className?: string;
+    children?: React.ReactNode;
+  }) => {
+    const language = /language-(\w+)/.exec(className || '')?.[1];
+    if (language === 'pagen') {
+      return <PageCard key={message.id} messageId={message.id} />;
+    }
+    return <code className={className}>{children}</code>;
+  };
 
   return (
-    <div className={cn('group relative flex items-start', className)} {...props}>
+    <div className={cn('group relative flex items-start', className)}>
       <div className="inline-flex items-start gap-1 rounded-lg text-sm font-medium">
         <div className="p-1 rounded-full bg-muted">
           {message.role === 'user' ? (
@@ -72,7 +99,7 @@ function ChatMessage({
           className={cn(
             'flex-1 flex flex-col space-y-1 leading-normal p-2 rounded-lg min-w-0',
             message.role === 'user'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-primary/60 text-primary-foreground'
               : 'bg-muted/50 text-muted-foreground'
           )}
         >
@@ -80,29 +107,31 @@ function ChatMessage({
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeHighlight]}
             components={{
-              code({ node, className, children, ...props }) {
-                const language = /language-(\w+)/.exec(className || '')?.[1];
-                if (language === 'pagen') {
-                  return <PageCard messageId={message.id} />;
-                }
-                return (
-                  <code className={className} {...props}>
-                    {children}
-                  </code>
-                );
-              },
-              ul({ children }) {
-                return <ul className="list-disc pl-6 mb-4 space-y-2">{children}</ul>;
-              },
-              ol({ children }) {
-                return <ol className="list-decimal pl-6 mb-4 space-y-2">{children}</ol>;
-              },
-              li({ children }) {
-                return <li className="leading-relaxed">{children}</li>;
-              },
-              p({ children }) {
-                return <p className="mb-4 leading-relaxed">{children}</p>;
-              },
+              code: renderCodeBlock,
+              ul: ({ className, children, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
+                <ul className={cn('list-disc pl-6 mb-4 space-y-2', className)} {...props}>
+                  {children}
+                </ul>
+              ),
+              ol: ({ className, children, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
+                <ol className={cn('list-decimal pl-6 mb-4 space-y-2', className)} {...props}>
+                  {children}
+                </ol>
+              ),
+              li: ({ className, children, ...props }: React.HTMLAttributes<HTMLLIElement>) => (
+                <li className={cn('leading-relaxed', className)} {...props}>
+                  {children}
+                </li>
+              ),
+              p: ({
+                className,
+                children,
+                ...props
+              }: React.HTMLAttributes<HTMLParagraphElement>) => (
+                <p className={cn('mb-4 leading-relaxed', className)} {...props}>
+                  {children}
+                </p>
+              ),
             }}
           >
             {message.content}
@@ -113,34 +142,9 @@ function ChatMessage({
   );
 }
 
-function EmptyScreen({ setInput }: { setInput: (input: string) => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4">
-      <div className="rounded-lg border bg-background p-8">
-        <h1 className="mb-2 text-lg font-semibold">Welcome to Pagen AI</h1>
-        <p className="mb-2 leading-normal text-muted-foreground">
-          This is an AI-powered web page generator. Describe what you want to create and I&apos;ll
-          help you build it.
-        </p>
-        <div className="mt-4 flex flex-col items-start space-y-2">
-          {[
-            'Create a login form with a modern design',
-            'Build a pricing page with three tiers',
-            'Design a hero section with a call-to-action',
-          ].map(example => (
-            <Button
-              key={example}
-              variant="link"
-              className="h-auto p-0 text-base"
-              onClick={() => setInput(example)}
-            >
-              <span className="text-muted-foreground">&rarr;</span> {example}
-            </Button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+interface ChatUIProps {
+  id: string;
+  chat: Chat;
 }
 
 export function ChatUI({ id: chatId, chat }: ChatUIProps) {
@@ -173,7 +177,6 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
     },
   });
 
-  // Automatically submit initial message for new chats
   useEffect(() => {
     if (chat?.isNew && chat.messages.length > 0 && messages.length === 1) {
       append(chat.messages[0]);
@@ -182,42 +185,60 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
   }, [chat, messages.length]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = () => {
+      const element = messagesEndRef.current;
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+          const container = element.parentElement;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        }, 100);
+      }
+    };
+
+    scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!input?.trim()) {
+      return;
+    }
+
+    addMessage(chatId, {
+      id: nanoid(),
+      role: 'user',
+      content: input,
+      createdAt: new Date(),
+    });
+    onSubmit(e);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!input?.trim()) {
-        return;
+      const form = e.currentTarget.form;
+      if (form && input?.trim()) {
+        form.requestSubmit();
       }
-
-      addMessage(chatId, {
-        id: nanoid(),
-        role: 'user',
-        content: input,
-        createdAt: new Date(),
-      });
-      onSubmit(e);
-    },
-    [input, onSubmit]
-  );
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        const form = e.currentTarget.form;
-        if (form && input?.trim()) {
-          form.requestSubmit();
-        }
-      }
-    },
-    [input]
-  );
+    }
+  };
 
   return (
     <div className="flex h-full flex-col justify-between">
+      <div className="flex h-14 items-center justify-between border-b px-4">
+        <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/images/logo.svg" alt="Logo" width={24} height={24} />
+            <span className="font-semibold">Pagen</span>
+          </Link>
+          <span className="text-sm text-muted-foreground">{chat.title || 'New Chat'}</span>
+        </div>
+      </div>
       <div className="flex flex-col flex-1 overflow-y-auto p-2 gap-4">
         {messages.length ? (
           <>
@@ -256,6 +277,36 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
           </Button>
         </div>
       </form>
+    </div>
+  );
+}
+
+function EmptyScreen({ setInput }: { setInput: (input: string) => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4">
+      <div className="rounded-lg border bg-background p-8">
+        <h1 className="mb-2 text-lg font-semibold">Welcome to Pagen AI</h1>
+        <p className="mb-2 leading-normal text-muted-foreground">
+          This is an AI-powered web page generator. Describe what you want to create and I&apos;ll
+          help you build it.
+        </p>
+        <div className="mt-4 flex flex-col items-start space-y-2">
+          {[
+            'Create a login form with a modern design',
+            'Build a pricing page with three tiers',
+            'Design a hero section with a call-to-action',
+          ].map(example => (
+            <Button
+              key={example}
+              variant="link"
+              className="h-auto p-0 text-base"
+              onClick={() => setInput(example)}
+            >
+              <span className="text-muted-foreground">&rarr;</span> {example}
+            </Button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

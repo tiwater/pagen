@@ -28,15 +28,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="flex h-screen flex-col">
-      <div className="flex h-14 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/images/logo.svg" alt="Logo" width={24} height={24} />
-            <span className="font-semibold">Pagen</span>
-          </Link>
-          <span className="text-sm text-muted-foreground">{chat.title || 'New Chat'}</span>
-        </div>
-      </div>
       <ResizablePanelGroup direction={isMobile ? 'vertical' : 'horizontal'} className="flex-1">
         <ResizablePanel defaultSize={40} minSize={30}>
           <ChatUI id={id} chat={chat} />

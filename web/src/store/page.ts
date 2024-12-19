@@ -38,29 +38,34 @@ export const usePageStore = create<PageState>()(
         return Object.values(state.pages).filter(page => page.messageId === messageId);
       },
       updatePage: updates => {
-        set(state => ({
-          pages: {
-            ...state.pages,
-            [updates.messageId]: {
-              ...state.pages[updates.messageId],
-              ...updates,
-              status: updates.status || 'generating',
-              metadata: {
-                title: updates.metadata?.title || 'Generated Page',
-              },
+        set(state => {
+          const currentPage = state.pages[updates.messageId];
+          const newPage = {
+            path: currentPage?.path || '',
+            messageId: updates.messageId,
+            content: updates.content || currentPage?.content || '',
+            status: updates.status || currentPage?.status || 'generating',
+            metadata: {
+              ...(currentPage?.metadata || {}),
+              ...(updates.metadata || {}),
+              title: updates.metadata?.title || currentPage?.metadata?.title || 'Generated Page',
             },
-          },
-          activePage: state.activePage || updates.messageId,
-        }));
+          };
+
+          return {
+            pages: {
+              ...state.pages,
+              [updates.messageId]: newPage,
+            },
+          };
+        });
       },
-      setActivePage: messageId =>
-        set(() => ({
-          activePage: messageId,
-        })),
+      setActivePage: messageId => {
+        set({ activePage: messageId });
+      },
     }),
     {
       name: 'page-storage',
-      skipHydration: true,
     }
   )
 );

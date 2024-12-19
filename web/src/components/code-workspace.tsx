@@ -81,9 +81,6 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                 {activePageData.status === 'generating' && (
                   <Icons.spinner className="h-4 w-4 animate-spin" />
                 )}
-                {activePageData.status === 'complete' && (
-                  <Icons.checkCircle className="h-4 w-4 text-green-500" />
-                )}
               </div>
             )}
           </TabsList>
@@ -109,7 +106,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
         <div className="flex-1 h-[calc(100%-4rem)] overflow-hidden">
           <TabsContent value="code" className="h-full m-0 bg-muted/20">
             {activePageData ? (
-              <ScrollArea className="h-full">
+              <ScrollArea className="h-full w-full">
                 <CodeBlock code={activePageData.content || ''} language="tsx" />
               </ScrollArea>
             ) : (
