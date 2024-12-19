@@ -38,7 +38,14 @@ export function PreviewClient({ code }: { code: string }) {
     try {
       console.log("Original code:", code);
 
-      // Remove imports
+      // Extract component name and definition
+      const exportMatch = code.match(/export\s+(default\s+)?(?:function|const)\s+(\w+)/);
+      if (!exportMatch) {
+        throw new Error('No exported component found in the code');
+      }
+      const componentName = exportMatch[2];
+      
+      // Remove imports and exports
       const cleanCode = code
         .split("\n")
         .filter((line) => !line.trim().startsWith("import"))
@@ -62,7 +69,7 @@ export function PreviewClient({ code }: { code: string }) {
         ...Object.keys(components),
         `
         ${transformedCode}
-        return typeof LoginCard === 'function' ? LoginCard : Component;
+        return ${componentName};
         `
       );
 

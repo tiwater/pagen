@@ -92,8 +92,6 @@ function ChatMessage({ message, className, ...props }: { message: any; className
               }) {
                 const language = /language-(\w+)/.exec(className || '')?.[1];
                 if (language === 'pagen') {
-                  // We should show the PageCard regardless of the content pattern
-                  // since we're already handling the page content in the useEffect
                   return <PageCard messageId={message.id} />;
                 }
                 return (
@@ -105,6 +103,18 @@ function ChatMessage({ message, className, ...props }: { message: any; className
                   </code>
                 );
               },
+              ul({ children }) {
+                return <ul className="list-disc pl-6 mb-4 space-y-2">{children}</ul>;
+              },
+              ol({ children }) {
+                return <ol className="list-decimal pl-6 mb-4 space-y-2">{children}</ol>;
+              },
+              li({ children }) {
+                return <li className="leading-relaxed">{children}</li>;
+              },
+              p({ children }) {
+                return <p className="mb-4 leading-relaxed">{children}</p>;
+              }
             }}
           >
             {message.content}

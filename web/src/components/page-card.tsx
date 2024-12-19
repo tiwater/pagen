@@ -49,7 +49,7 @@ export function PageCard({ messageId }: PageCardProps) {
   return (
     <div 
       className={cn(
-        "group relative rounded-lg border border-muted-foreground overflow-hidden bg-background/50 transition-colors min-w-0",
+        "group relative rounded-lg border border-muted-foreground overflow-hidden bg-background/50 transition-colors min-w-0 max-w-full",
         page.status === 'complete' && "hover:bg-accent/5 cursor-pointer"
       )}
       onClick={handleClick}
