@@ -14,72 +14,73 @@ import { transform } from "sucrase";
 
 export function PreviewClient({ code }: { code: string }) {
   const [error, setError] = React.useState<string | null>(null);
-  const [Component, setComponent] = React.useState<React.ComponentType | null>(
-    null
-  );
+  const [Component, setComponent] = React.useState<React.ComponentType | null>(null);
+
+  // Create a stable reference to our components
+  const components = React.useMemo(() => ({
+    React,
+    Button,
+    Card,
+    CardHeader,
+    CardContent,
+    CardFooter,
+    Input,
+    ...LucideIcons,
+  }), []);
 
   React.useEffect(() => {
     try {
-      // Make all components available in the scope
-      const components = {
-        React,
-        Button,
-        Card,
-        CardHeader,
-        CardContent,
-        CardFooter,
-        Input,
-        ...LucideIcons,
-      };
+      console.log("Original code:", code);
 
-      console.log("before cleaned code:", code);
-
-      // Remove imports and exports, keeping the component definition
-      let cleanCode = code
+      // Remove imports
+      const cleanCode = code
         .split("\n")
-        .filter((line) => !line.trim().startsWith("import"))
+        .filter(line => !line.trim().startsWith("import"))
         .join("\n")
         .replace(/export\s+default\s+/, "")
         .replace(/export\s+/, "")
         .trim();
 
-      // Ensure the code starts with a valid component definition
-      if (!cleanCode.startsWith("function") && !cleanCode.startsWith("const")) {
-        cleanCode = `function Component() {\n  return (${cleanCode})\n}`;
-      }
+      console.log("Clean code:", cleanCode);
 
-      console.log("cleaned code:", cleanCode);
-
-      // Transform TSX to JS using Sucrase
+      // Transform TSX to JS
       const { code: transformedCode } = transform(cleanCode, {
         transforms: ["typescript", "jsx"],
         production: true,
       });
 
-      // Wrap the code in a function that returns a component
-      const functionBody = `
-        const Component = (function() {
-          with (components) {
-            ${transformedCode}
-            return Component;
-          }
-        })();
-        return Component;
-      `;
+      console.log("Transformed code:", transformedCode);
 
-      const ComponentFunction = new Function("components", functionBody);
-      const PreviewComponent = ComponentFunction(components);
-      setComponent(() => PreviewComponent);
-    } catch (error) {
-      console.error("Error rendering preview:", error);
-      setError(
-        error instanceof Error ? error.message : "Error rendering preview"
+      // Create a function that will return our component
+      const createComponent = new Function(
+        ...Object.keys(components),
+        `
+        ${transformedCode}
+        return typeof LoginCard === 'function' ? LoginCard : Component;
+        `
       );
+
+      // Create the component with all dependencies
+      const PreviewComponent = createComponent(...Object.values(components));
+      
+      if (typeof PreviewComponent !== 'function') {
+        throw new Error('Failed to create component');
+      }
+
+      setComponent(() => PreviewComponent);
+      setError(null);
+    } catch (err) {
+      console.error("Error creating component:", err);
+      setError(err instanceof Error ? err.message : "Error creating component");
     }
-  }, [code]);
+  }, [code, components]);
 
   if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+    return (
+      <div className="p-4 text-red-500">
+        <pre className="whitespace-pre-wrap">{error}</pre>
+      </div>
+    );
   }
 
   if (!Component) {
@@ -87,9 +88,19 @@ export function PreviewClient({ code }: { code: string }) {
   }
 
   try {
-    return <Component />;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+        <Component />
+      </div>
+    );
   } catch (error) {
     console.error("Error rendering component:", error);
-    return <div className="p-4 text-red-500">Error rendering component</div>;
+    return (
+      <div className="p-4 text-red-500">
+        <pre className="whitespace-pre-wrap">
+          {error instanceof Error ? error.message : "Error rendering component"}
+        </pre>
+      </div>
+    );
   }
 }
