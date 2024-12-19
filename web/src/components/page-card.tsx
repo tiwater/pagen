@@ -65,8 +65,7 @@ export function PageCard({ messageId }: PageCardProps) {
           )}
           {page.status === "complete" && (
             <>
-              <Icons.check className="h-3.5 w-3.5 text-green-500" />
-              <span className="text-xs text-muted-foreground">Ready</span>
+              <Icons.checkCircle className="h-3.5 w-3.5 text-green-500" />
             </>
           )}
         </div>

@@ -47,7 +47,7 @@ export function CodeWorkspace({
                 <Icons.spinner className="h-4 w-4 animate-spin" />
               )}
               {activePageData.status === "complete" && (
-                <Icons.check className="h-4 w-4" />
+                <Icons.checkCircle className="h-4 w-4" />
               )}
               <Button
                 variant="ghost"

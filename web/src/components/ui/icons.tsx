@@ -14,6 +14,8 @@ import {
   User,
   Check,
   UserRound,
+  CheckCircle,
+  CheckCircle2,
 } from "lucide-react";
 
 function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -36,6 +38,7 @@ function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
 export const Icons = {
   logo: LogoIcon,
   check: Check,
+  checkCircle: CheckCircle2,
   close: X,
   link: Link,
   plus: Plus,

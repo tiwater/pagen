@@ -44,7 +44,7 @@ export const usePageStore = create<PageState>()(
             [updates.messageId]: {
               ...state.pages[updates.messageId],
               ...updates,
-              status: 'generating',
+              status: updates.status || 'generating',
               metadata: {
                 title: updates.metadata?.title || 'Generated Page',
               },
