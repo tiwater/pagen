@@ -53,34 +53,35 @@ function PageBlock({ messageId }: { messageId: string }) {
 }
 
 function ChatMessage({ message, className, ...props }: { message: any; className?: string; [key: string]: any }) {
-  const { updatePage } = usePageStore();
+  const { updatePage, setActivePage } = usePageStore();
 
   // Process page code blocks when receiving assistant message
   useEffect(() => {
     if (message.role !== 'assistant') return;
 
-    // Find page code block start
-    const startMatch = message.content.match(/```pagen\s*(\S+)\s+/);
+    // Find the start of the code block
+    const startMatch = message.content.match(/```(?:pagen|tsx|jsx)\n/);
     if (!startMatch) return;
 
-    const [fullMatch, path] = startMatch;
-    const startIdx = startMatch.index! + fullMatch.length;
-    const title = path.split('/').pop()?.replace(/\.tsx$/, '') || 'Generated Page';
+    const startIdx = startMatch.index! + startMatch[0].length;
     
-    // Check if code block is complete
+    // Find the end of the code block
     const endMatch = message.content.slice(startIdx).match(/```/);
     const content = endMatch 
       ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
       : message.content.slice(startIdx).trim();
+
+    console.log('extract code\n', content);
     
     updatePage({
       messageId: message.id,
       content,
       status: endMatch ? 'complete' : 'generating',
       metadata: {
-        title
+        title: 'Generated Page'
       }
     });
+    setActivePage(message.id);
   }, [message.id, message.content, message.role, updatePage]);
 
   return (

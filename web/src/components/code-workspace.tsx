@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PagePreview } from "@/components/page-preview"; 
 import { Icons } from "./ui/icons";
 import { Button } from "./ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CodeWorkspaceProps {
   id: string;
@@ -60,13 +61,20 @@ export function CodeWorkspace({
               </div>
             )}
           </div>
-          <TabsContent value="code" className="mt-0 flex-1">
-            {!activePageData ? (
+          <TabsContent value="code" className="mt-0 flex-1 relative">
+            {activePageData ? (
+              <ScrollArea className="absolute inset-0">
+                <div className="p-4">
+                  <CodeBlock
+                    code={activePageData.content || ""}
+                    language="tsx"
+                  />
+                </div>
+              </ScrollArea>
+            ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 No page selected
               </div>
-            ) : (
-              <CodeBlock code={activePageData.content} />
             )}
           </TabsContent>
           <TabsContent value="preview" className="mt-0 flex-1">

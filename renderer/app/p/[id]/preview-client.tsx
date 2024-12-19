@@ -32,12 +32,23 @@ export function PreviewClient({ code }: { code: string }) {
         ...LucideIcons,
       };
 
+      console.log("before cleaned code:", code);
+
       // Remove imports and exports, keeping the component definition
-      const cleanCode = code
-        .replace(/import[\s\S]*?from\s+['"].*?['"];?/g, "")
+      let cleanCode = code
+        .split('\n')
+        .filter(line => !line.trim().startsWith('import'))
+        .join('\n')
         .replace(/export\s+default\s+/, "")
-        .replace(/import\s*{[\s\S]*?}\s*from\s*['"].*?['"];?/g, "")
+        .replace(/export\s+/, "")
         .trim();
+
+      // Ensure the code starts with a valid component definition
+      if (!cleanCode.startsWith("function") && !cleanCode.startsWith("const")) {
+        cleanCode = `function Component() {\n  return (${cleanCode})\n}`;
+      }
+
+      console.log("cleaned code:", cleanCode);
 
       // Transform TSX to JS using Sucrase
       const { code: transformedCode } = transform(cleanCode, {
@@ -45,10 +56,15 @@ export function PreviewClient({ code }: { code: string }) {
         production: true,
       });
 
+      // Wrap the code in a function that returns a component
       const functionBody = `
-        with (components) {
-          return ${transformedCode};
-        }
+        const Component = (function() {
+          with (components) {
+            ${transformedCode}
+            return Component;
+          }
+        })();
+        return Component;
       `;
 
       const ComponentFunction = new Function("components", functionBody);
