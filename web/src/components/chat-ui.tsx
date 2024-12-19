@@ -19,13 +19,15 @@ import { Icons } from './ui/icons';
 
 interface ChatMessageProps {
   message: Message;
+  chat: Chat;
   className?: string;
 }
 
-function ChatMessage({ message, className }: ChatMessageProps) {
+function ChatMessage({ message, chat, className }: ChatMessageProps) {
   const { updatePage, setActivePage } = usePageStore();
   const lastContentRef = useRef<string>();
   const updateTimeoutRef = useRef<NodeJS.Timeout>();
+  const messages = chat.messages;
 
   useEffect(() => {
     if (message.role !== 'assistant') return;
@@ -40,36 +42,42 @@ function ChatMessage({ message, className }: ChatMessageProps) {
         ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
         : message.content.slice(startIdx).trim();
 
-    if (content === lastContentRef.current) return;
-    
-    // Clear any pending update
-    if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current);
-    }
-
-    // Debounce the update
-    updateTimeoutRef.current = setTimeout(() => {
-      lastContentRef.current = content;
-      updatePage({
-        messageId: message.id,
-        content,
-        status: endMatch ? 'complete' : 'generating',
-        metadata: {
-          title: 'Generated Page',
-        },
-      });
-
-      if (!lastContentRef.current || endMatch) {
-        setActivePage(message.id);
-      }
-    }, 300); // 300ms debounce
-
-    return () => {
+    if (content !== lastContentRef.current) {
+      // Clear any pending update
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
       }
-    };
-  }, [message.content, message.role, message.id, updatePage, setActivePage]);
+
+      // Debounce the update
+      updateTimeoutRef.current = setTimeout(() => {
+        lastContentRef.current = content;
+        // Find the user message that triggered this response
+        const userMessage = chat.messages.find(
+          (msg, index) => msg.role === 'user' && chat.messages[index + 1]?.id === message.id
+        );
+
+        updatePage({
+          messageId: message.id,
+          content,
+          prompt: userMessage?.content || '',
+          status: endMatch ? 'complete' : 'generating',
+          metadata: {
+            title: 'Generated Page',
+          },
+        });
+
+        if (!lastContentRef.current || endMatch) {
+          setActivePage(message.id);
+        }
+      }, 300); // 300ms debounce
+
+      return () => {
+        if (updateTimeoutRef.current) {
+          clearTimeout(updateTimeoutRef.current);
+        }
+      };
+    }
+  }, [message.content, message.role, message.id, updatePage, setActivePage, chat.messages]);
 
   const renderCodeBlock = ({
     className,
@@ -159,7 +167,6 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
     setInput,
     append,
   } = useChat({
-    api: '/api/generate',
     id: chatId,
     initialMessages: chat?.messages || [],
     body: {
@@ -230,7 +237,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
 
   return (
     <div className="flex h-full flex-col justify-between">
-      <div className="flex h-14 items-center justify-between border-b px-4">
+      <div className="flex h-12 items-center justify-between border-b px-4">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/images/logo.svg" alt="Logo" width={24} height={24} />
@@ -243,7 +250,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
         {messages.length ? (
           <>
             {messages.map((message, i) => (
-              <ChatMessage key={message.id || i} message={message} />
+              <ChatMessage key={message.id || i} message={message} chat={chat} />
             ))}
           </>
         ) : (

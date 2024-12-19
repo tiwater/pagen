@@ -1,11 +1,19 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { usePageStore } from '@/store/page';
 import { cn } from '@/lib/utils';
 import { Icons } from './ui/icons';
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface PageCardProps {
   messageId: string;
@@ -13,6 +21,7 @@ interface PageCardProps {
 
 export function PageCard({ messageId }: PageCardProps) {
   const { pages, activePage, setActivePage } = usePageStore();
+  const [showApiDialog, setShowApiDialog] = useState(false);
   const page = pages[messageId];
 
   if (!page) return null;
@@ -22,6 +31,8 @@ export function PageCard({ messageId }: PageCardProps) {
       setActivePage(messageId);
     }
   };
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://render.dustland.ai';
 
   return (
     <div

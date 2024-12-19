@@ -7,6 +7,7 @@ interface Page {
   content: string;
   status: 'generating' | 'complete';
   messageId: string;
+  prompt?: string;
   metadata: {
     title: string;
     version?: string;
@@ -45,6 +46,7 @@ export const usePageStore = create<PageState>()(
             messageId: updates.messageId,
             content: updates.content || currentPage?.content || '',
             status: updates.status || currentPage?.status || 'generating',
+            prompt: updates.prompt || currentPage?.prompt,
             metadata: {
               ...(currentPage?.metadata || {}),
               ...(updates.metadata || {}),
