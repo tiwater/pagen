@@ -28,10 +28,10 @@ export function PageCard({ messageId }: PageCardProps) {
       });
       setHtml(highlighted.replace(
         '<pre class="shiki"',
-        '<pre class="shiki !bg-transparent w-full" style="overflow: hidden; text-overflow: ellipsis;"'
+        '<pre class="shiki !bg-transparent w-full" style="overflow-x: auto; white-space: pre-wrap; word-break: break-word;"'
       ).replace(
         '<code>',
-        '<code style="white-space: pre; display: block; overflow: hidden; text-overflow: ellipsis;">'
+        '<code style="white-space: pre-wrap; display: block; overflow-wrap: break-word;">'
       ));
     };
 
@@ -72,7 +72,7 @@ export function PageCard({ messageId }: PageCardProps) {
         </div>
       </div>
       <div 
-        className="w-full text-xs bg-muted/50 p-2 max-h-[120px] overflow-hidden"
+        className="w-full text-xs bg-muted/50 p-2 max-h-[120px] overflow-x-auto overflow-y-hidden break-words"
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
