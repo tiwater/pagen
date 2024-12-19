@@ -12,6 +12,14 @@ import { Input } from "@/components/ui/input";
 import * as LucideIcons from "lucide-react";
 import { transform } from "sucrase";
 import { Loader2 } from "lucide-react";
+import { install, tw } from '@twind/core'
+import presetTailwind from '@twind/preset-tailwind'
+
+// Initialize twind just for dynamic styles
+install({
+  presets: [presetTailwind()],
+  hash: false,
+})
 
 export function PreviewClient({ code }: { code: string }) {
   const [error, setError] = React.useState<string | null>(null);
@@ -30,6 +38,7 @@ export function PreviewClient({ code }: { code: string }) {
       CardFooter,
       Input,
       ...LucideIcons,
+      tw, // Just for dynamic component's own styles
     }),
     [],
   );
