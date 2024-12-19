@@ -36,9 +36,9 @@ export function PreviewClient({ code }: { code: string }) {
 
       // Remove imports and exports, keeping the component definition
       let cleanCode = code
-        .split('\n')
-        .filter(line => !line.trim().startsWith('import'))
-        .join('\n')
+        .split("\n")
+        .filter((line) => !line.trim().startsWith("import"))
+        .join("\n")
         .replace(/export\s+default\s+/, "")
         .replace(/export\s+/, "")
         .trim();

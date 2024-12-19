@@ -3,16 +3,16 @@
 import { useChat } from "ai/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { usePageStore } from "@/store/page";
-import { useCallback } from "react";
+import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import { Chat } from "@/types/chat";
-import { cn } from "@/lib/utils";
+import { PageCard } from "@/components/page-card";
 import useChatStore from "@/store/chat";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Icons } from "./ui/icons";
+import { usePageStore } from "@/store/page";
+import { Chat } from "@/types/chat";
 
 interface ChatUIProps {
   id: string;
@@ -29,27 +29,6 @@ interface PageBlock {
     version?: string;
     description?: string;
   };
-}
-
-function PageBlock({ messageId }: { messageId: string }) {
-  const { pages, setActivePage } = usePageStore();
-  const page = pages[messageId];
-  if (!page) return null;
-
-  return (
-    <div
-      className="my-2 rounded border p-2 hover:bg-muted/50 cursor-pointer"
-      onClick={() => setActivePage(messageId)}
-    >
-      <div className="flex items-center gap-2">
-        <Icons.code className="h-4 w-4" />
-        <span className="font-mono text-sm">{page.metadata.title}</span>
-        {page.status === 'generating' && (
-          <Icons.spinner className="h-3 w-3 animate-spin" />
-        )}
-      </div>
-    </div>
-  );
 }
 
 function ChatMessage({ message, className, ...props }: { message: any; className?: string; [key: string]: any }) {
@@ -95,10 +74,12 @@ function ChatMessage({ message, className, ...props }: { message: any; className
           <div className="p-2 rounded-full bg-muted">
           {message.role === "user" ? <Icons.user className="h-4 w-4 shrink-0" /> : <Icons.bot className="h-4 w-4 shrink-0" />}
           </div>
-          <div className={cn("flex flex-col space-y-1 leading-normal p-2 rounded-lg", message.role === "user"
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-muted-foreground"
-        )}>
+          <div className={cn(
+            "flex-1 flex flex-col space-y-1 leading-normal p-2 rounded-lg min-w-0",
+            message.role === "user"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground"
+          )}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeHighlight]}
@@ -111,11 +92,9 @@ function ChatMessage({ message, className, ...props }: { message: any; className
               }) {
                 const language = /language-(\w+)/.exec(className || '')?.[1];
                 if (language === 'pagen') {
-                  const match = /```pagen\s*(\S+)\s+/g.exec(children?.toString() || '');
-                  if (match) {
-                    return <PageBlock messageId={message.id} />;
-                  }
-                  return null;
+                  // We should show the PageCard regardless of the content pattern
+                  // since we're already handling the page content in the useEffect
+                  return <PageCard messageId={message.id} />;
                 }
                 return (
                   <code
