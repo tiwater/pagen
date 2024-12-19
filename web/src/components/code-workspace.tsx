@@ -95,7 +95,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                 disabled={
                   !activePageData || activePageData.status !== 'complete' || isScreenshotting
                 }
-                className="flex items-center h-6 w-6"
+                className="h-8 w-8 p-0"
               >
                 {isScreenshotting ? (
                   <Icons.spinner className="h-4 w-4 animate-spin" />
