@@ -107,7 +107,10 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px]">
                   <DialogHeader>
-                    <DialogTitle>Generate API</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Icons.api className="h-4 w-4" />
+                      <span>Generate API</span>
+                    </DialogTitle>
                     <DialogDescription className="space-y-2">
                       <p>
                         Use this API to generate a page from a prompt and get its screenshot. Send a
@@ -140,12 +143,16 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                         Note: Using default prompt as no prompt was found for this page.
                       </p>
                     )}
-                    <p>
-                      View our{' '}
-                      <Link href="/docs" target="_blank">
+                    <p className="text-sm text-muted-foreground">
+                      For more information on how to use this API, visit our{' '}
+                      <Link
+                        href="/docs"
+                        target="_blank"
+                        className="underline hover:text-primary"
+                      >
                         API documentation
-                      </Link>{' '}
-                      for more details.
+                      </Link>
+                      .
                     </p>
                   </div>
                 </DialogContent>

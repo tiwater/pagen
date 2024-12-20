@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Pagen API
   version: 1.0.0
-  description: API documentation for the Pagen webpage generation service
+  description: API Documentation for Pagen webpage generation services, using beautiful shadcn/ui components.
 
 servers:
   - url: https://pages.dustland.ai
