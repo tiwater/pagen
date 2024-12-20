@@ -5,9 +5,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import useChatStore from '@/store/chat';
 import { nanoid } from 'nanoid';
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { Icons } from '@/components/ui/icons';
 import { Textarea } from '@/components/ui/textarea';
+
 
 export default function Home() {
   const router = useRouter();

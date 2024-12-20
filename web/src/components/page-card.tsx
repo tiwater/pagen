@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { usePageStore } from '@/store/page';
-import { cn } from '@/lib/utils';
-import { Icons } from './ui/icons';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Icons } from './icons';
+
 
 interface PageCardProps {
   messageId: string;

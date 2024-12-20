@@ -5,7 +5,10 @@ import { useTheme } from 'next-themes';
 import { toast } from '@/hooks/use-toast';
 import { usePageStore } from '@/store/page';
 import { CodeBlock } from '@/components/code-block';
+import { CopyButton } from '@/components/copy-button';
+import { Icons } from '@/components/icons';
 import { PagePreview } from '@/components/page-preview';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -16,8 +19,6 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from './ui/button';
-import { Icons } from './ui/icons';
 
 interface CodeWorkspaceProps {
   id: string;
@@ -29,17 +30,6 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
   const { pages, activePage } = usePageStore();
   const activePageData = activePage ? pages[activePage] : null;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
-
-  const handleCopy = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied',
-      description:
-        'The command has been copied to your clipboard. You can now paste it into your terminal.',
-      variant: 'default',
-    });
-  };
-
   const handleScreenshot = useCallback(async () => {
     if (!activePage) return;
 
@@ -83,7 +73,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
   }, [activePage]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col max-w-full">
       <Tabs defaultValue="code" className="flex-1 h-full flex flex-col">
         <div className="flex items-center justify-between border-b">
           <TabsList className="bg-transparent">
@@ -115,7 +105,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                     <Icons.api className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[600px]">
                   <DialogHeader>
                     <DialogTitle>Generate API</DialogTitle>
                     <DialogDescription>
@@ -125,25 +115,23 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="relative">
-                      <pre className="p-4 bg-muted rounded-lg text-xs overflow-x-auto">
-                        {`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/generate \\
+                      <div className="rounded-lg overflow-hidden bg-muted">
+                        <pre className="p-4 text-xs overflow-x-auto whitespace-pre-wrap break-all">
+                          <code className="text-sm">
+                            {`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/generate \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
   --output page.png`}
-                      </pre>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 h-6 w-6"
-                        onClick={() =>
-                          handleCopy(`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/generate \\
+                          </code>
+                        </pre>
+                        <CopyButton
+                          className="absolute top-2 right-2 h-6 w-6"
+                          text={`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/generate \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
-  --output page.png`)
-                        }
-                      >
-                        <Icons.copy className="h-3 w-3" />
-                      </Button>
+  --output page.png`}
+                        />
+                      </div>
                     </div>
                     {!activePageData?.prompt && (
                       <p className="text-sm text-yellow-500">

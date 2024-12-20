@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { usePageStore } from '@/store/page';
+import { Icons } from './icons';
 import { Loading } from './loading';
-import { Icons } from './ui/icons';
+
 
 const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://render.dustland.ai';
 

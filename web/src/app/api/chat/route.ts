@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createOpenAI } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import { generateText, streamText } from 'ai';
 
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
@@ -89,19 +89,26 @@ The design uses subtle shadows and rounded corners to create depth while maintai
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages } = await request.json();
+    const { messages, stream = true } = await request.json();
 
     const body = {
       model: openai('gpt-4o'),
       messages: [{ role: 'system', content: systemPrompt }, ...(messages || [])],
       temperature: 0.7,
-      stream: true,
+      stream,
     };
 
     console.log(body);
 
-    const result = await streamText(body);
-    return result.toDataStreamResponse();
+    if (stream) {
+      const result = await streamText(body);
+      return result.toDataStreamResponse();
+    } else {
+      const { text } = await generateText(body);
+      return new Response(
+        JSON.stringify({ messages: [...messages, { role: 'assistant', content: text }] })
+      );
+    }
   } catch (error) {
     console.error('Generate error:', error);
     return new Response(
