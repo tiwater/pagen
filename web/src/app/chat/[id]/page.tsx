@@ -1,16 +1,15 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import useChatStore from '@/store/chat';
 import { ChatUI } from '@/components/chat-ui';
 import { CodeWorkspace } from '@/components/code-workspace';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { Icons } from '@/components/icons';
+import { useChat } from '@/hooks/use-chat';
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const chat = useChatStore(state => state.chats[id]);
+  const { chat, isLoading } = useChat(id);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -19,11 +18,27 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Icons.spinner className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   if (!chat) {
-    return <div>Chat not found</div>;
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-4">
+        <Icons.warning className="h-8 w-8 text-muted-foreground" />
+        <p className="text-muted-foreground">Chat not found</p>
+      </div>
+    );
   }
 
   return (

@@ -12,6 +12,7 @@ interface ChatState {
   addLog: (chatId: string, log: string) => void;
   setCurrentChat: (chatId: string) => void;
   markChatInitialized: (chatId: string) => void;
+  deleteChat: (chatId: string) => void;
 }
 
 const useChatStore = create<ChatState>()(
@@ -35,7 +36,7 @@ const useChatStore = create<ChatState>()(
               messages: initialMessage
                 ? [
                     {
-                      id: nanoid(),
+                      id: `msg-${nanoid(10)}`,
                       role: 'user',
                       content: initialMessage,
                       createdAt: new Date(),
@@ -53,7 +54,7 @@ const useChatStore = create<ChatState>()(
         return chatId;
       },
 
-      addMessage: (chatId: string, message: Message) => {
+      addMessage: (chatId, message) => {
         set(state => {
           const chat = state.chats[chatId];
           if (!chat) return state;
@@ -108,6 +109,15 @@ const useChatStore = create<ChatState>()(
         }),
 
       setCurrentChat: (chatId: string) => set({ currentChatId: chatId }),
+
+      deleteChat: chatId =>
+        set(state => {
+          const { [chatId]: deletedChat, ...remainingChats } = state.chats;
+          return {
+            chats: remainingChats,
+            currentChatId: state.currentChatId === chatId ? null : state.currentChatId,
+          };
+        }),
     }),
     {
       name: 'chat-store',

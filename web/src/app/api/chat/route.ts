@@ -20,6 +20,7 @@ Follow these strict rules when generating code:
    - Use exact shadcn/ui import paths: @/components/ui/*
    - Import icons from lucide-react
    - Only use components that exist in shadcn/ui
+   - IMPORTANT: Some icons like Facebook and Google are no longer available in the latest version of lucide-react. Use alternative icons or custom SVG components for these cases.
 
 3. Code Style:
    - Wrap the generated code in a \`\`\`pagen code block

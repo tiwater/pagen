@@ -167,6 +167,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
     isLoading,
     setInput,
     append,
+    setMessages,
   } = useChat({
     id: chatId,
     initialMessages: chat?.messages || [],
@@ -186,11 +187,12 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
   });
 
   useEffect(() => {
-    if (chat?.isNew && chat.messages.length > 0 && messages.length === 1) {
+    if (chat?.isNew && chat.messages.length > 0) {
+      setMessages([]);
       append(chat.messages[0]);
       markChatInitialized(chatId);
     }
-  }, [chat, messages.length]);
+  }, [chat]);
 
   useEffect(() => {
     const scrollToBottom = () => {

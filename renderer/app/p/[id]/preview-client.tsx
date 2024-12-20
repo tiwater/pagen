@@ -8,23 +8,24 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import * as LucideIcons from "lucide-react";
 import { transform } from "sucrase";
 import { Loader2 } from "lucide-react";
-import { install, tw } from '@twind/core'
-import presetTailwind from '@twind/preset-tailwind'
+import { install, tw } from "@twind/core";
+import presetTailwind from "@twind/preset-tailwind";
 
 // Initialize twind just for dynamic styles
 install({
   presets: [presetTailwind()],
   hash: false,
-})
+});
 
 export function PreviewClient({ code }: { code: string }) {
   const [error, setError] = React.useState<string | null>(null);
   const [Component, setComponent] = React.useState<React.ComponentType | null>(
-    null,
+    null
   );
 
   // Create a stable reference to our components
@@ -37,10 +38,11 @@ export function PreviewClient({ code }: { code: string }) {
       CardContent,
       CardFooter,
       Input,
+      Textarea,
       ...LucideIcons,
       tw, // Just for dynamic component's own styles
     }),
-    [],
+    []
   );
 
   React.useEffect(() => {
@@ -49,7 +51,7 @@ export function PreviewClient({ code }: { code: string }) {
 
       // Extract component name and definition
       const exportMatch = code.match(
-        /export\s+(default\s+)?(?:function|const)\s+(\w+)/,
+        /export\s+(default\s+)?(?:function|const)\s+(\w+)/
       );
       if (!exportMatch) {
         throw new Error("No exported component found in the code");
@@ -81,7 +83,7 @@ export function PreviewClient({ code }: { code: string }) {
         `
         ${transformedCode}
         return ${componentName};
-        `,
+        `
       );
 
       // Create the component with all dependencies

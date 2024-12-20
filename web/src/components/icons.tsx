@@ -1,4 +1,4 @@
-import { AppWindow, Bot, Camera, Check, CheckCircle, CheckCircle2, Code, Copy, Link, Loader2, Plus, Send, Square, Terminal, User, UserRound, Wand, Webhook, X } from 'lucide-react';
+import { AlertCircle, AppWindow, Bot, Camera, Check, CheckCircle, CheckCircle2, Code, Copy, Link, Loader2, Plus, Send, Square, Terminal, User, UserRound, Wand, Webhook, X } from 'lucide-react';
 
 
 function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -37,4 +37,5 @@ export const Icons = {
   api: Webhook,
   copy: Copy,
   user: UserRound,
+  warning: AlertCircle,
 };
