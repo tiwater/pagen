@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useTheme } from 'next-themes';
-import { toast } from '@/hooks/use-toast';
+import Link from 'next/link';
 import { usePageStore } from '@/store/page';
 import { CodeBlock } from '@/components/code-block';
 import { CopyButton } from '@/components/copy-button';
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 interface CodeWorkspaceProps {
   id: string;
@@ -108,9 +108,11 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                 <DialogContent className="sm:max-w-[600px]">
                   <DialogHeader>
                     <DialogTitle>Generate API</DialogTitle>
-                    <DialogDescription>
-                      Use this API to generate a page from a prompt and get its screenshot. Send a
-                      POST request with the following curl command:
+                    <DialogDescription className="space-y-2">
+                      <p>
+                        Use this API to generate a page from a prompt and get its screenshot. Send a
+                        POST request with the following curl command:
+                      </p>
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
@@ -138,6 +140,13 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                         Note: Using default prompt as no prompt was found for this page.
                       </p>
                     )}
+                    <p>
+                      View our{' '}
+                      <Link href="/docs" target="_blank">
+                        API documentation
+                      </Link>{' '}
+                      for more details.
+                    </p>
                   </div>
                 </DialogContent>
               </Dialog>

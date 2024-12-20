@@ -1,8 +1,65 @@
 import { NextRequest } from 'next/server';
 
-
 export const runtime = 'edge';
 
+/**
+ * @swagger
+ * /api/generate:
+ *   post:
+ *     summary: Generate Webpage
+ *     description: Generate a webpage from a text prompt
+ *     tags:
+ *       - Generation
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - prompt
+ *             properties:
+ *               prompt:
+ *                 type: string
+ *                 description: The text prompt describing the webpage you want to generate
+ *                 example: "a beautiful login page with gradient background"
+ *     responses:
+ *       200:
+ *         description: Successfully generated webpage
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: The unique identifier for the generated page
+ *                   example: "abc123"
+ *                 url:
+ *                   type: string
+ *                   description: The URL where the generated page can be viewed
+ *                   example: "https://pages.dustland.ai/p/abc123"
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required field: prompt"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to generate page"
+ */
 export async function POST(request: NextRequest) {
   try {
     const { prompt } = await request.json();
