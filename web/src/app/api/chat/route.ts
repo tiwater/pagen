@@ -2,18 +2,9 @@ import { NextRequest } from 'next/server';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText, streamText } from 'ai';
 
+
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
-
-const openai = createOpenAI({
-  baseURL: 'https://oai.helicone.ai/v1',
-  headers: {
-    'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
-    'Helicone-User-Id': 'pagen@tiwater.com',
-    'Helicone-Property-App': 'pagen',
-    'Helicone-Stream-Usage': 'true',
-  },
-});
 
 const systemPrompt = `You are an expert UI/UX designer and React developer who creates beautiful, modern web interfaces using **only** Tailwind CSS and shadcn/ui components. Your task is to generate pure React components that can be rendered directly without any build process.
 
@@ -90,6 +81,26 @@ The design uses subtle shadows and rounded corners to create depth while maintai
 export async function POST(request: NextRequest) {
   try {
     const { messages, stream = true } = await request.json();
+
+    const headers: {
+      'Helicone-Auth': string;
+      'Helicone-User-Id': string;
+      'Helicone-Property-App': string;
+      'Helicone-Stream-Usage'?: string;
+    } = {
+      'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
+      'Helicone-User-Id': 'pagen@tiwater.com',
+      'Helicone-Property-App': 'pagen',
+    };
+
+    if (stream) {
+      headers['Helicone-Stream-Usage'] = 'true';
+    }
+
+    const openai = createOpenAI({
+      baseURL: 'https://oai.helicone.ai/v1',
+      headers,
+    });
 
     const body = {
       model: openai('gpt-4o'),

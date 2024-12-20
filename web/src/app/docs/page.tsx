@@ -17,10 +17,6 @@ const SwaggerUI = dynamic(() => import('swagger-ui-react'), {
 export default function DocsPage() {
   const [error, setError] = useState<string | null>(null);
 
-  const handleError = () => {
-    setError('Failed to load API documentation. Please try again later.');
-  };
-
   if (error) {
     return (
       <div className="container mx-auto p-8">
@@ -37,12 +33,10 @@ export default function DocsPage() {
         url="/openapi.yaml"
         docExpansion="full"
         defaultModelsExpandDepth={-1}
-        filter={false}
         supportedSubmitMethods={['post']}
         displayOperationId={false}
         displayRequestDuration={false}
-        showExtensions={false}
-        showCommonExtensions={false}
+        persistAuthorization={true}
       />
 
       <style jsx global>{`
@@ -53,12 +47,44 @@ export default function DocsPage() {
 
         /* Hide unnecessary elements */
         .swagger-ui .information-container .info__contact,
+        .swagger-ui .information-container .info__termsOfService,
+        .swagger-ui .information-container .info__version,
         .swagger-ui .information-container .info__license,
-        .swagger-ui .information-container .info__tos,
-        .swagger-ui .scheme-container,
-        .swagger-ui .servers-title,
-        .swagger-ui select {
+        .swagger-ui .information-container .info__tos {
           display: none !important;
+        }
+
+        /* Show server selection */
+        .swagger-ui .servers-title,
+        .swagger-ui .servers > label {
+          display: block !important;
+          margin-bottom: 1.5rem;
+          color: #64748b;
+        }
+
+        .swagger-ui .servers > label select {
+          background-color: white;
+          display: block !important;
+          width: 100%;
+          max-width: 340px;
+          border: 1px solid #e2e8f0;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
+          line-height: 1.25rem;
+          color: #1e293b;
+        }
+
+        [data-theme="dark"] .swagger-ui .servers > label select {
+          background-color: #1e293b;
+          border-color: #334155;
+          color: #e2e8f0;
+        }
+
+        .swagger-ui .servers > label select:focus {
+          outline: none;
+          border-color: #0091EA;
+          ring: 2px;
+          ring-color: #0091EA;
         }
 
         /* Headers */

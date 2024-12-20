@@ -1,59 +1,5 @@
 import { NextResponse } from 'next/server';
 
-/**
- * @swagger
- * /api/screenshot:
- *   post:
- *     summary: Take Screenshot
- *     description: Take a screenshot of a generated webpage
- *     tags:
- *       - Screenshot
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - id
- *             properties:
- *               id:
- *                 type: string
- *                 description: The page ID of the generated webpage
- *                 example: "abc123"
- *     responses:
- *       200:
- *         description: Successfully captured screenshot
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 url:
- *                   type: string
- *                   description: URL of the captured screenshot
- *                   example: "https://pages.dustland.ai/screenshots/abc123.png"
- *       400:
- *         description: Bad request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Missing required field: id"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Failed to capture screenshot"
- */
 export async function POST(request: Request) {
   try {
     const { id } = await request.json();
