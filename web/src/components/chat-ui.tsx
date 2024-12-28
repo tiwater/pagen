@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Icons } from './icons';
-
+import { ScrollArea } from './ui/scroll-area';
 
 interface ChatMessageProps {
   message: Message;
@@ -249,7 +249,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
           <span className="text-sm text-muted-foreground">{chat.title || 'New Chat'}</span>
         </div>
       </div>
-      <div className="flex flex-col flex-1 overflow-y-auto p-2 gap-4">
+      <ScrollArea className="flex flex-col flex-1 overflow-y-auto p-2 gap-4">
         {messages.length ? (
           <>
             {messages.map((message, i) => (
@@ -260,8 +260,8 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
           <EmptyScreen setInput={setInput} />
         )}
         <div ref={messagesEndRef} />
-      </div>
-      <form onSubmit={handleSubmit} className="border-t bg-background p-4">
+      </ScrollArea>
+      <form onSubmit={handleSubmit} className="border-t bg-background p-2">
         <div className="relative flex w-full overflow-hidden bg-background gap-2">
           <Textarea
             tabIndex={0}
@@ -271,13 +271,13 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
             onKeyDown={handleKeyDown}
             placeholder="Send a message"
             spellCheck={false}
-            className="w-full sm:text-sm"
+            className="w-full sm:text-sm resize-none overflow-hidden"
           />
           <Button
             type="submit"
             size="icon"
             disabled={isLoading || input === ''}
-            className="shrink-0"
+            className="absolute right-1 bottom-1 shrink-0 h-7 w-7"
           >
             {isLoading ? (
               <Icons.spinner className="h-4 w-4 animate-spin" />
