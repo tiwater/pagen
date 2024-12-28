@@ -138,7 +138,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
                 children,
                 ...props
               }: React.HTMLAttributes<HTMLParagraphElement>) => (
-                <p className={cn('mb-4 leading-relaxed', className)} {...props}>
+                <p className={cn('leading-relaxed', className)} {...props}>
                   {children}
                 </p>
               ),
@@ -250,8 +250,8 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
           <span className="text-sm text-muted-foreground">{chat.title || 'New Chat'}</span>
         </div>
       </div>
-      <ScrollArea>
-        <div className="flex flex-col flex-1 p-2 pr-3 gap-2">
+      <ScrollArea className="flex-1 flex flex-col justify-start">
+        <div className="flex flex-col p-2 pr-3 gap-2">
           {messages.length ? (
             <>
               {messages.map((message, i) => (
