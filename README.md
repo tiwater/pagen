@@ -77,6 +77,10 @@ pagen/
 - Dynamic component rendering
 - Isolated environment for previews
 
+### Webshot
+- Screenshot service for generated pages, based on browserless/chromium
+- Read docs https://webshot.dustland.ai/docs
+
 ## Development
 
 ### Adding Dependencies

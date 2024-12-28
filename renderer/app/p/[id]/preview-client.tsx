@@ -122,7 +122,7 @@ export function PreviewClient({ code }: { code: string }) {
 
   try {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background w-full">
+      <div className="preview-container flex items-center justify-center min-h-screen bg-background w-full">
         <Component />
       </div>
     );

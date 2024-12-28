@@ -38,7 +38,11 @@ export default function PreviewPage({ params }: PreviewPageProps) {
 
   try {
     if (!content) {
-      return <Loading />;
+      return (
+        <div className="flex items-center justify-center h-full min-h-screen w-full">
+          <Loading />
+        </div>
+      );
     }
 
     return <PreviewClient code={content} />;

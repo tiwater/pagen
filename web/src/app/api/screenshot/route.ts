@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+
 export async function POST(request: Request) {
   try {
     const { id } = await request.json();
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
         url: pageUrl,
         options: {
           fullPage: true,
+          waitForSelector: '.preview-container',
         },
       }),
     });
