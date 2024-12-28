@@ -3,7 +3,7 @@
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { nord, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
-import { cn } from '@/lib/utils';
+
 
 interface CodeBlockProps {
   code: string;

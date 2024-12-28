@@ -1,20 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useTheme } from 'next-themes';
 import { usePageStore } from '@/store/page';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { Icons } from './icons';
-
 
 interface PageCardProps {
   messageId: string;
@@ -22,7 +11,6 @@ interface PageCardProps {
 
 export function PageCard({ messageId }: PageCardProps) {
   const { pages, activePage, setActivePage } = usePageStore();
-  const [showApiDialog, setShowApiDialog] = useState(false);
   const page = pages[messageId];
 
   if (!page) return null;

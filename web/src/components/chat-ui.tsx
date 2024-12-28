@@ -169,6 +169,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
     setInput,
     append,
     setMessages,
+    stop,
   } = useChat({
     id: chatId,
     initialMessages: chat?.messages || [],
@@ -216,6 +217,10 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isLoading) {
+      stop();
+      return;
+    }
     if (!input?.trim()) {
       return;
     }
@@ -279,11 +284,11 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
           <Button
             type="submit"
             size="icon"
-            disabled={isLoading || input === ''}
-            className="absolute right-1 bottom-1 shrink-0 h-7 w-7"
+            disabled={!isLoading && input === ''}
+            className={cn('absolute right-1 bottom-1 shrink-0 h-7 w-7', isLoading && 'bg-red-500 text-white hover:bg-red-600')}
           >
             {isLoading ? (
-              <Icons.spinner className="h-4 w-4 animate-spin" />
+              <Icons.square className="h-4 w-4" />
             ) : (
               <Icons.send className="h-4 w-4" />
             )}
