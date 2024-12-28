@@ -16,7 +16,10 @@ export async function POST(request: Request) {
         url: pageUrl,
         options: {
           fullPage: true,
-          waitForSelector: '.preview-container',
+        },
+        waitForSelector: {
+          selector: '.preview-container',
+          timeout: 10000,
         },
       }),
     });
