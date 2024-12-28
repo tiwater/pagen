@@ -7,8 +7,9 @@ import useChatStore from '@/store/chat';
 import { nanoid } from 'nanoid';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+
 
 const samplePrompts = [
   'Create a modern login page with social sign-in',
@@ -17,6 +18,15 @@ const samplePrompts = [
   'Make a hero section for a SaaS product',
 ];
 
+  /**
+   * The main entrypoint for the app, renders the homepage where users
+   * can enter a prompt to generate a webpage.
+   *
+   * The component also renders a list of previous chats, allowing users
+   * to easily go back to previous conversations.
+   *
+   * @returns The JSX element for the homepage.
+   */
 export default function Home() {
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
@@ -68,19 +78,19 @@ export default function Home() {
         </h1>
       </div>
       <div className="w-full max-w-2xl">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-2">
           <Textarea
             name="prompt"
             placeholder="Describe the webpage you want to create..."
             value={prompt}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="min-h-[120px] resize-none text-lg"
+            className="min-h-[120px] resize-none text-xs sm:text-sm"
           />
           <div className="flex flex-col gap-4">
             <Button type="submit" className="h-10 px-4" disabled={!prompt.trim()}>
-              <Icons.wand className="w-4 h-4 mr-2" />
-              Generate Webpage
+              <Icons.sparcles className="w-4 h-4 mr-2" />
+              Generate Page
             </Button>
             <div className="text-sm text-muted-foreground">
               Try these examples:

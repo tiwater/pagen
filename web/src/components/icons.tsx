@@ -1,5 +1,27 @@
-import { AlertCircle, AppWindow, Bot, Camera, Check, CheckCircle, CheckCircle2, Code, Copy, Link, Loader2, Plus, Send, Square, Terminal, User, UserRound, Wand, Webhook, X } from 'lucide-react';
-
+import {
+  AlertCircle,
+  AppWindow,
+  Bot,
+  Camera,
+  Check,
+  CheckCircle,
+  CheckCircle2,
+  Code,
+  Copy,
+  Link,
+  Loader2,
+  Plus,
+  Send,
+  SendHorizonal,
+  Sparkles,
+  Square,
+  Terminal,
+  User,
+  UserRound,
+  Wand,
+  Webhook,
+  X,
+} from 'lucide-react';
 
 function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -27,7 +49,8 @@ export const Icons = {
   plus: Plus,
   spinner: Loader2,
   figma: Square, // Using Square as a placeholder for Figma icon
-  send: Send,
+  send: SendHorizonal,
+  sparcles: Sparkles,
   bot: Bot,
   terminal: Terminal,
   wand: Wand,

@@ -261,7 +261,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
         )}
         <div ref={messagesEndRef} />
       </ScrollArea>
-      <form onSubmit={handleSubmit} className="border-t bg-background p-2">
+      <form onSubmit={handleSubmit} className="border-t bg-background p-1">
         <div className="relative flex w-full overflow-hidden bg-background gap-2">
           <Textarea
             tabIndex={0}
@@ -271,7 +271,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
             onKeyDown={handleKeyDown}
             placeholder="Send a message"
             spellCheck={false}
-            className="w-full sm:text-sm resize-none overflow-hidden"
+            className="w-full sm:text-sm resize-none overflow-hidden bg-background border-0 focus:ring-0 focus-visible:ring-0 focus:border-primary/20 focus-visible:border-primary/20 focus-visible:ring-offset-0"
           />
           <Button
             type="submit"
