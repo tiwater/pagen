@@ -1,18 +1,9 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
+import * as UI from "@/components/ui";
 import * as LucideIcons from "lucide-react";
 import { transform } from "sucrase";
-import { Loader2 } from "lucide-react";
 import { install, tw } from "@twind/core";
 import presetTailwind from "@twind/preset-tailwind";
 
@@ -32,13 +23,7 @@ export function PreviewClient({ code }: { code: string }) {
   const components = React.useMemo(
     () => ({
       React,
-      Button,
-      Card,
-      CardHeader,
-      CardContent,
-      CardFooter,
-      Input,
-      Textarea,
+      ...UI,
       ...LucideIcons,
       tw, // Just for dynamic component's own styles
     }),
@@ -113,7 +98,7 @@ export function PreviewClient({ code }: { code: string }) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background w-full">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <LucideIcons.Loader2 className="h-8 w-8 animate-spin text-blue-500" />
           <p className="text-sm text-muted-foreground">Loading preview...</p>
         </div>
       </div>
