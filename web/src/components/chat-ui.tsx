@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { Icons } from './icons';
 import { ScrollArea } from './ui/scroll-area';
 
+
 interface ChatMessageProps {
   message: Message;
   chat: Chat;
@@ -249,16 +250,18 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
           <span className="text-sm text-muted-foreground">{chat.title || 'New Chat'}</span>
         </div>
       </div>
-      <ScrollArea className="flex flex-col flex-1 overflow-y-auto p-2 gap-4">
-        {messages.length ? (
-          <>
-            {messages.map((message, i) => (
-              <ChatMessage key={message.id || i} message={message} chat={chat} />
-            ))}
-          </>
-        ) : (
-          <EmptyScreen setInput={setInput} />
-        )}
+      <ScrollArea>
+        <div className="flex flex-col flex-1 p-2 pr-3 gap-2">
+          {messages.length ? (
+            <>
+              {messages.map((message, i) => (
+                <ChatMessage key={message.id || i} message={message} chat={chat} />
+              ))}
+            </>
+          ) : (
+            <EmptyScreen setInput={setInput} />
+          )}
+        </div>
         <div ref={messagesEndRef} />
       </ScrollArea>
       <form onSubmit={handleSubmit} className="border-t bg-background p-1">
