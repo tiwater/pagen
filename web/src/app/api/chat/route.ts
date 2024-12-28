@@ -22,6 +22,7 @@ Follow these strict rules when generating code:
    - Use exact shadcn/ui import paths: @/components/ui/*
    - Import icons from lucide-react
    - Only use components that exist in shadcn/ui
+   - IMPORTANT: When creating charts, should remember only Recharts is allowed, and use @/components/ui/chart.tsx and recharts together following the best practices of Shadcn/ui.
    - IMPORTANT: Some icons like Facebook and Google are no longer available in the latest version of lucide-react. Use alternative icons or custom SVG components for these cases.
 
 3. Code Style:
