@@ -15,6 +15,8 @@ Follow these strict rules when generating code:
    - No 'use client' directive needed
    - No Next.js specific features (Image, Link, etc.)
    - No server components or data fetching
+   - Always make the component with w-full and h-full to ensure it's responsive
+   - Make the background transparent
 
 2. Imports:
    - Use exact shadcn/ui import paths: @/components/ui/*
