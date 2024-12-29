@@ -8,12 +8,14 @@ import {
   Check,
   CheckCircle,
   CheckCircle2,
+  ChevronLeft,
   Code,
   CodeXml,
   Copy,
   Folder,
   Laptop,
   Link,
+  ListTodo,
   Loader2,
   LogOut,
   MessageSquareDiff,
@@ -24,11 +26,13 @@ import {
   Send,
   SendHorizonal,
   Settings,
+  Settings2,
   Sparkles,
   Square,
   Sun,
   SunMoon,
   Terminal,
+  Trash,
   User,
   UserRound,
   Wand,
@@ -36,19 +40,17 @@ import {
   X,
 } from 'lucide-react';
 
-function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
+function Logo(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M6 4h8a6 6 0 0 1 6 6v0a6 6 0 0 1-6 6h-8" />
-      <path d="M6 20v-16" />
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="#4F46E5" />
+
+      <path d="M11 8h8c2.2091 0 4 1.7909 4 4 0 2.2091-1.7909 4-4 4h-4v8h-4V8z" fill="white" />
+
+      <path d="M15 12h3.5c1.1046 0 2 .8954 2 2s-.8954 2-2 2H15v-4z" fill="#4F46E5" />
+
+      <rect x="19" y="18" width="6" height="2" rx="1" fill="white" opacity="0.8" />
+      <rect x="19" y="22" width="4" height="2" rx="1" fill="white" opacity="0.6" />
     </svg>
   );
 }
@@ -89,12 +91,14 @@ export function Github({ ...props }: any) {
 }
 
 export const Icons = {
-  logo: LogoIcon,
+  logo: Logo,
   check: Check,
   checkCircle: CheckCircle2,
+  chevronLeft: ChevronLeft,
   close: X,
   link: Link,
   plus: Plus,
+  listTodo: ListTodo,
   spinner: Loader2,
   figma: Square, // Using Square as a placeholder for Figma icon
   send: SendHorizonal,
@@ -102,6 +106,7 @@ export const Icons = {
   bot: Bot,
   square: Square,
   terminal: Terminal,
+  trash: Trash,
   wand: Wand,
   window: AppWindowMac,
   code: CodeXml,
@@ -111,6 +116,7 @@ export const Icons = {
   user: UserRound,
   warning: AlertCircle,
   settings: Settings,
+  settings2: Settings2,
   logout: LogOut,
   sun: Sun,
   moon: Moon,

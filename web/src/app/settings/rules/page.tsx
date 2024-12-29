@@ -1,55 +1,68 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useSettingsStore } from '@/store/setting';
 import { Textarea } from '@/components/ui/textarea';
+import { useSettingsStore } from '@/store/setting';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Icons } from '@/components/icons';
+import { nanoid } from 'nanoid';
 
-export default function RulesSettingsPage() {
-    const { rules, addRule, deleteRule } = useSettingsStore();
-    const [newRule, setNewRule] = useState<string>('');
-
-    const handleAddRule = () => {
-        if (newRule.trim()) {
-            addRule(newRule.trim());
-            setNewRule('');
-        }
-    };
+export default function RulesPage() {
+    const { rules, addRule, deleteRule, updateRule } = useSettingsStore();
 
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">Manage Rules</h1>
-            <Card className="mb-4">
-                <CardHeader>
-                    <h2 className="text-lg font-semibold">Add New Rule</h2>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex gap-2">
-                        <Textarea
-                            rows={5}
-                            value={newRule}
-                            onChange={(e) => setNewRule(e.target.value)}
-                            placeholder="Enter rule description, such as 'The webpage should have a header with the title of the webpage'"
-                            className="flex-1"
-                        />
-                        <Button onClick={handleAddRule}>Add Rule</Button>
-                    </div>
-                </CardContent>
-            </Card>
-            <div>
-                {rules.map((rule, index) => (
-                    <Card key={index} className="mb-2">
-                        <CardContent className="flex justify-between items-center">
-                            <span>{rule}</span>
-                            <Button variant="destructive" onClick={() => deleteRule(index)}>
-                                Delete
-                            </Button>
-                        </CardContent>
-                    </Card>
-                ))}
+        <div className="container w-full min-h-screen p-2">
+            <div className="flex items-center gap-4 mb-8">
+                <h1 className="text-2xl font-semibold">Rules</h1>
+                <Button variant="outline" size="icon" onClick={() => {
+                    addRule({ id: nanoid(), title: 'New Rule', content: '' });
+                }}>
+                    <Icons.plus className="h-4 w-4" />
+                </Button>
             </div>
+
+            <Accordion type="single" collapsible className="group space-y-2 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+                {rules.map((rule, index) => {
+                    return (
+                        <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg px-4">
+                            <AccordionTrigger className="hover:no-underline gap-2">
+                                <div className="flex items-center gap-2 w-full">
+                                    <Icons.listTodo className="h-4 w-4 shrink-0" />
+                                    <Input value={rule.title || ''} onChange={(e) => {
+                                        updateRule({ ...rule, title: e.target.value });
+                                    }} className="font-medium flex-1" />
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="flex flex-col w-full gap-2">
+                                <Textarea className="focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-sm bg-transparent shadow-none" rows={10} value={rule.content || ''} onChange={(e) => {
+                                    updateRule({ ...rule, content: e.target.value });
+                                }}
+                                    placeholder="Enter your rule here as a markdown list..."
+                                />
+                                <div className="flex items-center justify-end gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteRule(rule.id);
+                                        }}
+                                    >
+                                        <Icons.trash className="h-4 w-4 shrink-0" />
+                                    </Button>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    );
+                })}
+            </Accordion>
         </div>
     );
 }

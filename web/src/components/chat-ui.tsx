@@ -187,6 +187,10 @@ function handleSettingsClick() {
 
 export function ChatUI({ id, chat }: ChatUIProps) {
   const { addMessage, markChatInitialized } = useChatStore();
+  const [selectedRuleId, setSelectedRuleId] = useState<string>('');
+  const { rules } = useSettingsStore();
+  const selectedRule = rules.find(rule => rule.id === selectedRuleId);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const {
     messages,
@@ -204,6 +208,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     body: {
       id: id,
       title: chat?.title,
+      rules: selectedRule ? [selectedRule] : [],
     },
     onFinish: response => {
       console.log('Chat finished:', response);
@@ -272,9 +277,6 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     }
   };
 
-  const [selectedRule, setSelectedRule] = useState<string>('');
-  const { rules } = useSettingsStore();
-
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-12 items-center justify-between border-b px-4">
@@ -316,17 +318,28 @@ export function ChatUI({ id, chat }: ChatUIProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="absolute left-1 bottom-1 shrink-0 h-7 flex items-center gap-1 px-2 text-sm">
-                <Icons.add className="h-4 w-4" />
-                Rules
+                {selectedRuleId ? (
+                  <>
+                    <Icons.listTodo className="h-4 w-4 shrink-0" />
+                    <span className="text-xs text-muted-foreground">{selectedRule?.title}</span>
+                  </>
+                ) : (
+                  <>
+                    <Icons.listTodo className="h-4 w-4 shrink-0" />
+                    <span className="text-xs text-muted-foreground">Rules</span>
+                  </>
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
-              {rules.map((rule, index) => (
+              {rules.slice(0, 5).map((rule, index) => (
                 <DropdownMenuItem
                   key={index}
-                  onClick={() => setSelectedRule(rule)}
+                  onClick={() => setSelectedRuleId(rule.id)}
+                  className={cn(selectedRuleId === rule.id && 'bg-primary/10 border-primary/20')}
                 >
-                  {rule.slice(0, 30)}
+                  <Icons.listTodo className="h-4 w-4 shrink-0" />
+                  {rule.title}
                 </DropdownMenuItem>
               ))}
               {rules.length > 0 && (

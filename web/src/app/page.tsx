@@ -95,10 +95,10 @@ export default function Home() {
                   <Icons.add className="w-4 h-4" />
                   <span className="text-xs">Rules</span>
                 </Button>
-                <Button type="submit" size="sm" variant="outline" className="h-7 gap-2" >
+                {/* <Button type="submit" size="sm" variant="outline" className="h-7 gap-2" >
                   <Icons.project className="w-4 h-4" />
                   <span className="text-xs">Projects</span>
-                </Button>
+                </Button> */}
               </div>
               <div className="flex items-center gap-2">
                 <Button type="submit" size="sm" className="h-7 gap-2" disabled={!prompt.trim()}>
