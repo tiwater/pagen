@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { usePageStore } from '@/store/page';
-import { Icons } from './icons';
 import { Loading } from './loading';
 
 

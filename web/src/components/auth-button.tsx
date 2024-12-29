@@ -43,29 +43,44 @@ export function AuthButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-7 w-7">
-            <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
-            <AvatarFallback>
-              {user.user_metadata.full_name?.[0]?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-        </Button>
+        <Avatar className="h-8 w-8 cursor-pointer">
+          <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
+          <AvatarFallback>
+            {user.user_metadata.full_name?.[0]?.toUpperCase() || 'U'}
+          </AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 text-sm">
-        <div className="flex items-center justify-start gap-2 p-2">
-          <div className="flex flex-col space-y-1 leading-none">
+      <DropdownMenuContent align="end" className="w-80 text-sm">
+        <div className="flex items-center justify-start gap-2 p-2 p-2">
+          <div className="flex flex-col space-y-2 leading-none">
             {user.user_metadata.full_name && (
-              <p className="font-medium">{user.user_metadata.full_name}</p>
+              <p className="font-medium text-lg">{user.user_metadata.full_name}</p>
             )}
-            {user.email && (
-              <p className="w-[200px] truncate text-sm text-muted-foreground">{user.email}</p>
-            )}
+
+            <div className="flex items-center gap-2">
+              <p className="truncate text-sm text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {user.user_metadata.email_verified && (
+                <Icons.badgeCheck className="h-4 w-4 text-green-500" />
+              )}
+              {user.app_metadata.provider === 'google' && (
+                <Icons.google className="h-4 w-4 text-muted-foreground" />
+              )}
+              {user.app_metadata.provider === 'github' && (
+                <Icons.github className="h-4 w-4 text-muted-foreground" />
+              )}
+              {user.app_metadata.provider === 'email' && (
+                <Icons.mail className="h-4 w-4 text-muted-foreground" />
+              )}
+            </div>
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/settings" className="flex w-full items-center gap-2">
+        <DropdownMenuItem className="w-full p-2 mt-1">
+          <Link href="/settings" className="flex w-full items-center gap-2 cursor-pointer">
             Settings
           </Link>
         </DropdownMenuItem>
@@ -77,13 +92,13 @@ export function AuthButton() {
           <ThemeSwitch />
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/docs" className="flex w-full items-center gap-2">
+        <DropdownMenuItem className="w-full p-2">
+          <Link href="/docs" className="flex w-full items-center gap-2 cursor-pointer">
             API Documentation
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2 justify-between">
+        <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2 justify-between cursor-pointer">
           Sign Out
           <Icons.logout className="h-4 w-4 mr-2" />
         </DropdownMenuItem>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -28,11 +28,16 @@ interface ChatMessageProps {
   className?: string;
 }
 
+const MemoizedPageCard = memo(PageCard);
+
 function ChatMessage({ message, chat, className }: ChatMessageProps) {
   const { updatePage, setActivePage } = usePageStore();
   const lastContentRef = useRef<string>();
   const updateTimeoutRef = useRef<NodeJS.Timeout>();
   const { user } = useAuth();
+  const { rules } = useSettingsStore();
+  const selectedRuleId = rules.find(rule => rule.id === message.id)?.id;
+
   useEffect(() => {
     if (message.role !== 'assistant') return;
 
@@ -41,10 +46,9 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
 
     const startIdx = startMatch.index! + startMatch[0].length;
     const endMatch = message.content.slice(startIdx).match(/```/);
-    const content =
-      endMatch && typeof endMatch.index !== 'undefined'
-        ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
-        : message.content.slice(startIdx).trim();
+    const content = endMatch && typeof endMatch.index !== 'undefined'
+      ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
+      : message.content.slice(startIdx).trim();
 
     if (content !== lastContentRef.current) {
       // Clear any pending update
@@ -55,7 +59,6 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
       // Debounce the update
       updateTimeoutRef.current = setTimeout(() => {
         lastContentRef.current = content;
-        // Find the user message that triggered this response
         const userMessage = chat.messages.find(
           (msg, index) => msg.role === 'user' && chat.messages[index + 1]?.id === message.id
         );
@@ -70,10 +73,9 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
           },
         });
 
-        if (!lastContentRef.current || endMatch) {
-          setActivePage(message.id);
-        }
-      }, 300); // 300ms debounce
+        // Always set as active when we update the page
+        setActivePage(message.id);
+      }, 300);
 
       return () => {
         if (updateTimeoutRef.current) {
@@ -83,7 +85,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
     }
   }, [message.content, message.role, message.id, updatePage, setActivePage, chat.messages]);
 
-  const renderCodeBlock = ({
+  const renderCodeBlock = useCallback(({
     className,
     children,
   }: {
@@ -93,10 +95,46 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
     const language = /language-(\w+)/.exec(className || '')?.[1];
     console.log(language);
     if (language === 'pagen') {
-      return <PageCard key={message.id} messageId={message.id} />;
+      return <MemoizedPageCard key={message.id} messageId={message.id} />;
     }
     return <code className={className}>{children}</code>;
-  };
+  }, [message.id]);
+
+  const MemoizedMarkdown = memo(({ content }: { content: string }) => (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeHighlight]}
+      components={{
+        code: renderCodeBlock,
+        ul: ({ className, children, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
+          <ul className={cn('list-disc pl-6 mb-4 space-y-2', className)} {...props}>
+            {children}
+          </ul>
+        ),
+        ol: ({ className, children, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
+          <ol className={cn('list-decimal pl-6 mb-4 space-y-2', className)} {...props}>
+            {children}
+          </ol>
+        ),
+        li: ({ className, children, ...props }: React.HTMLAttributes<HTMLLIElement>) => (
+          <li className={cn('leading-relaxed', className)} {...props}>
+            {children}
+          </li>
+        ),
+        p: ({
+          className,
+          children,
+          ...props
+        }: React.HTMLAttributes<HTMLParagraphElement>) => (
+          <p className={cn('leading-relaxed', className)} {...props}>
+            {children}
+          </p>
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  ));
 
   return (
     <div className={cn('group relative flex items-start', className)}>
@@ -137,39 +175,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
               : 'bg-muted-foreground/5 text-muted-foreground'
           )}
         >
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeHighlight]}
-            components={{
-              code: renderCodeBlock,
-              ul: ({ className, children, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
-                <ul className={cn('list-disc pl-6 mb-4 space-y-2', className)} {...props}>
-                  {children}
-                </ul>
-              ),
-              ol: ({ className, children, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
-                <ol className={cn('list-decimal pl-6 mb-4 space-y-2', className)} {...props}>
-                  {children}
-                </ol>
-              ),
-              li: ({ className, children, ...props }: React.HTMLAttributes<HTMLLIElement>) => (
-                <li className={cn('leading-relaxed', className)} {...props}>
-                  {children}
-                </li>
-              ),
-              p: ({
-                className,
-                children,
-                ...props
-              }: React.HTMLAttributes<HTMLParagraphElement>) => (
-                <p className={cn('leading-relaxed', className)} {...props}>
-                  {children}
-                </p>
-              ),
-            }}
-          >
-            {message.content}
-          </ReactMarkdown>
+          <MemoizedMarkdown content={message.content} />
         </div>
       </div>
     </div>

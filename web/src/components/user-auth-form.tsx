@@ -40,6 +40,7 @@ export function UserAuthForm({
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false);
+  const [isGitHubLoading, setIsGitHubLoading] = React.useState<boolean>(false);
   const [isResendingVerification, setIsResendingVerification] = React.useState<boolean>(false);
   const [showVerificationPrompt, setShowVerificationPrompt] = React.useState<boolean>(false);
   const router = useRouter();
@@ -133,16 +134,19 @@ export function UserAuthForm({
     });
   };
 
-  const handleOAuthSignIn = async (provider: 'google') => {
+  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
     try {
-      setIsGoogleLoading(true);
+      if (provider === 'google') {
+        setIsGoogleLoading(true);
+      } else {
+        setIsGitHubLoading(true);
+      }
 
       const supabase = await createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-          redirectTo: `${window.location.origin
-            }/auth/callback?next=${encodeURIComponent(redirect ?? '/')}`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirect ?? '/')}`,
         },
       });
 
@@ -152,12 +156,16 @@ export function UserAuthForm({
     } catch (error) {
       console.error(`Error signing in with ${provider}:`, error);
       toast({
-        title: 'Login failed',
+        title: "Login failed",
         description: `Failed to sign in with ${provider === 'google' ? 'Google' : 'GitHub'}. Please try again.`,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
-      setIsGoogleLoading(false);
+      if (provider === 'google') {
+        setIsGoogleLoading(false);
+      } else {
+        setIsGitHubLoading(false);
+      }
     }
   };
 
@@ -261,21 +269,35 @@ export function UserAuthForm({
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">or use</span>
+              <span className="bg-background px-2 text-muted-foreground">or continue with</span>
             </div>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => handleOAuthSignIn('google')}
-            disabled={isLoading || isGoogleLoading}
-          >
-            {isGoogleLoading ? (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Icons.google className="mr-2 h-4 w-4" />
-            )}{' '}
-            Google
-          </Button>
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              variant="outline"
+              onClick={() => handleOAuthSignIn('google')}
+              disabled={isLoading || isGoogleLoading || isGitHubLoading}
+            >
+              {isGoogleLoading ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icons.google className="mr-2 h-4 w-4" />
+              )}{' '}
+              Google
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleOAuthSignIn('github')}
+              disabled={isLoading || isGoogleLoading || isGitHubLoading}
+            >
+              {isGitHubLoading ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icons.github className="mr-2 h-4 w-4" />
+              )}{' '}
+              GitHub
+            </Button>
+          </div>
         </>
       )}
     </div>
