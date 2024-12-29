@@ -141,9 +141,8 @@ export function UserAuthForm({
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-          redirectTo: `${
-            window.location.origin
-          }/auth/callback?next=${encodeURIComponent(redirect ?? '/')}`,
+          redirectTo: `${window.location.origin
+            }/auth/callback?next=${encodeURIComponent(redirect ?? '/')}`,
         },
       });
 
@@ -198,7 +197,7 @@ export function UserAuthForm({
           <CardContent className="text-center">
             <p className="text-red-500 font-semibold mb-2">Your email is not verified</p>
             <p className="text-gray-600">
-              We've sent a verification email to your address. Please check and click the link to complete verification.
+              We&apos;ve sent a verification email to your address. Please check and click the link to complete verification.
             </p>
           </CardContent>
           <CardFooter className="flex flex-col items-center gap-4">
@@ -207,7 +206,7 @@ export function UserAuthForm({
               Resend Verification Email
             </Button>
             <p className="text-sm text-gray-500 text-center">
-              Haven't received the email? Check your spam folder or click above to resend.
+              Haven&apos;t received the email? Check your spam folder or click above to resend.
             </p>
           </CardFooter>
         </Card>

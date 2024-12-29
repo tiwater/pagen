@@ -192,6 +192,8 @@ export function ChatUI({ id, chat }: ChatUIProps) {
   const selectedRule = rules.find(rule => rule.id === selectedRuleId);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const {
     messages,
     input,
@@ -212,6 +214,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     },
     onFinish: response => {
       console.log('Chat finished:', response);
+      setIsGenerating(false);
       addMessage(id, {
         id: response.id,
         role: response.role,
@@ -219,6 +222,11 @@ export function ChatUI({ id, chat }: ChatUIProps) {
         createdAt: response.createdAt,
       });
     },
+    onError: (error) => {
+      console.error('Chat error:', error);
+      setIsGenerating(false);
+      // Show error toast or message
+    }
   });
 
   useEffect(() => {
@@ -232,21 +240,18 @@ export function ChatUI({ id, chat }: ChatUIProps) {
   useEffect(() => {
     const scrollToBottom = () => {
       const element = messagesEndRef.current;
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+      if (!element) return;
 
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
-          const container = element.parentElement;
-          if (container) {
-            container.scrollTop = container.scrollHeight;
-          }
-        }, 100);
-      }
+      // Use requestAnimationFrame to optimize performance
+      requestAnimationFrame(() => {
+        element.scrollIntoView({ behavior: 'smooth' });
+      });
     };
 
-    scrollToBottom();
-  }, [messages]);
+    // Debounce scroll updates
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timeoutId);
+  }, [messages]); // Only run when messages change
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -258,6 +263,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
       return;
     }
 
+    setIsGenerating(true);
     addMessage(id, {
       id: nanoid(),
       role: 'user',
@@ -277,6 +283,26 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     }
   };
 
+  const renderMessages = () => {
+    return (
+      <>
+        {messages.map((message, i) => (
+          <ChatMessage
+            key={message.id || i}
+            message={message}
+            chat={chat}
+          />
+        ))}
+        {isLoading && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Icons.spinner className="h-4 w-4 animate-spin" />
+            <span>AI is thinking...</span>
+          </div>
+        )}
+      </>
+    );
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-12 items-center justify-between border-b px-4">
@@ -291,15 +317,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
       </div>
       <ScrollArea className="flex-1 flex flex-col justify-start">
         <div className="flex flex-col p-2 pr-3 gap-2">
-          {messages.length ? (
-            <>
-              {messages.map((message, i) => (
-                <ChatMessage key={message.id || i} message={message} chat={chat} />
-              ))}
-            </>
-          ) : (
-            <EmptyScreen setInput={setInput} />
-          )}
+          {messages.length ? renderMessages() : <EmptyScreen setInput={setInput} />}
         </div>
         <div ref={messagesEndRef} />
       </ScrollArea>
