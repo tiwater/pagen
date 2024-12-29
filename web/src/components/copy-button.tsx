@@ -5,12 +5,14 @@ import { toast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 
+
 interface CopyButtonProps {
   text: string;
+  prompt?: string;
   className?: string;
 }
 
-export function CopyButton({ text, className }: CopyButtonProps) {
+export function CopyButton({ text, prompt, className }: CopyButtonProps) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -18,7 +20,9 @@ export function CopyButton({ text, className }: CopyButtonProps) {
     setIsCopied(true);
     toast({
       title: 'Copied',
-      description: 'The text has been copied to your clipboard. You can now paste it.',
+      description: prompt
+        ? prompt
+        : 'The text has been copied to your clipboard. You can now paste it.',
       variant: 'default',
     });
     setTimeout(() => {

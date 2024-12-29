@@ -127,6 +127,9 @@ export function PreviewClient({ code }: { code: string }) {
   const components = React.useMemo(
     () => ({
       React,
+      useState: React.useState,
+      useEffect: React.useEffect,
+      useMemo: React.useMemo,
       ...UI,
       ...LucideIcons,
       ...Recharts, // Make all Recharts components available

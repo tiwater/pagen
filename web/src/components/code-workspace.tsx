@@ -8,17 +8,10 @@ import { CopyButton } from '@/components/copy-button';
 import { Icons } from '@/components/icons';
 import { PagePreview } from '@/components/page-preview';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
+import { cn } from '@/lib/utils';
 
 interface CodeWorkspaceProps {
   id: string;
@@ -71,20 +64,35 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
       setIsScreenshotting(false);
     }
   }, [activePage]);
-
+  
   return (
     <div className="flex h-full flex-col max-w-full">
       <Tabs defaultValue="code" className="flex-1 h-full flex flex-col">
         <div className="flex items-center justify-between border-b">
-          <TabsList className="bg-transparent">
-            <TabsTrigger value="code" className="flex items-center gap-2">
-              <Icons.terminal className="h-4 w-4" />
-              Code
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2">
-              <Icons.window className="h-4 w-4" />
-              Preview
-            </TabsTrigger>
+          <TabsList className="bg-transparent gap-2">
+            {[
+              {
+                value: 'code',
+                icon: Icons.code,
+                label: 'Code',
+              },
+              {
+                value: 'preview',
+                icon: Icons.window,
+                label: 'Preview',
+              },
+            ].map(tab => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className={cn(
+                  'flex items-center h-7 gap-2 rounded-md shadow-none data-[state=active]:bg-muted',
+                )}
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </TabsTrigger>
+            ))}
             {activePageData && (
               <div className="flex items-center gap-2 p-2">
                 {activePageData.status === 'generating' && (
@@ -95,12 +103,26 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
           </TabsList>
           {activePageData && (
             <div className="flex items-center gap-2 p-2">
+              <Button
+                variant="ghost"
+                onClick={handleScreenshot}
+                disabled={
+                  !activePageData || activePageData.status !== 'complete' || isScreenshotting
+                }
+                className="h-7 w-7 p-0"
+              >
+                {isScreenshotting ? (
+                  <Icons.spinner className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Icons.camera className="h-4 w-4" />
+                )}
+              </Button>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button
                     variant="ghost"
                     disabled={!activePageData || activePageData.status !== 'complete'}
-                    className="h-8 w-8 p-0"
+                    className="h-7 w-7 p-0"
                   >
                     <Icons.api className="h-4 w-4" />
                   </Button>
@@ -108,22 +130,20 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                 <DialogContent className="sm:max-w-[600px]">
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                      <Icons.api className="h-4 w-4" />
+                      <Icons.api className="h-5 w-5" />
                       <span>Generate API</span>
                     </DialogTitle>
                     <DialogDescription className="space-y-2">
-                      <p>
-                        Use this API to generate a page from a prompt and get its screenshot. Send a
-                        POST request with the following curl command:
-                      </p>
+                      <p>Use this API to generate a page from a prompt and get its screenshot.</p>
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
+                    <p>Send a POST request with the following command:</p>
                     <div className="relative">
                       <div className="rounded-lg overflow-hidden bg-muted">
                         <pre className="p-4 text-xs overflow-x-auto whitespace-pre-wrap break-all">
                           <code className="text-sm">
-                            {`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/generate \\
+                            {`curl -X POST ${'https://pages.dustland.ai'}/api/generate \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
   --output page.png`}
@@ -135,6 +155,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
   -H "Content-Type: application/json" \\
   -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
   --output page.png`}
+                          prompt={`Command to generate page \"${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}\" has been copied. You can paste it into your terminal.`}
                         />
                       </div>
                     </div>
@@ -145,11 +166,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                     )}
                     <p className="text-sm text-muted-foreground">
                       For more information on how to use this API, visit our{' '}
-                      <Link
-                        href="/docs"
-                        target="_blank"
-                        className="underline hover:text-primary"
-                      >
+                      <Link href="/docs" target="_blank" className="underline hover:text-primary">
                         API documentation
                       </Link>
                       .
@@ -157,20 +174,6 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button
-                variant="ghost"
-                onClick={handleScreenshot}
-                disabled={
-                  !activePageData || activePageData.status !== 'complete' || isScreenshotting
-                }
-                className="h-8 w-8 p-0"
-              >
-                {isScreenshotting ? (
-                  <Icons.spinner className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Icons.camera className="h-4 w-4" />
-                )}
-              </Button>
             </div>
           )}
         </div>
