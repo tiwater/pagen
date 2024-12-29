@@ -18,6 +18,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Icons } from './icons';
 import { ScrollArea } from './ui/scroll-area';
+import { Rule } from '@/types/rules';
+import { useSettingsStore } from '@/store/setting';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface ChatMessageProps {
   message: Message;
@@ -100,7 +103,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
         <div
           className={cn(
             'rounded-full bg-muted',
-            message.role === 'user' ? 'bg-primary/90 text-primary-foreground' : 'bg-muted/10'
+            message.role === 'user' ? 'bg-primary/90 text-primary-foreground' : 'bg-primary/90 text-primary-foreground'
           )}
         >
           {message.role === 'user' ? (
@@ -110,13 +113,19 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
                 alt="avatar"
                 width={24}
                 height={24}
-                className="rounded-full h-4 w-4 shrink-0"
+                className="rounded-full h-7 w-7 shrink-0"
               />
             ) : (
-              <Icons.user className="h-4 w-4 shrink-0" />
+              <Icons.user className="m-1 h-5 w-5 shrink-0" />
             )
           ) : (
-            <Icons.bot className="h-4 w-4 shrink-0" />
+            <Image
+              src="/images/logo.svg"
+              alt="avatar"
+              width={24}
+              height={24}
+              className="rounded-full h-7 w-7 shrink-0"
+            />
           )}
         </div>
         <div
@@ -171,7 +180,12 @@ interface ChatUIProps {
   chat: Chat;
 }
 
-export function ChatUI({ id: chatId, chat }: ChatUIProps) {
+function handleSettingsClick() {
+  // Implement the logic to open settings or navigate to the settings page
+  console.log('Settings button clicked');
+}
+
+export function ChatUI({ id, chat }: ChatUIProps) {
   const { addMessage, markChatInitialized } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const {
@@ -185,15 +199,15 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
     setMessages,
     stop,
   } = useChat({
-    id: chatId,
+    id: id,
     initialMessages: chat?.messages || [],
     body: {
-      id: chatId,
+      id: id,
       title: chat?.title,
     },
     onFinish: response => {
       console.log('Chat finished:', response);
-      addMessage(chatId, {
+      addMessage(id, {
         id: response.id,
         role: response.role,
         content: response.content,
@@ -206,7 +220,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
     if (chat?.isNew && chat.messages.length === 1) {
       setMessages([]);
       append(chat.messages[0]);
-      markChatInitialized(chatId);
+      markChatInitialized(id);
     }
   }, [chat]);
 
@@ -239,7 +253,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
       return;
     }
 
-    addMessage(chatId, {
+    addMessage(id, {
       id: nanoid(),
       role: 'user',
       content: input,
@@ -258,8 +272,11 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
     }
   };
 
+  const [selectedRule, setSelectedRule] = useState<string>('');
+  const { rules } = useSettingsStore();
+
   return (
-    <div className="flex h-full flex-col justify-between">
+    <div className="flex h-full flex-col">
       <div className="flex h-12 items-center justify-between border-b px-4">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
@@ -268,6 +285,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
           </Link>
           <span className="text-sm text-muted-foreground">{chat.title || 'New Chat'}</span>
         </div>
+
       </div>
       <ScrollArea className="flex-1 flex flex-col justify-start">
         <div className="flex flex-col p-2 pr-3 gap-2">
@@ -295,16 +313,44 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
             spellCheck={false}
             className="w-full sm:text-sm resize-none overflow-hidden bg-background border-0 focus:ring-0 focus-visible:ring-0 focus:border-primary/20 focus-visible:border-primary/20 focus-visible:ring-offset-0"
           />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="absolute left-1 bottom-1 shrink-0 h-7 flex items-center gap-1 px-2 text-sm">
+                <Icons.add className="h-4 w-4" />
+                Rules
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              {rules.map((rule, index) => (
+                <DropdownMenuItem
+                  key={index}
+                  onClick={() => setSelectedRule(rule)}
+                >
+                  {rule.slice(0, 30)}
+                </DropdownMenuItem>
+              ))}
+              {rules.length > 0 && (
+                <DropdownMenuSeparator />
+              )}
+              <DropdownMenuItem>
+                <Link href="/settings/rules" className="flex items-center gap-2 w-full">
+                  <Icons.settings className="h-4 w-4" />
+                  Configure Rules...
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             type="submit"
-            size="icon"
+            size="sm"
             disabled={!isLoading && input === ''}
             className={cn(
-              'absolute right-1 bottom-1 shrink-0 h-7 w-7',
+              'absolute right-1 bottom-1 shrink-0 h-7 w-auto flex items-center gap-1 px-2 text-sm',
               isLoading && 'bg-red-500 text-white hover:bg-red-600'
             )}
           >
             {isLoading ? <Icons.square className="h-4 w-4" /> : <Icons.send className="h-4 w-4" />}
+            {isLoading ? 'Stop' : 'Send'}
           </Button>
         </div>
       </form>

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "注册 - Ting.fm",
-  description: "创建您的账户",
+  title: "Create Account",
+  description: "Create a new account to get started",
 };

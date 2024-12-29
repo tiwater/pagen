@@ -6,11 +6,13 @@ import { CodeWorkspace } from '@/components/code-workspace';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Icons } from '@/components/icons';
 import { useChat } from '@/hooks/use-chat';
+import { Rule } from '@/types/rules';
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { chat, isLoading } = useChat(id);
   const [isMobile, setIsMobile] = useState(false);
+  const [selectedRule, setSelectedRule] = useState<Rule | null>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -23,6 +25,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
+
+  const handleRuleChange = (rule: Rule) => {
+    setSelectedRule(rule);
+  };
 
   if (isLoading) {
     return (

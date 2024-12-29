@@ -153,8 +153,8 @@ export function UserAuthForm({
     } catch (error) {
       console.error(`Error signing in with ${provider}:`, error);
       toast({
-        title: '登录失败',
-        description: `使用${provider === 'google' ? '谷歌' : 'GitHub'}登录失败，请重试。`,
+        title: 'Login failed',
+        description: `Failed to sign in with ${provider === 'google' ? 'Google' : 'GitHub'}. Please try again.`,
         variant: 'destructive',
       });
     } finally {
@@ -193,21 +193,21 @@ export function UserAuthForm({
       {showVerificationPrompt ? (
         <Card className="max-w-full mx-auto">
           <CardHeader className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800">验证您的邮箱</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Verify Your Email</h2>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-red-500 font-semibold mb-2">您的邮箱尚未验证</p>
+            <p className="text-red-500 font-semibold mb-2">Your email is not verified</p>
             <p className="text-gray-600">
-              我们已经发送了一封验证邮件到您的邮箱。请查收并点击链接完成验证。
+              We've sent a verification email to your address. Please check and click the link to complete verification.
             </p>
           </CardContent>
           <CardFooter className="flex flex-col items-center gap-4">
             <Button onClick={handleResendVerification} variant="outline">
               {isResendingVerification && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-              重新发送验证邮件
+              Resend Verification Email
             </Button>
             <p className="text-sm text-gray-500 text-center">
-              没有收到邮件？请检查垃圾邮件文件夹或点击上方按钮重新发送。
+              Haven't received the email? Check your spam folder or click above to resend.
             </p>
           </CardFooter>
         </Card>
@@ -217,7 +217,7 @@ export function UserAuthForm({
             <div className="grid gap-2">
               <div className="grid gap-1">
                 <Label className="sr-only" htmlFor="email">
-                  邮箱
+                  Email
                 </Label>
                 <Input
                   id="email"
@@ -235,11 +235,11 @@ export function UserAuthForm({
               </div>
               <div className="grid gap-1">
                 <Label className="sr-only" htmlFor="password">
-                  密码
+                  Password
                 </Label>
                 <Input
                   id="password"
-                  placeholder="密码"
+                  placeholder="Password"
                   type="password"
                   autoCapitalize="none"
                   autoComplete="current-password"
@@ -253,7 +253,7 @@ export function UserAuthForm({
               </div>
               <Button disabled={isLoading}>
                 {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                {isSignUp ? '注册' : '登录'}
+                {isSignUp ? 'Sign Up' : 'Login'}
               </Button>
             </div>
           </form>
@@ -262,7 +262,7 @@ export function UserAuthForm({
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">或者使用</span>
+              <span className="bg-background px-2 text-muted-foreground">or use</span>
             </div>
           </div>
           <Button

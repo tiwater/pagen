@@ -21,7 +21,7 @@ export function AuthButton() {
     return (
       <Button variant="ghost" size="sm" disabled>
         <Icons.spinner className="h-4 w-4 animate-spin" />
-        <span className="sr-only">加载中...</span>
+        <span className="sr-only">Loading...</span>
       </Button>
     );
   }
@@ -35,7 +35,7 @@ export function AuthButton() {
         className="flex items-center gap-2"
       >
         <Icons.google className="h-4 w-4" />
-        使用 Google 登录
+        Sign in with Google
       </Button>
     );
   }
@@ -52,7 +52,7 @@ export function AuthButton() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56 text-sm">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
             {user.user_metadata.full_name && (
@@ -66,18 +66,26 @@ export function AuthButton() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/settings" className="flex w-full items-center gap-2">
-            <Icons.settings className="h-4 w-4" />
-            设置
+            Settings
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <div className="p-2">
+        <div className="p-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            Theme
+          </div>
           <ThemeSwitch />
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem asChild>
+          <Link href="/docs" className="flex w-full items-center gap-2">
+            API Documentation
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2 justify-between">
+          Sign Out
           <Icons.logout className="h-4 w-4 mr-2" />
-          退出登录
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

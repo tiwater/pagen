@@ -17,12 +17,12 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 const errorMessages: { [key: string]: string } = {
-  default: "认证过程中发生了意外错误。",
-  "session-missing": "登录会话已失效或不存在。",
-  "no-code": "未收到认证码，请重新登录。",
-  unexpected: "发生了意外错误，请重试。",
-  invalid_grant: "认证码已过期或无效，请重新登录。",
-  invalid_request: "无效的认证请求，请重新登录。",
+  default: "An unexpected error occurred during authentication.",
+  "session-missing": "Login session has expired or does not exist.",
+  "no-code": "No authentication code received. Please login again.",
+  unexpected: "An unexpected error occurred. Please try again.",
+  invalid_grant: "Authentication code has expired or is invalid. Please login again.",
+  invalid_request: "Invalid authentication request. Please login again.",
 };
 
 function AuthErrorContent() {
@@ -37,10 +37,10 @@ function AuthErrorContent() {
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Icons.warning className="h-12 w-12 text-destructive" />
-            <CardTitle>认证错误</CardTitle>
+            <CardTitle>Authentication Error</CardTitle>
           </div>
           <CardDescription>
-            认证过程中出现错误，请重试或联系支持。
+            An error occurred during authentication. Please try again or contact support.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -51,10 +51,10 @@ function AuthErrorContent() {
             href="/auth/login"
             className={cn(buttonVariants({ variant: "default" }))}
           >
-            重新登录
+            Login Again
           </Link>
           <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>
-            返回首页
+            Back to Home
           </Link>
         </CardFooter>
       </Card>

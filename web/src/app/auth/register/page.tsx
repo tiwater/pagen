@@ -18,13 +18,13 @@ export default function RegisterPage() {
               src="/images/logo.svg"
               className="mx-auto h-20 w-20"
             />
-            <h1 className="text-2xl font-semibold tracking-tight">创建账户</h1>
-            <p className="text-sm text-muted-foreground">使用您的 Google 账户注册</p>
+            <h1 className="text-2xl font-semibold tracking-tight">Create Account</h1>
+            <p className="text-sm text-muted-foreground">Sign up with your Google account</p>
           </div>
           <UserAuthForm isSignUp />
           <p className="px-8 text-center text-sm text-muted-foreground">
             <Link href="/auth/login" className="hover:text-brand underline underline-offset-4">
-              已有账户？立即登录
+              Already have an account? Login now
             </Link>
           </p>
         </div>
