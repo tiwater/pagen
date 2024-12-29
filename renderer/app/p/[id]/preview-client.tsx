@@ -7,6 +7,7 @@ import * as Recharts from "recharts";
 import * as ts from "typescript";
 import { install, tw } from "@twind/core";
 import presetTailwind from "@twind/preset-tailwind";
+import { Google, Facebook, GitHub } from "@/components/icons";
 
 // Add base styles for Shadcn UI
 const shadcnBaseStyles = `
@@ -132,6 +133,9 @@ export function PreviewClient({ code }: { code: string }) {
       useMemo: React.useMemo,
       ...UI,
       ...LucideIcons,
+      Google,
+      Facebook,
+      GitHub,
       ...Recharts, // Make all Recharts components available
       tw, // Just for dynamic component's own styles
     }),

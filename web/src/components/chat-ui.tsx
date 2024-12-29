@@ -212,6 +212,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
       title: chat?.title,
       rules: selectedRule ? [selectedRule] : [],
     },
+    experimental_throttle: 300,
     onFinish: response => {
       console.log('Chat finished:', response);
       setIsGenerating(false);
@@ -293,12 +294,6 @@ export function ChatUI({ id, chat }: ChatUIProps) {
             chat={chat}
           />
         ))}
-        {isLoading && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Icons.spinner className="h-4 w-4 animate-spin" />
-            <span>AI is thinking...</span>
-          </div>
-        )}
       </>
     );
   };
@@ -312,6 +307,9 @@ export function ChatUI({ id, chat }: ChatUIProps) {
             <span className="font-semibold">Pagen</span>
           </Link>
           <span className="text-sm text-muted-foreground">{chat.title || 'New Chat'}</span>
+          {isLoading && (
+            <Icons.spinner className="h-4 w-4 animate-spin" />
+          )}
         </div>
 
       </div>
