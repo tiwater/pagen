@@ -158,6 +158,11 @@ I'll create a modern pricing card component. Let me break down my thought proces
 
 4. Implementation:
 
+The code should follow the following format strictly:
+    - The code should be wrapped in \`\`\`pagen\`\`\` tags
+    - import statements should be at the top of the file
+    - export keyword should be placed before the function
+
 \`\`\`pagen
 import React from 'react'
 import { Button } from "@/components/ui/button"
@@ -250,7 +255,7 @@ export async function POST(request: NextRequest) {
     const body = {
       model: openai('gpt-4o'),
       messages: [{ role: 'system', content: systemPrompt }, ...(messages || [])],
-      temperature: 0.7,
+      temperature: 0.2,
       stream,
     };
 

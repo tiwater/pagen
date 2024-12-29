@@ -26,7 +26,7 @@ function LoginContent() {
         <UserAuthForm redirect={redirect} />
         <p className="px-8 text-center text-sm text-muted-foreground">
           <Link href="/auth/register" className="hover:text-brand underline underline-offset-4">
-            Don't have an account? Sign up now
+            Don&apos;t have an account? Sign up now
           </Link>
         </p>
       </div>

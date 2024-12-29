@@ -91,6 +91,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
     children?: React.ReactNode;
   }) => {
     const language = /language-(\w+)/.exec(className || '')?.[1];
+    console.log(language);
     if (language === 'pagen') {
       return <PageCard key={message.id} messageId={message.id} />;
     }
