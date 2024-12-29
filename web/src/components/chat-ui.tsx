@@ -1,26 +1,32 @@
 'use client';
 
-import { useEffect, useRef, useState, memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import useChatStore from '@/store/chat';
 import { usePageStore } from '@/store/page';
+import { useSettingsStore } from '@/store/setting';
 import { Chat } from '@/types/chat';
+import { Rule } from '@/types/rules';
 import { Message, useChat } from 'ai/react';
 import { nanoid } from 'nanoid';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import { PageCard } from '@/components/page-card';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Icons } from './icons';
 import { ScrollArea } from './ui/scroll-area';
-import { Rule } from '@/types/rules';
-import { useSettingsStore } from '@/store/setting';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface ChatMessageProps {
   message: Message;
@@ -46,9 +52,10 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
 
     const startIdx = startMatch.index! + startMatch[0].length;
     const endMatch = message.content.slice(startIdx).match(/```/);
-    const content = endMatch && typeof endMatch.index !== 'undefined'
-      ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
-      : message.content.slice(startIdx).trim();
+    const content =
+      endMatch && typeof endMatch.index !== 'undefined'
+        ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
+        : message.content.slice(startIdx).trim();
 
     if (content !== lastContentRef.current) {
       // Clear any pending update
@@ -85,19 +92,16 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
     }
   }, [message.content, message.role, message.id, updatePage, setActivePage, chat.messages]);
 
-  const renderCodeBlock = useCallback(({
-    className,
-    children,
-  }: {
-    className?: string;
-    children?: React.ReactNode;
-  }) => {
-    const language = /language-(\w+)/.exec(className || '')?.[1];
-    if (language === 'pagen') {
-      return <MemoizedPageCard key={message.id} messageId={message.id} />;
-    }
-    return <code className={className}>{children}</code>;
-  }, [message.id]);
+  const renderCodeBlock = useCallback(
+    ({ className, children }: { className?: string; children?: React.ReactNode }) => {
+      const language = /language-(\w+)/.exec(className || '')?.[1];
+      if (language === 'pagen') {
+        return <MemoizedPageCard key={message.id} messageId={message.id} />;
+      }
+      return <code className={className}>{children}</code>;
+    },
+    [message.id]
+  );
 
   const MemoizedMarkdown = memo(({ content }: { content: string }) => (
     <ReactMarkdown
@@ -120,11 +124,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
             {children}
           </li>
         ),
-        p: ({
-          className,
-          children,
-          ...props
-        }: React.HTMLAttributes<HTMLParagraphElement>) => (
+        p: ({ className, children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
           <p className={cn('leading-relaxed', className)} {...props}>
             {children}
           </p>
@@ -135,13 +135,17 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
     </ReactMarkdown>
   ));
 
+  MemoizedMarkdown.displayName = 'MemoizedMarkdown';
+
   return (
     <div className={cn('group relative flex items-start', className)}>
       <div className="inline-flex items-start gap-1 rounded-lg text-sm font-medium">
         <div
           className={cn(
             'rounded-full bg-muted',
-            message.role === 'user' ? 'bg-primary/90 text-primary-foreground' : 'bg-primary/90 text-primary-foreground'
+            message.role === 'user'
+              ? 'bg-primary/90 text-primary-foreground'
+              : 'bg-primary/90 text-primary-foreground'
           )}
         >
           {message.role === 'user' ? (
@@ -200,7 +204,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const initialMessages = useMemo(() => {
-    return chat?.isNew ? [] : (chat?.messages || []);
+    return chat?.isNew ? [] : chat?.messages || [];
   }, [chat?.isNew, chat?.id]); // Only depend on isNew and id, not the messages
 
   const {
@@ -242,7 +246,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
       append(chat.messages[0]);
       markChatInitialized(id);
     }
-  }, [chat]);
+  }, [chat, setMessages, append, markChatInitialized, id]);
 
   useEffect(() => {
     console.log('messages', messages);
@@ -298,7 +302,6 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     // Only append if it's not already the last message
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage || lastMessage.role !== 'user' || lastMessage.content !== currentInput) {
-
     }
   };
 
@@ -316,11 +319,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     return (
       <>
         {messages.map((message, i) => (
-          <ChatMessage
-            key={message.id || i}
-            message={message}
-            chat={chat}
-          />
+          <ChatMessage key={message.id || i} message={message} chat={chat} />
         ))}
       </>
     );
@@ -335,11 +334,8 @@ export function ChatUI({ id, chat }: ChatUIProps) {
             <span className="font-semibold">Pagen</span>
           </Link>
           <span className="text-sm text-muted-foreground">{chat.title || 'New Chat'}</span>
-          {isLoading && (
-            <Icons.spinner className="h-4 w-4 animate-spin" />
-          )}
+          {isLoading && <Icons.spinner className="h-4 w-4 animate-spin" />}
         </div>
-
       </div>
       <ScrollArea className="flex-1 flex flex-col justify-start">
         <div className="flex flex-col p-2 pr-3 gap-2">
@@ -361,7 +357,11 @@ export function ChatUI({ id, chat }: ChatUIProps) {
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="absolute left-1 bottom-1 shrink-0 h-7 flex items-center gap-1 px-2 text-sm">
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute left-1 bottom-1 shrink-0 h-7 flex items-center gap-1 px-2 text-sm"
+              >
                 {selectedRuleId ? (
                   <>
                     <Icons.listTodo className="h-4 w-4 shrink-0" />
@@ -386,9 +386,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
                   {rule.title}
                 </DropdownMenuItem>
               ))}
-              {rules.length > 0 && (
-                <DropdownMenuSeparator />
-              )}
+              {rules.length > 0 && <DropdownMenuSeparator />}
               <DropdownMenuItem>
                 <Link href="/settings/rules" className="flex items-center gap-2 w-full">
                   <Icons.settings className="h-4 w-4" />
