@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, memo, useCallback } from 'react';
+import { useEffect, useRef, useState, memo, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -93,7 +93,6 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
     children?: React.ReactNode;
   }) => {
     const language = /language-(\w+)/.exec(className || '')?.[1];
-    console.log(language);
     if (language === 'pagen') {
       return <MemoizedPageCard key={message.id} messageId={message.id} />;
     }
@@ -197,9 +196,12 @@ export function ChatUI({ id, chat }: ChatUIProps) {
   const [selectedRuleId, setSelectedRuleId] = useState<string>('');
   const { rules } = useSettingsStore();
   const selectedRule = rules.find(rule => rule.id === selectedRuleId);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const initialMessages = useMemo(() => {
+    return chat?.isNew ? [] : (chat?.messages || []);
+  }, [chat?.isNew, chat?.id]); // Only depend on isNew and id, not the messages
 
   const {
     messages,
@@ -213,7 +215,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     stop,
   } = useChat({
     id: id,
-    initialMessages: chat?.messages || [],
+    initialMessages,
     body: {
       id: id,
       title: chat?.title,
@@ -223,18 +225,15 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     onFinish: response => {
       console.log('Chat finished:', response);
       setIsGenerating(false);
-      addMessage(id, {
-        id: response.id,
-        role: response.role,
-        content: response.content,
-        createdAt: response.createdAt,
-      });
+      if (!chat?.messages?.find(m => m.id === response.id)) {
+        addMessage(id, {
+          id: response.id,
+          role: response.role,
+          content: response.content,
+          createdAt: response.createdAt,
+        });
+      }
     },
-    onError: (error) => {
-      console.error('Chat error:', error);
-      setIsGenerating(false);
-      // Show error toast or message
-    }
   });
 
   useEffect(() => {
@@ -246,6 +245,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
   }, [chat]);
 
   useEffect(() => {
+    console.log('messages', messages);
     const scrollToBottom = () => {
       const element = messagesEndRef.current;
       if (!element) return;
@@ -271,14 +271,35 @@ export function ChatUI({ id, chat }: ChatUIProps) {
       return;
     }
 
+    const messageId = nanoid();
     setIsGenerating(true);
-    addMessage(id, {
-      id: nanoid(),
+
+    // Store the input value before clearing it
+    const currentInput = input;
+
+    // Clear the input immediately
+    setInput('');
+
+    append({
+      id: messageId,
+      content: currentInput,
       role: 'user',
-      content: input,
       createdAt: new Date(),
     });
-    onSubmit(e);
+
+    // Add to local store first
+    addMessage(id, {
+      id: messageId,
+      role: 'user',
+      content: currentInput,
+      createdAt: new Date(),
+    });
+
+    // Only append if it's not already the last message
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage || lastMessage.role !== 'user' || lastMessage.content !== currentInput) {
+
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
