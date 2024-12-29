@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/use-auth';
 import useChatStore from '@/store/chat';
 import { usePageStore } from '@/store/page';
 import { Chat } from '@/types/chat';
@@ -18,7 +19,6 @@ import { cn } from '@/lib/utils';
 import { Icons } from './icons';
 import { ScrollArea } from './ui/scroll-area';
 
-
 interface ChatMessageProps {
   message: Message;
   chat: Chat;
@@ -29,8 +29,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
   const { updatePage, setActivePage } = usePageStore();
   const lastContentRef = useRef<string>();
   const updateTimeoutRef = useRef<NodeJS.Timeout>();
-  const messages = chat.messages;
-
+  const { user } = useAuth();
   useEffect(() => {
     if (message.role !== 'assistant') return;
 
@@ -98,9 +97,24 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
   return (
     <div className={cn('group relative flex items-start', className)}>
       <div className="inline-flex items-start gap-1 rounded-lg text-sm font-medium">
-        <div className="p-1 rounded-full bg-muted">
+        <div
+          className={cn(
+            'rounded-full bg-muted',
+            message.role === 'user' ? 'bg-primary/90 text-primary-foreground' : 'bg-muted/10'
+          )}
+        >
           {message.role === 'user' ? (
-            <Icons.user className="h-4 w-4 shrink-0" />
+            user?.user_metadata.avatar_url ? (
+              <Image
+                src={user?.user_metadata.avatar_url}
+                alt="avatar"
+                width={24}
+                height={24}
+                className="rounded-full h-4 w-4 shrink-0"
+              />
+            ) : (
+              <Icons.user className="h-4 w-4 shrink-0" />
+            )
           ) : (
             <Icons.bot className="h-4 w-4 shrink-0" />
           )}
@@ -109,8 +123,8 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
           className={cn(
             'flex-1 flex flex-col space-y-1 leading-normal p-2 rounded-lg min-w-0',
             message.role === 'user'
-              ? 'bg-primary/60 text-primary-foreground'
-              : 'bg-muted/50 text-muted-foreground'
+              ? 'bg-primary/90 text-primary-foreground'
+              : 'bg-muted-foreground/5 text-muted-foreground'
           )}
         >
           <ReactMarkdown
@@ -189,7 +203,7 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
   });
 
   useEffect(() => {
-    if (chat?.isNew && chat.messages.length > 0) {
+    if (chat?.isNew && chat.messages.length === 1) {
       setMessages([]);
       append(chat.messages[0]);
       markChatInitialized(chatId);
@@ -285,13 +299,12 @@ export function ChatUI({ id: chatId, chat }: ChatUIProps) {
             type="submit"
             size="icon"
             disabled={!isLoading && input === ''}
-            className={cn('absolute right-1 bottom-1 shrink-0 h-7 w-7', isLoading && 'bg-red-500 text-white hover:bg-red-600')}
-          >
-            {isLoading ? (
-              <Icons.square className="h-4 w-4" />
-            ) : (
-              <Icons.send className="h-4 w-4" />
+            className={cn(
+              'absolute right-1 bottom-1 shrink-0 h-7 w-7',
+              isLoading && 'bg-red-500 text-white hover:bg-red-600'
             )}
+          >
+            {isLoading ? <Icons.square className="h-4 w-4" /> : <Icons.send className="h-4 w-4" />}
           </Button>
         </div>
       </form>

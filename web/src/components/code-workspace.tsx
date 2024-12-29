@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { AuthButton } from './auth-button';
 
 interface CodeWorkspaceProps {
   id: string;
@@ -64,7 +65,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
       setIsScreenshotting(false);
     }
   }, [activePage]);
-  
+
   return (
     <div className="flex h-full flex-col max-w-full">
       <Tabs defaultValue="code" className="flex-1 h-full flex flex-col">
@@ -86,7 +87,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                 key={tab.value}
                 value={tab.value}
                 className={cn(
-                  'flex items-center h-7 gap-2 rounded-md shadow-none data-[state=active]:bg-muted',
+                  'flex items-center h-7 gap-2 rounded-md shadow-none data-[state=active]:bg-muted'
                 )}
               >
                 <tab.icon className="h-4 w-4" />
@@ -101,81 +102,78 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
               </div>
             )}
           </TabsList>
-          {activePageData && (
-            <div className="flex items-center gap-2 p-2">
-              <Button
-                variant="ghost"
-                onClick={handleScreenshot}
-                disabled={
-                  !activePageData || activePageData.status !== 'complete' || isScreenshotting
-                }
-                className="h-7 w-7 p-0"
-              >
-                {isScreenshotting ? (
-                  <Icons.spinner className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Icons.camera className="h-4 w-4" />
-                )}
-              </Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    disabled={!activePageData || activePageData.status !== 'complete'}
-                    className="h-7 w-7 p-0"
-                  >
-                    <Icons.api className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px]">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <Icons.api className="h-5 w-5" />
-                      <span>Generate API</span>
-                    </DialogTitle>
-                    <DialogDescription className="space-y-2">
-                      <p>Use this API to generate a page from a prompt and get its screenshot.</p>
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <p>Send a POST request with the following command:</p>
-                    <div className="relative">
-                      <div className="rounded-lg overflow-hidden bg-muted">
-                        <pre className="p-4 text-xs overflow-x-auto whitespace-pre-wrap break-all">
-                          <code className="text-sm">
-                            {`curl -X POST ${'https://pages.dustland.ai'}/api/generate \\
+          <div className="flex items-center gap-2 p-2">
+            <Button
+              variant="ghost"
+              onClick={handleScreenshot}
+              disabled={!activePageData || activePageData.status !== 'complete' || isScreenshotting}
+              className="h-7 w-7 p-0"
+            >
+              {isScreenshotting ? (
+                <Icons.spinner className="h-4 w-4 animate-spin" />
+              ) : (
+                <Icons.camera className="h-4 w-4" />
+              )}
+            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  disabled={!activePageData || activePageData.status !== 'complete'}
+                  className="h-7 w-7 p-0"
+                >
+                  <Icons.api className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Icons.api className="h-5 w-5" />
+                    <span>Generate API</span>
+                  </DialogTitle>
+                  <DialogDescription className="space-y-2">
+                    <p>Use this API to generate a page from a prompt and get its screenshot.</p>
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p>Send a POST request with the following command:</p>
+                  <div className="relative">
+                    <div className="rounded-lg overflow-hidden bg-muted">
+                      <pre className="p-4 text-xs overflow-x-auto whitespace-pre-wrap break-all">
+                        <code className="text-sm">
+                          {`curl -X POST ${'https://pages.dustland.ai'}/api/generate \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
   --output page.png`}
-                          </code>
-                        </pre>
-                        <CopyButton
-                          className="absolute top-2 right-2 h-6 w-6"
-                          text={`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/generate \\
+                        </code>
+                      </pre>
+                      <CopyButton
+                        className="absolute top-2 right-2 h-6 w-6"
+                        text={`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/generate \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
   --output page.png`}
-                          prompt={`Command to generate page \"${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}\" has been copied. You can paste it into your terminal.`}
-                        />
-                      </div>
+                        prompt={`Command to generate page \"${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}\" has been copied. You can paste it into your terminal.`}
+                      />
                     </div>
-                    {!activePageData?.prompt && (
-                      <p className="text-sm text-yellow-500">
-                        Note: Using default prompt as no prompt was found for this page.
-                      </p>
-                    )}
-                    <p className="text-sm text-muted-foreground">
-                      For more information on how to use this API, visit our{' '}
-                      <Link href="/docs" target="_blank" className="underline hover:text-primary">
-                        API documentation
-                      </Link>
-                      .
-                    </p>
                   </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
+                  {!activePageData?.prompt && (
+                    <p className="text-sm text-yellow-500">
+                      Note: Using default prompt as no prompt was found for this page.
+                    </p>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    For more information on how to use this API, visit our{' '}
+                    <Link href="/docs" target="_blank" className="underline hover:text-primary">
+                      API documentation
+                    </Link>
+                    .
+                  </p>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <AuthButton />
+          </div>
         </div>
         <div className="flex-1 h-[calc(100%-4rem)] overflow-hidden">
           <TabsContent value="code" className="h-full m-0 bg-muted/20">

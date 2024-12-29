@@ -114,7 +114,7 @@ export default function Home() {
 
       {sortedChats.length > 0 && (
         <div className="w-full mt-12 px-4">
-          <h2 className="text-xl font-semibold mb-4">Previous Chats</h2>
+          <h2 className="text-xl text-center font-semibold mb-4">Previous Generations</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {sortedChats.map(chat => (
               <Card
