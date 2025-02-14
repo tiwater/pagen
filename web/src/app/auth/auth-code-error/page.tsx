@@ -1,7 +1,10 @@
 'use client';
 
+import React, { Suspense } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,19 +13,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import React, { Suspense } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { cn } from '@/lib/utils';
 
 const errorMessages: { [key: string]: string } = {
-  default: "An unexpected error occurred during authentication.",
-  "session-missing": "Login session has expired or does not exist.",
-  "no-code": "No authentication code received. Please login again.",
-  unexpected: "An unexpected error occurred. Please try again.",
-  invalid_grant: "Authentication code has expired or is invalid. Please login again.",
-  invalid_request: "Invalid authentication request. Please login again.",
+  default: 'An unexpected error occurred during authentication.',
+  'session-missing': 'Login session has expired or does not exist.',
+  'no-code': 'No authentication code received. Please login again.',
+  unexpected: 'An unexpected error occurred. Please try again.',
+  invalid_grant: 'Authentication code has expired or is invalid. Please login again.',
+  invalid_request: 'Invalid authentication request. Please login again.',
 };
 
 function AuthErrorContent() {
@@ -32,7 +31,7 @@ function AuthErrorContent() {
   const errorMessage = errorMessages[errorType] || errorMessages.default;
 
   return (
-    <div className="flex items-center justify-center h-[calc(100vh-var(--navbar-height))]">
+    <div className="flex items-center justify-center h-[100vh]">
       <Card className="w-[640px]">
         <CardHeader>
           <div className="flex items-center space-x-2">
@@ -46,14 +45,11 @@ function AuthErrorContent() {
         <CardContent>
           <p className="text-sm text-gray-600">{errorMessage}</p>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <Link
-            href="/auth/login"
-            className={cn(buttonVariants({ variant: "default" }))}
-          >
+        <CardFooter className="flex justify-center gap-4">
+          <Link href="/auth/login" className={cn(buttonVariants({ variant: 'default' }))}>
             Login Again
           </Link>
-          <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>
+          <Link href="/" className={cn(buttonVariants({ variant: 'outline' }))}>
             Back to Home
           </Link>
         </CardFooter>
