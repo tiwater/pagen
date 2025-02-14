@@ -143,10 +143,14 @@ export function UserAuthForm({
       }
 
       const supabase = await createClient();
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirect ?? '/')}`,
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            next: encodeURIComponent(redirect ?? '/'),
+          },
+          skipBrowserRedirect: false,
         },
       });
 
@@ -156,9 +160,9 @@ export function UserAuthForm({
     } catch (error) {
       console.error(`Error signing in with ${provider}:`, error);
       toast({
-        title: "Login failed",
+        title: 'Login failed',
         description: `Failed to sign in with ${provider === 'google' ? 'Google' : 'GitHub'}. Please try again.`,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       if (provider === 'google') {
@@ -205,7 +209,8 @@ export function UserAuthForm({
           <CardContent className="text-center">
             <p className="text-red-500 font-semibold mb-2">Your email is not verified</p>
             <p className="text-gray-600">
-              We&apos;ve sent a verification email to your address. Please check and click the link to complete verification.
+              We&apos;ve sent a verification email to your address. Please check and click the link
+              to complete verification.
             </p>
           </CardContent>
           <CardFooter className="flex flex-col items-center gap-4">
