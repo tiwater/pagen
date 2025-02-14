@@ -142,21 +142,22 @@ export function UserAuthForm({
         setIsGitHubLoading(true);
       }
 
-      const supabase = await createClient();
+      const supabase = createClient();
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            next: encodeURIComponent(redirect ?? '/'),
-          },
-          skipBrowserRedirect: false,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirect ?? '/')}`,
         },
       });
 
       if (error) {
         throw error;
       }
+
+      if (!data.url) {
+        throw new Error('No URL returned from signInWithOAuth');
+      }
+      // If successful, Supabase will redirect the user, so we don't need to do anything else here
     } catch (error) {
       console.error(`Error signing in with ${provider}:`, error);
       toast({
