@@ -22,17 +22,50 @@ const errorMessages: { [key: string]: string } = {
   unexpected: 'An unexpected error occurred. Please try again.',
   invalid_grant: 'Authentication code has expired or is invalid. Please login again.',
   invalid_request: 'Invalid authentication request. Please login again.',
+  'code-verifier': 'Authentication code verification failed. Please try again.',
+  'invalid-state': 'Invalid authentication state. Please try again.',
 };
+
+function getErrorMessage(errorParam: string | null): string {
+  if (!errorParam) return errorMessages.default;
+
+  // Check if it's a known error type
+  if (errorParam in errorMessages) {
+    return errorMessages[errorParam];
+  }
+
+  // Handle detailed error messages
+  const lowerError = errorParam.toLowerCase();
+  if (lowerError.includes('code verifier')) {
+    return errorMessages['code-verifier'];
+  }
+  if (lowerError.includes('invalid request')) {
+    return errorMessages.invalid_request;
+  }
+  if (lowerError.includes('invalid grant')) {
+    return errorMessages.invalid_grant;
+  }
+  if (lowerError.includes('state')) {
+    return errorMessages['invalid-state'];
+  }
+
+  // If it's a detailed error message, use it directly but clean it up
+  return errorParam
+    .replace(/^invalid request: /i, '')
+    .replace(/^invalid grant: /i, '')
+    .split('_')
+    .join(' ')
+    .replace(/\b\w/g, l => l.toUpperCase());
+}
 
 function AuthErrorContent() {
   const searchParams = useSearchParams();
-  const errorType = searchParams.get('error') || 'default';
-
-  const errorMessage = errorMessages[errorType] || errorMessages.default;
+  const errorParam = searchParams.get('error');
+  const errorMessage = getErrorMessage(errorParam);
 
   return (
     <div className="flex items-center justify-center h-[100vh]">
-      <Card className="w-[640px]">
+      <Card className="w-[640px] mx-4">
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Icons.warning className="h-12 w-12 text-destructive" />
@@ -44,6 +77,9 @@ function AuthErrorContent() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600">{errorMessage}</p>
+          {errorParam && (
+            <p className="mt-2 text-xs text-muted-foreground">Error code: {errorParam}</p>
+          )}
         </CardContent>
         <CardFooter className="flex justify-center gap-4">
           <Link href="/auth/login" className={cn(buttonVariants({ variant: 'default' }))}>
