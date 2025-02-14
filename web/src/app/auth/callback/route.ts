@@ -3,28 +3,42 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  // if "next" is in param, use it as the redirect URL
   const next = searchParams.get("next") ?? "/";
 
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+
     if (!error) {
-      const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
-      const isLocalEnv = process.env.NODE_ENV === "development";
-      if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${next}`);
+      // Get the host from various possible headers
+      const forwardedHost = request.headers.get("x-forwarded-host");
+      const host = request.headers.get("host");
+      const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+      
+      // Determine the base URL
+      let baseUrl: string;
+      if (process.env.NEXT_PUBLIC_BASE_URL) {
+        // Use configured site URL if available (recommended for production)
+        baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
       } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+        // Use forwarded host if available (for proxy setups)
+        baseUrl = `${protocol}://${forwardedHost}`;
+      } else if (host) {
+        // Fallback to direct host
+        baseUrl = `${protocol}://${host}`;
       } else {
-        return NextResponse.redirect(`${origin}${next}`);
+        // Final fallback
+        baseUrl = process.env.NODE_ENV === "development" 
+          ? "http://localhost:1578"
+          : "https://pages.dustland.ai";
       }
+
+      return NextResponse.redirect(`${baseUrl}${next}`);
     }
   }
 
   // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:1578"}/auth/auth-code-error`);
 }
