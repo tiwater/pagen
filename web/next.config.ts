@@ -10,10 +10,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Ensure auth pages are rendered at runtime
-  unstable_allowDynamic: [
-    '**/node_modules/@supabase/ssr/**',
-  ],
+  // Ensure Supabase auth works in production
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/ssr']
+  }
 };
 
 export default nextConfig;
