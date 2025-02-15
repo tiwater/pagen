@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePageStore } from '@/store/page';
 import { Loading } from './loading';
 
-
-const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://render.dustland.ai';
+const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
 
 interface PagePreviewProps {
   messageId?: string;

@@ -8,7 +8,14 @@ import { CopyButton } from '@/components/copy-button';
 import { Icons } from '@/components/icons';
 import { PagePreview } from '@/components/page-preview';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -141,7 +148,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                     <div className="rounded-lg overflow-hidden bg-muted">
                       <pre className="p-4 text-xs overflow-x-auto whitespace-pre-wrap break-all">
                         <code className="text-sm">
-                          {`curl -X POST ${'https://pages.dustland.ai'}/api/generate \\
+                          {`curl -X POST ${'https://pages.tisvc.com'}/api/generate \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
   --output page.png`}
@@ -149,7 +156,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                       </pre>
                       <CopyButton
                         className="absolute top-2 right-2 h-6 w-6"
-                        text={`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/generate \\
+                        text={`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.tisvc.com'}/api/generate \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
   --output page.png`}

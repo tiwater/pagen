@@ -31,16 +31,19 @@ pagen/
 
 1. Clone the repository
 2. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 3. Copy the example environment file and add your API keys:
+
    ```bash
    cp web/.env.example web/.env.local
    ```
 
 4. Start the development servers:
+
    ```bash
    # Start all applications
    pnpm dev
@@ -67,23 +70,27 @@ pagen/
 ## Applications
 
 ### Web App (@pagen/web)
+
 - Main application for webpage generation
 - Chat interface
 - Real-time preview of generated pages
 - Code editing capabilities
 
 ### Renderer (@pagen/renderer)
+
 - Preview service for generated components
 - Dynamic component rendering
 - Isolated environment for previews
 
 ### Webshot
+
 - Screenshot service for generated pages, based on browserless/chromium
-- Read docs https://webshot.dustland.ai/docs
+- Read docs https://pages-webshot.tisvc.com/docs
 
 ## Development
 
 ### Adding Dependencies
+
 ```bash
 # Add to specific app/package
 pnpm --filter @pagen/web add <package>
@@ -93,6 +100,7 @@ pnpm add -w <package>
 ```
 
 ### Running Commands
+
 ```bash
 # Run in all packages
 pnpm build

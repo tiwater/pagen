@@ -5,7 +5,7 @@ info:
   description: API Documentation for Pagen webpage generation services, using beautiful shadcn/ui components.
 
 servers:
-  - url: https://pages.dustland.ai
+  - url: https://pages.tisvc.com
     description: Production server
   - url: http://localhost:1578
     description: Local development server
@@ -33,7 +33,7 @@ paths:
                 prompt:
                   type: string
                   description: The text prompt describing the webpage you want to generate
-                  example: "a beautiful login page with gradient background"
+                  example: 'a beautiful login page with gradient background'
       responses:
         200:
           description: Successfully generated webpage screenshot
@@ -52,7 +52,7 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Missing required field: prompt"
+                    example: 'Missing required field: prompt'
         500:
           description: Internal server error
           content:
@@ -62,4 +62,4 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Failed to generate page"
+                    example: 'Failed to generate page'

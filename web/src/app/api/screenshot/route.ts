@@ -4,10 +4,10 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     const { id } = await request.json();
-    const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://render.dustland.ai';
+    const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
     const pageUrl = `${baseUrl}/p/${id}`;
 
-    const response = await fetch('https://webshot.dustland.ai/screenshot', {
+    const response = await fetch('https://pages-webshot.tisvc.com/screenshot', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

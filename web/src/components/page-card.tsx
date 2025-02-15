@@ -21,7 +21,7 @@ export function PageCard({ messageId }: PageCardProps) {
     }
   };
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://render.dustland.ai';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://pages-renderer.tisvc.com';
 
   return (
     <div

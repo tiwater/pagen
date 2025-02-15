@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     // Step 1: Generate the page using the chat API
     const chatResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/chat`,
+      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.tisvc.com'}/api/chat`,
       {
         method: 'POST',
         headers: {
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     // Step 2: Submit the page to the renderer
     const pageId = nanoid(10);
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://render.dustland.ai'}/api/render`,
+      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages-renderer.tisvc.com'}/api/render`,
       {
         method: 'POST',
         headers: {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const maxAttempts = 10;
     while (attempts < maxAttempts) {
       const pageResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_RENDERER_URL || 'https://render.dustland.ai'}/api/pages?id=${pageId}`
+        `${process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com'}/api/pages?id=${pageId}`
       );
       if (pageResponse.ok) {
         break;
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     // Step 3: Get the screenshot
     const screenshotResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.dustland.ai'}/api/screenshot`,
+      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.tisvc.com'}/api/screenshot`,
       {
         method: 'POST',
         headers: {

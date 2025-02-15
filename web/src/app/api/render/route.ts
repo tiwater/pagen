@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://render.dustland.ai';
+const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
 
 export async function POST(request: Request) {
   try {
