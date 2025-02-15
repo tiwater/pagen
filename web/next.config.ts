@@ -11,9 +11,7 @@ const nextConfig: NextConfig = {
     ],
   },
   // Ensure Supabase auth works in production
-  experimental: {
-    serverComponentsExternalPackages: ['@supabase/ssr']
-  }
+  serverExternalPackages: ['@supabase/ssr']
 };
 
 export default nextConfig;
