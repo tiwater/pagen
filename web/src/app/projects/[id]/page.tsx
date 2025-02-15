@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProject } from '@/hooks/use-project';
+import { Icons } from '@/components/icons';
 import { ProjectWrapper } from '@/components/project-wrapper';
 
 interface ProjectPageProps {
@@ -28,8 +29,9 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         } catch (error) {
           console.error('Failed to create project:', error);
           router.push('/');
+        } finally {
+          setIsCreating(false);
         }
-        setIsCreating(false);
       }
     }
 
@@ -40,7 +42,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <p className="mt-2 text-muted-foreground">Loading project...</p>
+          <Icons.simpleLogo className="text-foreground/20 w-10 h-10 animate-pulse" />
         </div>
       </div>
     );

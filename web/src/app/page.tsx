@@ -33,7 +33,7 @@ const samplePrompts = {
 function ProjectList() {
   const { projects } = useProject();
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {projects.map(project => (
         <Link href={`/projects/${project.id}`} key={project.id}>
           <Card className="p-2 gap-2 flex items-center h-full cursor-pointer hover:bg-accent">
@@ -42,7 +42,7 @@ function ProjectList() {
             ) : (
               <Icons.folders className="w-4 h-4" />
             )}
-            <span className="text-sm">{project.title}</span>
+            <span className="text-xs line-clamp-1">{project.title}</span>
           </Card>
         </Link>
       ))}
