@@ -28,9 +28,14 @@ RUN npm install -g pnpm@latest
 # Copy all files including dependencies
 COPY --from=deps /app ./
 
+# These ARGs are used during build time
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_RENDERER_URL=https://render.dustland.ai
-ENV NEXT_PUBLIC_SUPABASE_URL=https://zwfsyamwvilpiciqtvuo.supabase.co
+ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
 
 RUN pnpm build
 

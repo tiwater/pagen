@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Ensure auth pages are rendered at runtime
+  unstable_allowDynamic: [
+    '**/node_modules/@supabase/ssr/**',
+  ],
 };
 
 export default nextConfig;
