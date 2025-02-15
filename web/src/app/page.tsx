@@ -2,22 +2,53 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { useProject } from '@/hooks/use-project';
 import useChatStore from '@/store/chat';
-import { nanoid } from 'nanoid';
-import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
+import { ProjectType } from '@/types/chat';
 import { AuthButton } from '@/components/auth-button';
+import { Icons } from '@/components/icons';
+import { ProjectSelector } from '@/components/project-selector';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 
+const samplePrompts = {
+  page: [
+    'Create a modern login page with social sign-in',
+    'Design a pricing page with 3 tiers',
+    'Build a contact form with a map',
+    'Make a hero section for a SaaS product',
+  ],
+  site: [
+    'Create a multi-page website for a SaaS product',
+    'Build a portfolio website for a developer',
+    'Design a blog for a tech company',
+    'Make a landing page for a new product',
+  ],
+};
 
-const samplePrompts = [
-  'Create a modern login page with social sign-in',
-  'Design a pricing page with 3 tiers',
-  'Build a contact form with a map',
-  'Make a hero section for a SaaS product',
-];
+function ProjectList() {
+  const { projects } = useProject();
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {projects.map(project => (
+        <Link href={`/projects/${project.id}`} key={project.id}>
+          <Card className="p-4 gap-2 flex items-center h-full cursor-pointer hover:bg-accent">
+            {project.projectType === 'page' ? (
+              <Icons.file className="w-4 h-4" />
+            ) : (
+              <Icons.folders className="w-4 h-4" />
+            )}
+            <span className="text-sm">{project.title}</span>
+          </Card>
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 /**
  * The main entrypoint for the app, renders the homepage where users
@@ -30,20 +61,31 @@ const samplePrompts = [
  */
 export default function Home() {
   const router = useRouter();
+  const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
-  const createChat = useChatStore(state => state.createChat);
-  const deleteChat = useChatStore(state => state.deleteChat);
-  const chats = useChatStore(state => state.chats);
+  const [projectType, setProjectType] = useState<ProjectType>('page');
+  const { createProject, updateProject, projects } = useProject();
+  const { createChat } = useChatStore();
 
-  const createNewChat = (promptText: string) => {
-    if (!promptText.trim()) return;
-    const chatId = createChat('New Webpage', 'default-user', `/chats/${nanoid(10)}`, promptText.trim());
-    router.push(`/chat/${chatId}`);
+  const handleCreateProject = (promptText: string) => {
+    if (!promptText.trim() || !user?.id) return;
+
+    // Create a new project with proper title from prompt
+    const title = promptText.split('\n')[0].slice(0, 50) || 'New Project';
+    const projectId = createProject(title, projectType);
+
+    // Create a chat and associate it with the project
+    const chatId = createChat(title, user.id, promptText.trim());
+
+    // Update project with chatId
+    updateProject(projectId, { chatId });
+
+    router.push(`/projects/${projectId}`);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    createNewChat(prompt);
+    handleCreateProject(prompt);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -56,22 +98,13 @@ export default function Home() {
     }
   };
 
-  const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
-    e.stopPropagation();
-    deleteChat(chatId);
-  };
-
   const handleSamplePrompt = (e: React.MouseEvent, samplePrompt: string) => {
     e.preventDefault();
-    createNewChat(samplePrompt);
+    handleCreateProject(samplePrompt);
   };
 
-  const sortedChats = Object.values(chats).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-
   return (
-    <main className="relative flex min-h-screen flex-col items-center p-8 md:p-24">
+    <main className="relative flex min-h-screen flex-col items-center p-8 md:p-24 gap-8">
       <div className="flex flex-col items-center gap-6 mb-12">
         <Image src="/images/logo.svg" width={96} height={96} alt="Logo" />
         <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight text-center">
@@ -91,14 +124,11 @@ export default function Home() {
             />
             <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between">
               <div className="flex items-center gap-2">
+                <ProjectSelector value={projectType} onChange={setProjectType} />
                 <Button type="submit" size="sm" variant="outline" className="h-7 gap-2">
                   <Icons.add className="w-4 h-4" />
                   <span className="text-xs">Rules</span>
                 </Button>
-                {/* <Button type="submit" size="sm" variant="outline" className="h-7 gap-2" >
-                  <Icons.project className="w-4 h-4" />
-                  <span className="text-xs">Projects</span>
-                </Button> */}
               </div>
               <div className="flex items-center gap-2">
                 <Button type="submit" size="sm" className="h-7 gap-2" disabled={!prompt.trim()}>
@@ -111,13 +141,13 @@ export default function Home() {
           <div className="flex flex-col gap-4">
             <div className="text-sm text-muted-foreground">
               <div className="flex flex-wrap gap-2 mt-2">
-                {samplePrompts.map((samplePrompt, index) => (
+                {samplePrompts[projectType].map((samplePrompt: string, index: number) => (
                   <Button
                     key={index}
                     variant="outline"
                     size="sm"
                     className="text-xs"
-                    onClick={(e) => handleSamplePrompt(e, samplePrompt)}
+                    onClick={e => handleSamplePrompt(e, samplePrompt)}
                   >
                     {samplePrompt}
                   </Button>
@@ -127,40 +157,7 @@ export default function Home() {
           </div>
         </form>
       </div>
-
-      {sortedChats.length > 0 && (
-        <div className="w-full mt-12 px-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {sortedChats.map(chat => (
-              <Card
-                key={chat.id}
-                className="group cursor-pointer hover:shadow-md transition-colors relative"
-                onClick={() => router.push(`/chat/${chat.id}`)}
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => handleDeleteChat(e, chat.id)}
-                >
-                  <Icons.close className="h-3 w-3" />
-                </Button>
-                <CardHeader className="flex flex-row items-center gap-2 p-3 w-full">
-                  <Icons.project className="w-4 h-4" />
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(chat.createdAt).toLocaleDateString()}
-                  </span>
-                </CardHeader>
-                <CardContent className="p-3 pt-0">
-                  <p className="text-xs line-clamp-3">
-                    {chat.messages[0]?.content || 'No messages'}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+      <ProjectList />
       <div className="absolute top-1 right-1">
         <AuthButton />
       </div>

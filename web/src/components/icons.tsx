@@ -13,8 +13,11 @@ import {
   Code,
   CodeXml,
   Copy,
+  File,
   Folder,
+  FolderTree,
   Laptop,
+  LayoutTemplate,
   Link,
   ListTodo,
   Loader2,
@@ -131,4 +134,7 @@ export const Icons = {
   // Logos
   google: Google,
   github: Github,
-};
+  file: File,
+  folders: FolderTree,
+  layout: LayoutTemplate,
+} as const;

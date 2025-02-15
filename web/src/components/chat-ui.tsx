@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import useChatStore from '@/store/chat';
 import { usePageStore } from '@/store/page';
 import { useSettingsStore } from '@/store/setting';
-import { Chat } from '@/types/chat';
+import { Chat, ProjectType } from '@/types/chat';
 import { Rule } from '@/types/rules';
 import { Message, useChat } from 'ai/react';
 import { nanoid } from 'nanoid';
@@ -26,6 +26,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Icons } from './icons';
+import { ProjectTypeSelector } from './project-type-selector';
+import { SiteLayout } from './site/site-layout';
 import { ScrollArea } from './ui/scroll-area';
 
 interface ChatMessageProps {
@@ -196,12 +198,13 @@ function handleSettingsClick() {
 }
 
 export function ChatUI({ id, chat }: ChatUIProps) {
-  const { addMessage, markChatInitialized } = useChatStore();
+  const { addMessage, markChatInitialized, updateChatProjectType } = useChatStore();
   const [selectedRuleId, setSelectedRuleId] = useState<string>('');
   const { rules } = useSettingsStore();
   const selectedRule = rules.find(rule => rule.id === selectedRuleId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showProjectSelector, setShowProjectSelector] = useState(chat?.isNew ?? false);
 
   const initialMessages = useMemo(() => {
     return chat?.isNew ? [] : chat?.messages || [];
@@ -278,11 +281,11 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     const messageId = nanoid();
     setIsGenerating(true);
 
-    // Store the input value before clearing it
     const currentInput = input;
-
-    // Clear the input immediately
     setInput('');
+
+    // Get the project type from the empty screen
+    const projectType = chat.projectType || 'page';
 
     append({
       id: messageId,
@@ -291,7 +294,6 @@ export function ChatUI({ id, chat }: ChatUIProps) {
       createdAt: new Date(),
     });
 
-    // Add to local store first
     addMessage(id, {
       id: messageId,
       role: 'user',
@@ -299,9 +301,9 @@ export function ChatUI({ id, chat }: ChatUIProps) {
       createdAt: new Date(),
     });
 
-    // Only append if it's not already the last message
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage || lastMessage.role !== 'user' || lastMessage.content !== currentInput) {
+    // Update project type in chat store
+    if (chat.isNew) {
+      updateChatProjectType(id, projectType);
     }
   };
 
@@ -324,6 +326,22 @@ export function ChatUI({ id, chat }: ChatUIProps) {
       </>
     );
   };
+
+  const handleProjectTypeSelect = useCallback(
+    (type: ProjectType) => {
+      updateChatProjectType(id, type);
+      setShowProjectSelector(false);
+    },
+    [id]
+  );
+
+  if (showProjectSelector) {
+    return <ProjectTypeSelector onSelect={handleProjectTypeSelect} />;
+  }
+
+  if (chat.projectType === 'site') {
+    return <SiteLayout chat={chat} />;
+  }
 
   return (
     <div className="flex h-full flex-col">
