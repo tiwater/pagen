@@ -23,11 +23,14 @@ const supabase = createBrowserClient(
       setAll(cookiesToSet) {
         if (typeof window === 'undefined') return;
         cookiesToSet.forEach(({ name, value, options }) => {
+          // Get the current hostname
+          const domain = window.location.hostname;
+          // If it's localhost, don't set domain
+          const domainPart = domain === 'localhost' ? '' : `; domain=${domain}`;
+          
           document.cookie = `${name}=${value}; path=${
             options?.path || "/"
-          }; secure; samesite=lax${
-            process.env.NODE_ENV === "production" ? "; domain=.ting.fm" : ""
-          }`;
+          }; secure; samesite=lax${domainPart}`;
         });
       },
     },
