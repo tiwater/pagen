@@ -13,6 +13,7 @@ import {
   Code,
   CodeXml,
   Copy,
+  CornerDownLeft,
   File,
   Folder,
   FolderTree,
@@ -96,6 +97,7 @@ export function Github({ ...props }: any) {
 }
 
 export const Icons = {
+  cornerDownLeft: CornerDownLeft,
   logo: Logo,
   badgeCheck: BadgeCheck,
   check: Check,

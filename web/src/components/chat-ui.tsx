@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import useChatStore from '@/store/chat';
 import { usePageStore } from '@/store/page';
+import { Project } from '@/store/project';
 import { useSettingsStore } from '@/store/setting';
 import { Chat, ProjectType } from '@/types/chat';
 import { Rule } from '@/types/rules';
@@ -26,7 +27,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Icons } from './icons';
-import { ProjectTypeSelector } from './project-type-selector';
+import { ProjectTypeSwitch } from './project-type-switch';
 import { SiteLayout } from './site/site-layout';
 import { ScrollArea } from './ui/scroll-area';
 
@@ -189,7 +190,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
 
 interface ChatUIProps {
   id: string;
-  chat: Chat;
+  project: Project;
 }
 
 function handleSettingsClick() {
@@ -197,14 +198,35 @@ function handleSettingsClick() {
   console.log('Settings button clicked');
 }
 
-export function ChatUI({ id, chat }: ChatUIProps) {
+export function ChatUI({ id, project }: ChatUIProps) {
   const { addMessage, markChatInitialized, updateChatProjectType } = useChatStore();
   const [selectedRuleId, setSelectedRuleId] = useState<string>('');
   const { rules } = useSettingsStore();
   const selectedRule = rules.find(rule => rule.id === selectedRuleId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showProjectSelector, setShowProjectSelector] = useState(chat?.isNew ?? false);
+  const [showProjectSelector, setShowProjectSelector] = useState(false);
+
+  const chat = useChatStore(state =>
+    project.chatId ? state.getChats().find(c => c.id === project.chatId) : null
+  );
+
+  useEffect(() => {
+    if (chat?.isNew) {
+      setShowProjectSelector(true);
+    }
+  }, [chat?.isNew]);
+
+  if (!chat) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <Icons.warning className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="mt-2 text-muted-foreground">No chat found</p>
+        </div>
+      </div>
+    );
+  }
 
   const initialMessages = useMemo(() => {
     return chat?.isNew ? [] : chat?.messages || [];
@@ -335,12 +357,8 @@ export function ChatUI({ id, chat }: ChatUIProps) {
     [id]
   );
 
-  if (showProjectSelector) {
-    return <ProjectTypeSelector onSelect={handleProjectTypeSelect} />;
-  }
-
-  if (chat.projectType === 'site') {
-    return <SiteLayout chat={chat} />;
+  if (project.projectType === 'site') {
+    return <SiteLayout project={project} />;
   }
 
   return (
@@ -373,7 +391,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
             spellCheck={false}
             className="w-full sm:text-sm resize-none overflow-hidden bg-background border-0 focus:ring-0 focus-visible:ring-0 focus:border-primary/20 focus-visible:border-primary/20 focus-visible:ring-offset-0"
           />
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
@@ -412,7 +430,7 @@ export function ChatUI({ id, chat }: ChatUIProps) {
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
           <Button
             type="submit"
             size="sm"

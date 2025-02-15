@@ -4,14 +4,15 @@ import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import useChatStore from '@/store/chat';
 import { Project } from '@/store/project';
-import { Chat, ProjectFile } from '@/types/chat';
+import { ProjectFile } from '@/types/chat';
+import { ChatUI } from '@/components/chat-ui';
 import { Icons } from '@/components/icons';
 import { CodeViewer } from '../code-viewer';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
 import { FileTree } from './file-tree';
-import { SiteChatPanel } from './site-chat-panel';
 
 interface SiteLayoutProps {
   project: Project;
@@ -69,69 +70,67 @@ export function SiteLayout({ project }: SiteLayoutProps) {
   };
 
   return (
-    <div className="grid grid-cols-[250px_1fr_300px] h-screen">
-      <div className="border-r">
-        <FileTree
-          files={chat.files || []}
-          activeFileId={chat.activeFileId}
-          onFileSelect={fileId => setActiveFile(chat.id, fileId)}
-          onFileCreate={handleFileCreate}
-          onFileDelete={handleFileDelete}
-          onFileRename={handleFileRename}
-        />
-      </div>
-
-      <div className="flex flex-col">
-        <div className="h-12 border-b px-4 flex items-center">
-          <h3 className="font-semibold">{activeFile?.path || 'No file selected'}</h3>
-        </div>
-        <CodeViewer file={activeFile} />
-      </div>
-
-      <div className="border-l">
-        <div className="h-12 border-b px-4 flex items-center">
-          <h3 className="font-semibold">Chat</h3>
-        </div>
-        <SiteChatPanel chat={chat} />
-      </div>
-
-      {/* Rename Dialog */}
-      <Dialog open={!!fileToRename} onOpenChange={() => setFileToRename(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Rename File</DialogTitle>
-          </DialogHeader>
-          <Input
-            value={newFileName}
-            onChange={e => setNewFileName(e.target.value)}
-            placeholder="app/new-name.tsx"
+    <div className="h-screen w-full">
+      <ResizablePanelGroup direction="horizontal" className="flex-1">
+        <ResizablePanel defaultSize={15}>
+          <FileTree
+            files={chat.files || []}
+            activeFileId={chat.activeFileId}
+            onFileSelect={fileId => setActiveFile(chat.id, fileId)}
+            onFileCreate={handleFileCreate}
+            onFileDelete={handleFileDelete}
+            onFileRename={handleFileRename}
           />
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setFileToRename(null)}>
-              Cancel
-            </Button>
-            <Button onClick={confirmRename}>Rename</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </ResizablePanel>
+        <ResizableHandle />
 
-      {/* Delete Dialog */}
-      <Dialog open={!!fileToDelete} onOpenChange={() => setFileToDelete(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete File</DialogTitle>
-          </DialogHeader>
-          <p>Are you sure you want to delete {fileToDelete?.path}?</p>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setFileToDelete(null)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <ResizablePanel defaultSize={65}>
+          <CodeViewer file={activeFile} />
+        </ResizablePanel>
+        <ResizableHandle />
+
+        <ResizablePanel defaultSize={20}>
+          <ChatUI id={project.id} project={project} />
+        </ResizablePanel>
+
+        {/* Rename Dialog */}
+        <Dialog open={!!fileToRename} onOpenChange={() => setFileToRename(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Rename File</DialogTitle>
+            </DialogHeader>
+            <Input
+              value={newFileName}
+              onChange={e => setNewFileName(e.target.value)}
+              placeholder="app/new-name.tsx"
+            />
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setFileToRename(null)}>
+                Cancel
+              </Button>
+              <Button onClick={confirmRename}>Rename</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Dialog */}
+        <Dialog open={!!fileToDelete} onOpenChange={() => setFileToDelete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete File</DialogTitle>
+            </DialogHeader>
+            <p>Are you sure you want to delete {fileToDelete?.path}?</p>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setFileToDelete(null)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={confirmDelete}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </ResizablePanelGroup>
     </div>
   );
 }

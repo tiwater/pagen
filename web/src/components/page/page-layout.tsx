@@ -45,7 +45,7 @@ export function PageLayout({ project }: PageLayoutProps) {
     <div className="flex h-screen flex-col w-full">
       <ResizablePanelGroup direction={isMobile ? 'vertical' : 'horizontal'} className="flex-1">
         <ResizablePanel defaultSize={40} minSize={30}>
-          <ChatUI id={chat.id} chat={chat} />
+          <ChatUI id={project.id} project={project} />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={60} minSize={30}>

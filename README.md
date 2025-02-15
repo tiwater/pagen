@@ -1,4 +1,4 @@
-# Pagen - AI Page Generator
+# Pages - Generate professional-looking SaaS-style webpages using AI
 
 A monorepo containing applications and packages for generating professional-looking SaaS-style webpages using AI. Built with Next.js, TypeScript, shadcn/ui components, and the Vercel AI SDK.
 

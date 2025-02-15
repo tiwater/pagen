@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Pagen - AI Page Generator',
-  description: 'Generate professional-looking SaaS style webpages using AI',
+  title: 'Pages - Generate SaaS pages with AI',
+  description: 'Generate professional-looking SaaS-style webpages using AI',
   icons: {
     icon: [
       {

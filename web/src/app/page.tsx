@@ -10,7 +10,7 @@ import useChatStore from '@/store/chat';
 import { ProjectType } from '@/types/chat';
 import { AuthButton } from '@/components/auth-button';
 import { Icons } from '@/components/icons';
-import { ProjectSelector } from '@/components/project-selector';
+import { ProjectTypeSwitch } from '@/components/project-type-switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,7 +36,7 @@ function ProjectList() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {projects.map(project => (
         <Link href={`/projects/${project.id}`} key={project.id}>
-          <Card className="p-4 gap-2 flex items-center h-full cursor-pointer hover:bg-accent">
+          <Card className="p-2 gap-2 flex items-center h-full cursor-pointer hover:bg-accent">
             {project.projectType === 'page' ? (
               <Icons.file className="w-4 h-4" />
             ) : (
@@ -116,7 +116,7 @@ export default function Home() {
           <div className="relative">
             <Textarea
               name="prompt"
-              placeholder="Describe the webpage you want to create..."
+              placeholder={`Describe the ${projectType} you want to create...`}
               value={prompt}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -124,16 +124,16 @@ export default function Home() {
             />
             <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ProjectSelector value={projectType} onChange={setProjectType} />
-                <Button type="submit" size="sm" variant="outline" className="h-7 gap-2">
-                  <Icons.add className="w-4 h-4" />
-                  <span className="text-xs">Rules</span>
+                <Button disabled variant="outline" size="sm" className="h-7 gap-2">
+                  <Icons.bot className="w-4 h-4" />
+                  <span className="text-xs">gpt-4o</span>
                 </Button>
               </div>
               <div className="flex items-center gap-2">
+                <ProjectTypeSwitch value={projectType} onChange={setProjectType} />
                 <Button type="submit" size="sm" className="h-7 gap-2" disabled={!prompt.trim()}>
-                  <Icons.send className="w-4 h-4" />
-                  <span className="text-xs">Send</span>
+                  <span className="text-xs">submit</span>
+                  <Icons.cornerDownLeft className="w-3 h-3" />
                 </Button>
               </div>
             </div>

@@ -4,8 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useChatStore from '@/store/chat';
 import { Project } from '@/store/project';
-import { ProjectTypeSelector } from '@/components/project-type-selector';
-import { PageLayout } from '@/components/project/page-layout';
+import { PageLayout } from '@/components/page/page-layout';
 import { SiteLayout } from '@/components/site/site-layout';
 
 interface ProjectWrapperProps {
