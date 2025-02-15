@@ -29,22 +29,27 @@ RUN npm install -g pnpm@latest
 COPY --from=deps /app ./
 
 # These ARGs are used during build time
-#ARG NEXT_PUBLIC_SUPABASE_URL
-#ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_RENDERER_URL=https://render.dustland.ai
-ENV NEXT_PUBLIC_SUPABASE_URL=https://zwfsyamwvilpiciqtvuo.supabase.co
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3ZnN5YW13dmlscGljaXF0dnVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU0NDMyNjIsImV4cCI6MjA1MTAxOTI2Mn0.4UmnrwhPLEcm8jlXolp_Thjq168j6zDkHHXziPpPBP0
+ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
 
+# Build with production optimization
+ENV NODE_ENV=production
 RUN pnpm build
 
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
+# Copy environment variables from builder
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
