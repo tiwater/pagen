@@ -12,10 +12,12 @@ import { Message, useChat } from '@ai-sdk/react';
 import { nanoid } from 'nanoid';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
+import { CodeViewer } from '@/components/code-viewer';
 import { Icons } from '@/components/icons';
 import { PageCard } from '@/components/page-card';
 import { SiteGenerationProgress } from '@/components/site-generation-progress';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
@@ -34,9 +36,10 @@ const MemoizedPageCard = memo(PageCard);
 
 function ChatMessage({ message, chat, className }: ChatMessageProps) {
   const { updatePage } = usePageStore();
-  const lastContentRef = useRef<string>();
-  const updateTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastContentRef = useRef<string | undefined>(undefined);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const { user } = useAuth();
+  const [showMessageCode, setShowMessageCode] = useState(false);
 
   useEffect(() => {
     if (message.role !== 'assistant') return;
@@ -127,50 +130,72 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
   MemoizedMarkdown.displayName = 'MemoizedMarkdown';
 
   return (
-    <div className={cn('group relative flex items-start w-full', className)}>
-      <div className="inline-flex flex-col items-start gap-1 rounded-lg text-sm font-medium w-full">
-        <div
-          className={cn(
-            'rounded-full bg-muted',
-            message.role === 'user'
-              ? 'bg-primary/40 text-primary-foreground'
-              : 'bg-primary/40 text-primary-foreground'
-          )}
-        >
-          {message.role === 'user' ? (
-            user?.user_metadata.avatar_url ? (
-              <Image
-                src={user?.user_metadata.avatar_url}
-                alt="avatar"
-                width={12}
-                height={12}
-                className="rounded-full h-5 w-5 shrink-0"
-              />
-            ) : (
-              <Icons.user className="h-5 w-5 shrink-0" />
-            )
-          ) : (
-            <Image
-              src="/images/logo.svg"
-              alt="avatar"
-              width={24}
-              height={24}
-              className="rounded-full h-5 w-5 shrink-0"
-            />
-          )}
-        </div>
-        <div
-          className={cn(
-            'flex-1 flex flex-col space-y-1 leading-normal rounded-lg min-w-0 w-full',
-            message.role === 'user'
-              ? 'border border-primary/60 bg-muted-foreground/5 text-primary/60 p-2 '
-              : 'text-muted-foreground py-2'
-          )}
-        >
-          <MemoizedMarkdown content={message.content} />
+    <>
+      <div className={cn('group relative flex items-start w-full', className)}>
+        <div className="inline-flex flex-col items-start gap-1 rounded-lg text-sm font-medium w-full">
+          <div className="flex items-center justify-between gap-2 w-full">
+            <div
+              className={cn(
+                'rounded-full bg-muted',
+                message.role === 'user'
+                  ? 'bg-primary/40 text-primary-foreground'
+                  : 'bg-primary/40 text-primary-foreground'
+              )}
+            >
+              {message.role === 'user' ? (
+                user?.user_metadata.avatar_url ? (
+                  <Image
+                    src={user?.user_metadata.avatar_url}
+                    alt="avatar"
+                    width={12}
+                    height={12}
+                    className="rounded-full h-5 w-5 shrink-0"
+                  />
+                ) : (
+                  <Icons.user className="h-5 w-5 shrink-0" />
+                )
+              ) : (
+                <Image
+                  src="/images/logo.svg"
+                  alt="avatar"
+                  width={24}
+                  height={24}
+                  className="rounded-full h-5 w-5 shrink-0"
+                />
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowMessageCode(true)}
+                className="w-6 h-6"
+              >
+                <Icons.code className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div
+            className={cn(
+              'flex-1 flex flex-col space-y-1 leading-normal rounded-lg min-w-0 w-full',
+              message.role === 'user'
+                ? 'border border-primary/60 bg-muted-foreground/5 text-primary/60 p-2 '
+                : 'text-muted-foreground py-2'
+            )}
+          >
+            <MemoizedMarkdown content={message.content} />
+          </div>
         </div>
       </div>
-    </div>
+
+      <CodeViewer
+        open={showMessageCode}
+        onOpenChange={setShowMessageCode}
+        code={message.content}
+        title="Message Content"
+        language="markdown"
+      />
+    </>
   );
 }
 
@@ -249,6 +274,8 @@ export function ChatUI({ project }: ChatUIProps) {
     },
     onFinish: (message: Message) => {
       setIsGenerating(false);
+
+      // Store the message in the project's chat
       updateProject(project.id, {
         chat: {
           ...project.chat,
@@ -256,25 +283,61 @@ export function ChatUI({ project }: ChatUIProps) {
         },
       });
 
+      console.log('Starting code extraction from message:', {
+        messageLength: message.content.length,
+        hasMarkdown: message.content.includes('###'),
+        messageId: message.id,
+      });
+
       // Split the message content into sections based on markdown headers
       const sections = message.content.split(/#{3,}\s+/);
+      console.log('Split into sections:', {
+        numberOfSections: sections.length,
+        sections: sections.map(s => s.slice(0, 50) + '...'), // First 50 chars of each section
+      });
 
       for (const section of sections) {
+        console.log('Processing section:', {
+          sectionLength: section.length,
+          hasCodeBlock: section.includes('```'),
+          firstLine: section.split('\n')[0],
+        });
+
         // Extract code blocks from each section
-        const codeBlockRegex = /```(?:tsx|jsx)?\n([\s\S]*?)```/g;
+        const codeBlockRegex = /```(?:pagen|tsx|jsx)?\n([\s\S]*?)```/g;
         let match;
 
         while ((match = codeBlockRegex.exec(section)) !== null) {
+          console.log('Found code block:', {
+            matchLength: match[0].length,
+            contentLength: match[1].length,
+            content: match[1].slice(0, 100) + '...', // First 100 chars
+          });
+
           const blockContent = match[1].trim();
           // Look for the path comment at the start of the code block
           const pathMatch = blockContent.match(/\/\/\s*Path:\s*(.+\.tsx)/);
 
+          console.log('Path extraction:', {
+            hasPathMatch: !!pathMatch,
+            pathMatch: pathMatch ? pathMatch[1] : 'no path found',
+            firstLines: blockContent.split('\n').slice(0, 3), // First 3 lines
+          });
+
           if (pathMatch) {
             const path = pathMatch[1].trim();
-            const content = blockContent.replace(/\/\/\s*Path:\s*(.+\.tsx)\n/, '').trim();
+            // Remove the path comment and any empty lines that follow it
+            const content = blockContent.replace(/\/\/\s*Path:\s*(.+\.tsx)(\r?\n)*/, '').trim();
+
+            console.log('Processing code block:', {
+              path,
+              contentLength: content.length,
+              firstContentLines: content.split('\n').slice(0, 3),
+            });
 
             // Update file status if it's the current file
             if (path === currentFile) {
+              console.log('Updating file status for current file:', path);
               setGenerationFiles(files =>
                 files.map(f => (f.path === path ? { ...f, status: 'complete' } : f))
               );
@@ -284,13 +347,23 @@ export function ChatUI({ project }: ChatUIProps) {
             handleUpdatePageTree({ path, content });
 
             // Log for debugging
-            console.log('Extracted code block:', { path, contentLength: content.length });
+            console.log('Extracted code block:', {
+              path,
+              contentLength: content.length,
+              firstContentLines: content.split('\n').slice(0, 3),
+            });
           }
         }
       }
 
       // Find and generate next file
       const nextFile = generationFiles.find(f => f.status === 'pending');
+      console.log('Next file check:', {
+        hasNextFile: !!nextFile,
+        nextFile: nextFile ? nextFile.path : 'none',
+        remainingFiles: generationFiles.filter(f => f.status === 'pending').length,
+      });
+
       if (nextFile) {
         handleGenerateNextFile(nextFile);
       }

@@ -1,10 +1,12 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vs, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePageStore } from '@/store/page';
 import { ProjectFile } from '@/types/project';
-import { CodeBlock } from '@/components/code-block';
 import { CopyButton } from '@/components/copy-button';
 import { Icons } from '@/components/icons';
 import { PagePreview } from '@/components/page-preview';
@@ -29,6 +31,8 @@ interface CodeWorkspaceProps {
 }
 
 export function CodeWorkspace({ id, file, isMobile }: CodeWorkspaceProps) {
+  const { resolvedTheme } = useTheme();
+  const theme = resolvedTheme === 'dark' ? vscDarkPlus : vs;
   const { pages, activePage } = usePageStore();
   const activePageData = id && activePage ? pages[activePage] : null;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
@@ -187,7 +191,9 @@ export function CodeWorkspace({ id, file, isMobile }: CodeWorkspaceProps) {
           <TabsContent value="code" className="h-full m-0 bg-muted/20">
             {file || activePageData ? (
               <ScrollArea className="h-full w-full">
-                <CodeBlock code={file?.content || activePageData?.content || ''} language="tsx" />
+                <SyntaxHighlighter language="tsx" style={theme}>
+                  {file?.content || activePageData?.content || ''}
+                </SyntaxHighlighter>
               </ScrollArea>
             ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground">

@@ -6,6 +6,7 @@ import { vs, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useTheme } from 'next-themes';
 import { MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CodeViewer } from './code-viewer';
 import { Icons } from './icons';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
@@ -67,25 +68,7 @@ export function PageCard({ children }: PageCardProps) {
         )}
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl p-0">
-          <DialogTitle className="text-sm font-medium p-2">Source Code</DialogTitle>
-          <ScrollArea className="max-h-[calc(80vh-8rem)] w-full p-2">
-            <SyntaxHighlighter
-              language="tsx"
-              style={resolvedTheme === 'dark' ? vscDarkPlus : vs}
-              customStyle={{
-                margin: 0,
-                background: 'transparent',
-                maxHeight: 'none',
-                border: 'none',
-              }}
-            >
-              {content || '// Empty file'}
-            </SyntaxHighlighter>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+      <CodeViewer open={isDialogOpen} onOpenChange={setIsDialogOpen} code={content || ''} />
     </>
   );
 }
