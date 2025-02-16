@@ -45,12 +45,10 @@ export function AuthButton() {
       <DropdownMenuTrigger asChild>
         <Avatar className="h-8 w-8 cursor-pointer">
           <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
-          <AvatarFallback>
-            {user.user_metadata.full_name?.[0]?.toUpperCase() || 'U'}
-          </AvatarFallback>
+          <AvatarFallback>{user.user_metadata.full_name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 text-sm">
+      <DropdownMenuContent align="end" className="w-64 text-sm">
         <div className="flex items-center justify-start gap-2 p-2 p-2">
           <div className="flex flex-col space-y-2 leading-none">
             {user.user_metadata.full_name && (
@@ -58,9 +56,7 @@ export function AuthButton() {
             )}
 
             <div className="flex items-center gap-2">
-              <p className="truncate text-sm text-muted-foreground">
-                {user.email}
-              </p>
+              <p className="truncate text-sm text-muted-foreground">{user.email}</p>
             </div>
             <div className="flex items-center gap-2">
               {user.user_metadata.email_verified && (
@@ -86,9 +82,7 @@ export function AuthButton() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div className="p-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            Theme
-          </div>
+          <div className="flex items-center gap-2">Theme</div>
           <ThemeSwitch />
         </div>
         <DropdownMenuSeparator />
@@ -98,7 +92,10 @@ export function AuthButton() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2 justify-between cursor-pointer">
+        <DropdownMenuItem
+          onClick={() => signOut()}
+          className="flex items-center gap-2 justify-between cursor-pointer"
+        >
           Sign Out
           <Icons.logout className="h-4 w-4 mr-2" />
         </DropdownMenuItem>

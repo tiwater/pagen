@@ -259,8 +259,6 @@ export async function POST(request: NextRequest) {
       stream,
     };
 
-    console.log(body);
-
     if (stream) {
       const result = await streamText(body);
       return result.toDataStreamResponse();

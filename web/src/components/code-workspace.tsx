@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { usePageStore } from '@/store/page';
+import { ProjectFile } from '@/types/project';
 import { CodeBlock } from '@/components/code-block';
 import { CopyButton } from '@/components/copy-button';
 import { Icons } from '@/components/icons';
@@ -22,14 +23,14 @@ import { cn } from '@/lib/utils';
 import { AuthButton } from './auth-button';
 
 interface CodeWorkspaceProps {
-  id: string;
-  isMobile: boolean;
-  setIsPreviewOpen?: (open: boolean) => void;
+  id?: string;
+  file?: ProjectFile;
+  isMobile?: boolean;
 }
 
-export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
+export function CodeWorkspace({ id, file, isMobile }: CodeWorkspaceProps) {
   const { pages, activePage } = usePageStore();
-  const activePageData = activePage ? pages[activePage] : null;
+  const activePageData = id && activePage ? pages[activePage] : null;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
   const handleScreenshot = useCallback(async () => {
     if (!activePage) return;
@@ -184,13 +185,13 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
         </div>
         <div className="flex-1 h-[calc(100%-4rem)] overflow-hidden">
           <TabsContent value="code" className="h-full m-0 bg-muted/20">
-            {activePageData ? (
+            {file || activePageData ? (
               <ScrollArea className="h-full w-full">
-                <CodeBlock code={activePageData.content || ''} language="tsx" />
+                <CodeBlock code={file?.content || activePageData?.content || ''} language="tsx" />
               </ScrollArea>
             ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground">
-                No page selected
+                No file selected
               </div>
             )}
           </TabsContent>

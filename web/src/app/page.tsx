@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useProject } from '@/hooks/use-project';
-import useChatStore from '@/store/chat';
-import { ProjectType } from '@/types/chat';
+import { ProjectType } from '@/types/project';
 import { AuthButton } from '@/components/auth-button';
 import { Icons } from '@/components/icons';
 import { ProjectTypeSwitch } from '@/components/project-type-switch';
@@ -31,18 +30,32 @@ const samplePrompts = {
 };
 
 function ProjectList() {
-  const { projects } = useProject();
+  const { projects, deleteProject } = useProject();
+  const handleDeleteProject = (e: React.MouseEvent, projectId: string) => {
+    e.preventDefault();
+    deleteProject(projectId);
+  };
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {projects.map(project => (
         <Link href={`/projects/${project.id}`} key={project.id}>
-          <Card className="p-2 gap-2 flex items-center h-full cursor-pointer hover:bg-accent">
+          <Card className="relative group p-2 gap-2 flex items-center h-full cursor-pointer hover:bg-accent">
             {project.projectType === 'page' ? (
               <Icons.file className="w-4 h-4" />
             ) : (
               <Icons.folders className="w-4 h-4" />
             )}
             <span className="text-xs line-clamp-1">{project.title}</span>
+            <div className="absolute right-1 hidden group-hover:block">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={e => handleDeleteProject(e, project.id)}
+                className="p-0 w-6 h-6 hover:text-red-500"
+              >
+                <Icons.trash className="w-4 h-4" />
+              </Button>
+            </div>
           </Card>
         </Link>
       ))}
@@ -64,8 +77,7 @@ export default function Home() {
   const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [projectType, setProjectType] = useState<ProjectType>('page');
-  const { createProject, updateProject, projects } = useProject();
-  const { createChat } = useChatStore();
+  const { createProject } = useProject();
 
   const handleCreateProject = (promptText: string) => {
     if (!promptText.trim() || !user?.id) return;
@@ -73,12 +85,6 @@ export default function Home() {
     // Create a new project with proper title from prompt
     const title = promptText.split('\n')[0].slice(0, 50) || 'New Project';
     const projectId = createProject(title, projectType);
-
-    // Create a chat and associate it with the project
-    const chatId = createChat(title, user.id, promptText.trim());
-
-    // Update project with chatId
-    updateProject(projectId, { chatId });
 
     router.push(`/projects/${projectId}`);
   };

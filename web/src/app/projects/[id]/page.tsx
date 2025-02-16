@@ -19,24 +19,24 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const [isCreating, setIsCreating] = useState(false);
   const project = projects.find(p => p.id === id);
 
-  useEffect(() => {
-    async function handleProjectCreation() {
-      if (!project && !isCreating) {
-        setIsCreating(true);
-        try {
-          await createProject('New Project', 'page');
-          router.refresh();
-        } catch (error) {
-          console.error('Failed to create project:', error);
-          router.push('/');
-        } finally {
-          setIsCreating(false);
-        }
-      }
-    }
+  // useEffect(() => {
+  //   async function handleProjectCreation() {
+  //     if (!project && !isCreating) {
+  //       setIsCreating(true);
+  //       try {
+  //         await createProject('New Project', 'page');
+  //         router.refresh();
+  //       } catch (error) {
+  //         console.error('Failed to create project:', error);
+  //         router.push('/');
+  //       } finally {
+  //         setIsCreating(false);
+  //       }
+  //     }
+  //   }
 
-    handleProjectCreation();
-  }, [project, createProject, router, isCreating]);
+  //   handleProjectCreation();
+  // }, [project, createProject, router, isCreating]);
 
   if (!project || isCreating) {
     return (

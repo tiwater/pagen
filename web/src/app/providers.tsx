@@ -2,14 +2,12 @@
 
 import { useEffect } from 'react';
 import { ThemeProvider } from 'next-themes';
-import useChatStore from '@/store/chat';
-import { usePageStore } from '@/store/page';
+import useProjectStore from '@/store/project';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Rehydrate all stores when app loads
-    useChatStore.persist.rehydrate();
-    usePageStore.persist.rehydrate();
+    useProjectStore.persist.rehydrate();
   }, []);
 
   return (

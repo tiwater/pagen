@@ -2,81 +2,91 @@
 
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
-import useChatStore from '@/store/chat';
-import { Project } from '@/store/project';
-import { ProjectFile } from '@/types/chat';
+import useProjectStore from '@/store/project';
+import { PageTreeNode, Project } from '@/types/project';
+import { nanoid } from 'nanoid';
 import { ChatUI } from '@/components/chat-ui';
-import { Icons } from '@/components/icons';
-import { CodeViewer } from '../code-viewer';
+import { CodeWorkspace } from '../code-workspace';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
-import { FileTree } from './file-tree';
+import { FileTree } from './page-tree';
 
 interface SiteLayoutProps {
   project: Project;
 }
 
 export function SiteLayout({ project }: SiteLayoutProps) {
-  const { updateChatFile, setActiveFile } = useChatStore();
-  const chat = useChatStore(state =>
-    project.chatId ? state.getChats().find(c => c.id === project.chatId) : null
-  );
-
-  const [fileToRename, setFileToRename] = useState<ProjectFile | null>(null);
+  const { updateProject } = useProjectStore();
+  const [fileToRename, setFileToRename] = useState<PageTreeNode | null>(null);
   const [newFileName, setNewFileName] = useState('');
-  const [fileToDelete, setFileToDelete] = useState<ProjectFile | null>(null);
+  const [fileToDelete, setFileToDelete] = useState<PageTreeNode | null>(null);
+  const [activeFileId, setActiveFileId] = useState<string | null>(null);
 
-  if (!chat) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <Icons.warning className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-2 text-muted-foreground">No chat associated with this project</p>
-        </div>
-      </div>
-    );
-  }
-
-  const activeFile = chat.files?.find(f => f.id === chat.activeFileId);
+  const activeFile = project.pageTree?.find(f => f.id === activeFileId);
 
   const handleFileCreate = (path: string, type: 'page' | 'layout' | 'component') => {
-    // ... existing file creation logic
+    const newFile: PageTreeNode = {
+      id: nanoid(),
+      path,
+      file: {
+        id: nanoid(),
+        name: path.split('/').pop() || 'Untitled',
+        content: '',
+        metadata: {
+          title: path.split('/').pop() || 'Untitled',
+        },
+      },
+    };
+
+    updateProject(project.id, {
+      pageTree: [...(project.pageTree || []), newFile],
+    });
   };
 
   const handleFileDelete = (fileId: string) => {
-    const file = chat.files?.find(f => f.id === fileId);
+    const file = project.pageTree?.find(f => f.id === fileId);
     if (!file) return;
     setFileToDelete(file);
   };
 
   const confirmDelete = () => {
     if (!fileToDelete) return;
-    updateChatFile(chat.id, { ...fileToDelete, deleted: true });
+    updateProject(project.id, {
+      pageTree: project.pageTree?.filter(f => f.id !== fileToDelete.id),
+    });
     setFileToDelete(null);
     toast({ title: 'File deleted', description: `Deleted ${fileToDelete.path}` });
   };
 
   const handleFileRename = (fileId: string, currentPath: string) => {
-    const file = chat.files?.find(f => f.id === fileId);
+    const file = project.pageTree?.find(f => f.id === fileId);
     if (!file) return;
     setFileToRename(file);
     setNewFileName(currentPath);
   };
 
   const confirmRename = () => {
-    // ... existing rename logic
+    if (!fileToRename || !newFileName.trim()) return;
+    updateProject(project.id, {
+      pageTree: project.pageTree?.map(f =>
+        f.id === fileToRename.id ? { ...f, path: newFileName.trim() } : f
+      ),
+    });
+    setFileToRename(null);
+    setNewFileName('');
+    toast({ title: 'File renamed', description: `Renamed to ${newFileName}` });
   };
 
   return (
     <div className="h-screen w-full">
       <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={15}>
+        <ResizablePanel defaultSize={15} className="flex flex-col h-full">
           <FileTree
-            files={chat.files || []}
-            activeFileId={chat.activeFileId}
-            onFileSelect={fileId => setActiveFile(chat.id, fileId)}
+            files={project.pageTree || []}
+            activeFileId={activeFileId || undefined}
+            onFileSelect={setActiveFileId}
             onFileCreate={handleFileCreate}
             onFileDelete={handleFileDelete}
             onFileRename={handleFileRename}
@@ -85,12 +95,12 @@ export function SiteLayout({ project }: SiteLayoutProps) {
         <ResizableHandle />
 
         <ResizablePanel defaultSize={65}>
-          <CodeViewer file={activeFile} />
+          <CodeWorkspace file={activeFile?.file} />
         </ResizablePanel>
         <ResizableHandle />
 
         <ResizablePanel defaultSize={20}>
-          <ChatUI id={project.id} project={project} />
+          <ChatUI project={project} />
         </ResizablePanel>
 
         {/* Rename Dialog */}

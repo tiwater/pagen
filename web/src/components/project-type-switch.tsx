@@ -1,6 +1,6 @@
 'use client';
 
-import { ProjectType } from '@/types/chat';
+import { ProjectType } from '@/types/project';
 import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
 

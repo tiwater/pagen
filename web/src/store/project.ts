@@ -1,19 +1,8 @@
-import { ProjectType } from '@/types/chat';
+import { ProjectType, Project } from '@/types/project';
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export interface Project {
-  id: string;
-  userId: string;
-  title: string;
-  description?: string;
-  projectType: ProjectType;
-  chatId?: string;
-  createdAt: string;
-  updatedAt?: string;
-  isNew?: boolean;
-}
 
 interface ProjectState {
   projects: Project[];
@@ -23,6 +12,7 @@ interface ProjectState {
   updateProject: (id: string, project: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   setCurrentProject: (id: string) => void;
+  markProjectInitialized: (id: string) => void; 
 }
 
 export const useProjectStore = create<ProjectState>()(
@@ -47,8 +37,14 @@ export const useProjectStore = create<ProjectState>()(
               userId,
               title,
               projectType,
-              isNew: true,
+              isNew: false, // TODO: remove this
+              chat: {
+                id: nanoid(10),
+                projectId,
+                messages: [],
+              },
               createdAt: new Date().toISOString(),
+              pageTree: []  // Initialize with an empty page tree
             },
           ],
         }));
@@ -75,12 +71,22 @@ export const useProjectStore = create<ProjectState>()(
         })),
 
       setCurrentProject: (id) => set({ currentProjectId: id }),
+
+      markProjectInitialized: (id) =>
+        set(state => ({
+          projects: state.projects.map(p => (p.id === id ? { ...p, isNew: false } : p)),
+        })),
     }),
     {
       name: 'project-store',
       version: 1,
       onRehydrateStorage: () => (state) => {
-        if (state && !Array.isArray(state.projects)) {
+        if (state && Array.isArray(state.projects)) {
+          state.projects = state.projects.map(p => ({
+            ...p,
+            pageTree: p.pageTree ?? []
+          }));
+        } else if (state && !Array.isArray(state.projects)) {
           state.projects = [];
         }
       },

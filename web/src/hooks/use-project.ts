@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import useChatStore from '@/store/chat';
-import useProjectStore, { Project } from '@/store/project';
-import { ProjectType } from '@/types/chat';
+import useProjectStore from '@/store/project';
+import { Project, ProjectType } from '@/types/project';
 
 export function useProject(projectId?: string) {
   const { user } = useAuth();
@@ -15,7 +14,6 @@ export function useProject(projectId?: string) {
     currentProjectId,
     setCurrentProject,
   } = useProjectStore();
-  const { createChat } = useChatStore();
 
   const project = projectId
     ? projects.find((p: Project) => p.id === projectId)
@@ -26,14 +24,12 @@ export function useProject(projectId?: string) {
       if (!user?.id) throw new Error('User must be authenticated');
 
       const projectId = createProject(title, user.id, projectType);
-      const chatId = createChat(title, user.id);
       
-      updateProject(projectId, { chatId });
       setCurrentProject(projectId);
       
       return projectId;
     },
-    [user, createProject, createChat, updateProject, setCurrentProject]
+    [user, createProject, setCurrentProject]
   );
 
   return {

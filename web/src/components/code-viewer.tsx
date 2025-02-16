@@ -1,9 +1,9 @@
 'use client';
 
-import { ProjectFile } from '@/types/chat';
-import { ScrollArea } from './ui/scroll-area';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { ProjectFile } from '@/types/project';
+import { ScrollArea } from './ui/scroll-area';
 
 interface CodeViewerProps {
   file?: ProjectFile;
@@ -18,11 +18,11 @@ export function CodeViewer({ file }: CodeViewerProps) {
     );
   }
 
-  const language = file.path.endsWith('.tsx')
+  const language = file.name.endsWith('.tsx')
     ? 'typescript'
-    : file.path.endsWith('.jsx')
-    ? 'javascript'
-    : 'text';
+    : file.name.endsWith('.jsx')
+      ? 'javascript'
+      : 'text';
 
   return (
     <ScrollArea className="h-full w-full">
@@ -40,4 +40,4 @@ export function CodeViewer({ file }: CodeViewerProps) {
       </div>
     </ScrollArea>
   );
-} 
+}

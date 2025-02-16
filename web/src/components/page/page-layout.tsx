@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Project } from '@/store/project';
+import { Project } from '@/types/project';
 import { ChatUI } from '@/components/chat-ui';
 import { CodeWorkspace } from '@/components/code-workspace';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -28,11 +28,11 @@ export function PageLayout({ project }: PageLayoutProps) {
   return (
     <div className="flex h-screen flex-col w-full">
       <ResizablePanelGroup direction={isMobile ? 'vertical' : 'horizontal'} className="flex-1">
-        <ResizablePanel defaultSize={40} minSize={30}>
-          <ChatUI id={project.id} project={project} />
+        <ResizablePanel defaultSize={40} minSize={15}>
+          <ChatUI project={project} />
         </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={60} minSize={30}>
+        <ResizableHandle />
+        <ResizablePanel defaultSize={60} minSize={40}>
           <CodeWorkspace id={project.id} isMobile={isMobile} />
         </ResizablePanel>
       </ResizablePanelGroup>
