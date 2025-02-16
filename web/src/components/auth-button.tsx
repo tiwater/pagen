@@ -43,12 +43,12 @@ export function AuthButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="h-8 w-8 cursor-pointer">
+        <Avatar className="h-6 w-6 cursor-pointer border border-muted-foreground/40 bg-muted-foreground/10">
           <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
           <AvatarFallback>{user.user_metadata.full_name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 text-sm">
+      <DropdownMenuContent align="end" sideOffset={10} className="w-64 text-sm">
         <div className="flex items-center justify-start gap-2 p-2 p-2">
           <div className="flex flex-col space-y-2 leading-none">
             {user.user_metadata.full_name && (

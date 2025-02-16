@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useProject } from '@/hooks/use-project';
 import { usePageStore } from '@/store/page';
 import { Project } from '@/types/project';
-import { Message, useChat } from 'ai/react';
+import { Message, useChat } from '@ai-sdk/react';
 import { nanoid } from 'nanoid';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
@@ -85,7 +85,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
     ({ className, children }: { className?: string; children?: React.ReactNode }) => {
       const language = /language-(\w+)/.exec(className || '')?.[1];
       if (language === 'pagen' || language === 'tsx' || language === 'jsx') {
-        return <PageCard messageId={message.id} />;
+        return <PageCard>{children}</PageCard>;
       }
       return <code className={className}>{children}</code>;
     },
@@ -99,12 +99,12 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
       components={{
         code: renderCodeBlock,
         ul: ({ className, children, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
-          <ul className={cn('list-disc pl-6 mb-4 space-y-2', className)} {...props}>
+          <ul className={cn('list-disc pl-4 mb-0 space-y-2', className)} {...props}>
             {children}
           </ul>
         ),
         ol: ({ className, children, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
-          <ol className={cn('list-decimal pl-6 mb-4 space-y-2', className)} {...props}>
+          <ol className={cn('list-decimal pl-4 mb-2 space-y-2', className)} {...props}>
             {children}
           </ol>
         ),
@@ -127,14 +127,14 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
   MemoizedMarkdown.displayName = 'MemoizedMarkdown';
 
   return (
-    <div className={cn('group relative flex items-start', className)}>
-      <div className="inline-flex items-start gap-1 rounded-lg text-sm font-medium">
+    <div className={cn('group relative flex items-start w-full', className)}>
+      <div className="inline-flex flex-col items-start gap-1 rounded-lg text-sm font-medium w-full">
         <div
           className={cn(
             'rounded-full bg-muted',
             message.role === 'user'
-              ? 'bg-primary/90 text-primary-foreground'
-              : 'bg-primary/90 text-primary-foreground'
+              ? 'bg-primary/40 text-primary-foreground'
+              : 'bg-primary/40 text-primary-foreground'
           )}
         >
           {message.role === 'user' ? (
@@ -161,10 +161,10 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
         </div>
         <div
           className={cn(
-            'flex-1 flex flex-col space-y-1 leading-normal p-2 rounded-lg min-w-0',
+            'flex-1 flex flex-col space-y-1 leading-normal rounded-lg min-w-0 w-full',
             message.role === 'user'
-              ? 'bg-primary/90 text-primary-foreground'
-              : 'bg-muted-foreground/5 text-muted-foreground'
+              ? 'border border-primary/60 bg-muted-foreground/5 text-primary/60 p-2 '
+              : 'text-muted-foreground py-2'
           )}
         >
           <MemoizedMarkdown content={message.content} />
@@ -414,7 +414,7 @@ export function ChatUI({ project }: ChatUIProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between p-2 border-b">
+      <div className="flex items-center justify-between p-2 border-b h-10">
         <div className="flex items-center gap-2">
           <Link href="/">
             <Icons.logo className="h-5 w-5" />
@@ -437,12 +437,12 @@ export function ChatUI({ project }: ChatUIProps) {
               setMessages([]);
             }}
             disabled={isUpdating}
-            className="hover:text-red-500 w-7 h-7"
+            className="hover:text-red-500 w-6 h-6"
           >
             {isUpdating ? (
               <Icons.spinner className="h-4 w-4 animate-spin" />
             ) : (
-              <Icons.trash className="h-4 w-4" />
+              <Icons.trash className="h-4 w-4 text-red-500" />
             )}
           </Button>
         </div>

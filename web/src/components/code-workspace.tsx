@@ -77,7 +77,7 @@ export function CodeWorkspace({ id, file, isMobile }: CodeWorkspaceProps) {
   return (
     <div className="flex h-full flex-col max-w-full">
       <Tabs defaultValue="code" className="flex-1 h-full flex flex-col">
-        <div className="flex items-center justify-between border-b">
+        <div className="flex items-center justify-between border-b h-10">
           <TabsList className="bg-transparent gap-2">
             {[
               {
