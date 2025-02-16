@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useProject } from '@/hooks/use-project';
-import { ProjectType } from '@/types/project';
 import { AuthButton } from '@/components/auth-button';
 import { Icons } from '@/components/icons';
 import { ProjectTypeSwitch } from '@/components/project-type-switch';
@@ -36,22 +35,18 @@ function ProjectList() {
     deleteProject(projectId);
   };
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
       {projects.map(project => (
-        <Link href={`/projects/${project.id}`} key={project.id}>
-          <Card className="relative group p-2 gap-2 flex items-center h-full cursor-pointer hover:bg-accent">
-            {project.projectType === 'page' ? (
-              <Icons.file className="w-4 h-4" />
-            ) : (
-              <Icons.folders className="w-4 h-4" />
-            )}
+        <Link href={`/projects/${project.id}`} key={project.id} className="w-full">
+          <Card className="relative group p-2 gap-2 flex items-center w-full h-full cursor-pointer hover:bg-accent">
+            <Icons.folders className="w-4 h-4" />
             <span className="text-xs line-clamp-1">{project.title}</span>
             <div className="absolute right-1 hidden group-hover:block">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={e => handleDeleteProject(e, project.id)}
-                className="p-0 w-6 h-6 hover:text-red-500"
+                className="p-0 w-6 h-6 hover:text-red-500 bg-accent"
               >
                 <Icons.trash className="w-4 h-4" />
               </Button>
@@ -76,7 +71,7 @@ export default function Home() {
   const router = useRouter();
   const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
-  const [projectType, setProjectType] = useState<ProjectType>('page');
+  const [projectType, setProjectType] = useState<'page' | 'site'>('site');
   const { createProject } = useProject();
 
   const handleCreateProject = (promptText: string) => {
@@ -110,14 +105,14 @@ export default function Home() {
   };
 
   return (
-    <main className="relative flex h-screen flex-col items-center p-8 md:p-24 gap-8">
+    <main className="relative flex h-screen flex-col items-center p-8 md:p-24 mb-8 gap-8">
       <div className="flex flex-col items-center gap-6 mb-12">
         <Image src="/images/logo.svg" width={96} height={96} alt="Logo" />
         <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight text-center">
           What can I help you build?
         </h1>
       </div>
-      <div className="w-full max-w-4xl">
+      <div className="flex flex-col gap-2 w-full max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-2">
           <div className="relative">
             <Textarea
@@ -130,13 +125,13 @@ export default function Home() {
             />
             <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between">
               <div className="flex items-center gap-2">
+                <ProjectTypeSwitch value={projectType} onChange={setProjectType} />
                 <Button disabled variant="outline" size="sm" className="h-7 gap-2">
                   <Icons.bot className="w-4 h-4" />
                   <span className="text-xs">gpt-4o</span>
                 </Button>
               </div>
               <div className="flex items-center gap-2">
-                <ProjectTypeSwitch value={projectType} onChange={setProjectType} />
                 <Button type="submit" size="sm" className="h-7 gap-2" disabled={!prompt.trim()}>
                   <span className="text-xs">submit</span>
                   <Icons.cornerDownLeft className="w-3 h-3" />
@@ -144,24 +139,20 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-4">
-            <div className="text-sm text-muted-foreground">
-              <div className="flex flex-wrap gap-2 mt-2">
-                {samplePrompts[projectType].map((samplePrompt: string, index: number) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                    onClick={e => handleSamplePrompt(e, samplePrompt)}
-                  >
-                    {samplePrompt}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
         </form>
+        <div className="text-sm text-muted-foreground">
+          <div className="flex flex-wrap gap-2 mt-2">
+            {samplePrompts[projectType].map((samplePrompt: string, index: number) => (
+              <div
+                key={index}
+                className="text-xs px-2 py-1 rounded-md bg-accent/50 hover:bg-accent/80 cursor-pointer"
+                onClick={e => handleSamplePrompt(e, samplePrompt)}
+              >
+                {samplePrompt}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
       <ProjectList />
       <div className="absolute top-1 right-1">

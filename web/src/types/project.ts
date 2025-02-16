@@ -4,8 +4,6 @@
 
 import { Chat } from "./chat";
 
-export type ProjectType = 'page' | 'site';
-
 export interface ProjectFile {
   id: string;
   name: string; // relative to the project root, such as '/page.tsx' will be located at 'src/app/page.tsx' during generation
@@ -31,7 +29,6 @@ export interface Project {
   title: string;
   description?: string;
   chat: Chat; // attached chat, maintains the chat history
-  projectType: ProjectType;
   isNew?: boolean;
   createdAt: string;
   updatedAt?: string;

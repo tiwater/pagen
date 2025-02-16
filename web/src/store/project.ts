@@ -1,4 +1,4 @@
-import { ProjectType, Project } from '@/types/project';
+import { Project } from '@/types/project';
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -8,7 +8,7 @@ interface ProjectState {
   projects: Project[];
   currentProjectId: string | null;
   getProjects: () => Project[];
-  createProject: (title: string, userId: string, projectType?: ProjectType) => string;
+  createProject: (title: string, userId: string) => string;
   updateProject: (id: string, project: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   setCurrentProject: (id: string) => void;
@@ -26,7 +26,7 @@ export const useProjectStore = create<ProjectState>()(
         return Array.isArray(state.projects) ? state.projects : [];
       },
 
-      createProject: (title, userId, projectType = 'page') => {
+      createProject: (title, userId) => {
         const projectId = nanoid(10);
         set(state => ({
           currentProjectId: projectId,
@@ -36,8 +36,7 @@ export const useProjectStore = create<ProjectState>()(
               id: projectId,
               userId,
               title,
-              projectType,
-              isNew: false, // TODO: remove this
+              isNew: false,
               chat: {
                 id: nanoid(10),
                 projectId,

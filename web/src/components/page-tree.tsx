@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { PageTreeNode } from '@/types/project';
 import { nanoid } from 'nanoid';
 import {
@@ -11,10 +10,10 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { cn } from '@/lib/utils';
-import { Icons } from '../icons';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { ScrollArea } from '../ui/scroll-area';
+import { Icons } from './icons';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { ScrollArea } from './ui/scroll-area';
 
 interface FileTreeProps {
   files: PageTreeNode[];

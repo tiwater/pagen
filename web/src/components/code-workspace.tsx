@@ -26,10 +26,9 @@ import { AuthButton } from './auth-button';
 interface CodeWorkspaceProps {
   id?: string;
   file?: ProjectFile;
-  isMobile?: boolean;
 }
 
-export function CodeWorkspace({ id, file, isMobile }: CodeWorkspaceProps) {
+export function CodeWorkspace({ id, file }: CodeWorkspaceProps) {
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? vscDarkPlus : vs;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
@@ -173,7 +172,15 @@ export function CodeWorkspace({ id, file, isMobile }: CodeWorkspaceProps) {
           <TabsContent value="code" className="h-full m-0 bg-muted/20">
             {file ? (
               <ScrollArea className="h-full w-full">
-                <SyntaxHighlighter language="tsx" style={theme}>
+                <SyntaxHighlighter
+                  language="tsx"
+                  style={theme}
+                  customStyle={{
+                    margin: 0,
+                    background: 'transparent',
+                    border: 'none',
+                  }}
+                >
                   {file.content}
                 </SyntaxHighlighter>
               </ScrollArea>

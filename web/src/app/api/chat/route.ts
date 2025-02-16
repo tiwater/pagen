@@ -142,11 +142,10 @@ The code should follow the following format strictly:
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, stream = true, rules, type, context }: { 
+    const { messages, stream = true, rules, context }: { 
       messages: any; 
       stream?: boolean; 
       rules?: Rule[];
-      type?: 'site' | 'page';
       context?: {
         path?: string;
         parentLayout?: string;
@@ -174,74 +173,59 @@ export async function POST(request: NextRequest) {
       headers,
     });
 
-    // Base system prompt enhanced with site generation capabilities
-    let systemPrompt = type === 'site' 
-      ? `${baseSystemPrompt}
+    let systemPrompt = `${baseSystemPrompt}
 
-         SITE GENERATION RULES:
-         1. Follow Next.js 13+ App Router conventions:
-            - Use 'app/' directory instead of 'pages/'
-            - Name files as 'page.tsx' instead of 'index.tsx'
-            - Place layouts in 'layout.tsx' files
-            - Follow route groups and dynamic routes patterns
-         2. File naming rules:
-            - Root page should be 'app/page.tsx'
-            - Nested pages should be 'app/[route]/page.tsx'
-            - Layouts should be 'app/[route]/layout.tsx'
-            - DO NOT create separate component files
-         3. Keep code modular within pages and layouts
-         4. Optimize for performance with proper code splitting
-         5. Use Server Components where possible
+    SITE GENERATION RULES:
+    1. Follow Next.js 13+ App Router conventions:
+       - Use 'app/' directory instead of 'pages/'
+       - Name files as 'page.tsx' instead of 'index.tsx'
+       - Place layouts in 'layout.tsx' files
+       - Follow route groups and dynamic routes patterns
+    2. File naming rules:
+       - Root page should be 'app/page.tsx'
+       - Nested pages should be 'app/[route]/page.tsx'
+       - Layouts should be 'app/[route]/layout.tsx'
+       - DO NOT create separate component files
+    3. Keep code modular within pages and layouts
+    4. Optimize for performance with proper code splitting
+    5. All components must be client components
 
-         ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
-         ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}
-         ${context?.pageTree ? `Existing files: ${JSON.stringify(context.pageTree)}` : ''}
+    ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
+    ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}
+    ${context?.pageTree ? `Existing files: ${JSON.stringify(context.pageTree)}` : ''}
 
-         IMPORTANT PATH RULES:
-         - Always include '// Path: [filepath]' at the top of each code block
-         - Use 'app/' prefix for all routes
-         - Use 'page.tsx' for pages (not index.tsx)
-         - Use 'layout.tsx' for layouts
-         - Example paths:
-           • app/page.tsx (root page)
-           • app/about/page.tsx (about page)
-           • app/layout.tsx (root layout)
-           • app/about/layout.tsx (about section layout)
-         - DO NOT create separate component files
+    IMPORTANT PATH RULES:
+    - Always include '// Path: [filepath]' at the top of each code block
+    - Use 'app/' prefix for all routes
+    - Use 'page.tsx' for pages (not index.tsx)
+    - Use 'layout.tsx' for layouts
+    - Example paths:
+      • app/page.tsx (root page)
+      • app/about/page.tsx (about page)
+      • app/layout.tsx (root layout)
+      • app/about/layout.tsx (about section layout)
+    - DO NOT create separate component files
 
-         CODE ORGANIZATION:
-         - Keep all components within their respective page.tsx or layout.tsx files
-         - Use function components directly in the files where they are needed
-         - Avoid creating separate component files
-         - IMPORTANT: Add 'use client' directive at the top of EVERY component file
-         - Example:
-           \`\`\`pagen
-           // Path: app/page.tsx
-           'use client';
-           
-           import { ... } from '...';
-           
-           export function Page() {
-             // ...
-           }
-           \`\`\`
+    CODE ORGANIZATION:
+    - Keep all components within their respective page.tsx or layout.tsx files
+    - Use function components directly in the files where they are needed
+    - Avoid creating separate component files
+    - IMPORTANT: Add 'use client' directive at the top of EVERY component file
+    - Example:
+      \`\`\`pagen
+      // Path: app/page.tsx
+      'use client';
+      
+      import { ... } from '...';
+      
+      export function Page() {
+        // ...
+      }
+      \`\`\`
 
-         ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
-         ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}
-         ${context?.pageTree ? `Existing files: ${JSON.stringify(context.pageTree)}` : ''}
-
-         IMPORTANT PATH RULES:
-         - Always include '// Path: [filepath]' at the top of each code block
-         - Use 'app/' prefix for all routes
-         - Use 'page.tsx' for pages (not index.tsx)
-         - Use 'layout.tsx' for layouts
-         - Example paths:
-           • app/page.tsx (root page)
-           • app/about/page.tsx (about page)
-           • app/layout.tsx (root layout)
-           • app/about/layout.tsx (about section layout)
-           • app/components/header.tsx (component)`
-      : baseSystemPrompt;
+    ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
+    ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}
+    ${context?.pageTree ? `Existing files: ${JSON.stringify(context.pageTree)}` : ''}`;
 
     // Incorporate additional rules if provided
     if (rules) {

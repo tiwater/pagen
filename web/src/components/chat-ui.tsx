@@ -34,8 +34,8 @@ interface ChatMessageProps {
 
 const MemoizedPageCard = memo(PageCard);
 
-function ChatMessage({ message, chat, project, className }: ChatMessageProps) {
-  const { updateProject } = useProject(project.id);
+function ChatMessage({ message, chat, project: initialProject, className }: ChatMessageProps) {
+  const { project, updateProject } = useProject(initialProject.id);
   const { user } = useAuth();
   const [showMessageCode, setShowMessageCode] = useState(false);
   const processedRef = useRef(false);
@@ -46,7 +46,7 @@ function ChatMessage({ message, chat, project, className }: ChatMessageProps) {
     // Extract all code blocks from the message
     const codeBlockRegex = /```(?:pagen|tsx|jsx)?\n([\s\S]*?)```/g;
     let match;
-    const codeBlocks = [];
+    const codeBlocks: Array<{ path: string; content: string }> = [];
 
     while ((match = codeBlockRegex.exec(message.content)) !== null) {
       const content = match[1].trim();
@@ -62,7 +62,8 @@ function ChatMessage({ message, chat, project, className }: ChatMessageProps) {
     }
 
     // Process each code block
-    if (codeBlocks.length > 0) {
+    if (codeBlocks.length > 0 && project) {
+      // Create a new pageTree with the updated files
       const updatedPageTree = [...(project.pageTree || [])];
       codeBlocks.forEach(block => {
         const fileNode = {
@@ -86,12 +87,13 @@ function ChatMessage({ message, chat, project, className }: ChatMessageProps) {
         }
       });
 
+      // Update the project with the new pageTree
       updateProject(project.id, {
         pageTree: updatedPageTree,
       });
       processedRef.current = true;
     }
-  }, [message.content, message.role, message.id, project.id, updateProject]);
+  }, [message.content, message.role, message.id, project?.id, project?.pageTree, updateProject]);
 
   const renderCodeBlock = useCallback(
     ({ className, children }: { className?: string; children?: React.ReactNode }) => {
@@ -212,8 +214,8 @@ interface ChatUIProps {
   project: Project;
 }
 
-export function ChatUI({ project }: ChatUIProps) {
-  const { updateProject, isUpdating } = useProject(project.id);
+export function ChatUI({ project: initialProject }: ChatUIProps) {
+  const { project, updateProject, isUpdating } = useProject(initialProject.id);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationFiles, setGenerationFiles] = useState<
@@ -225,7 +227,7 @@ export function ChatUI({ project }: ChatUIProps) {
   >([]);
   const [currentFile, setCurrentFile] = useState<string>();
 
-  if (!project.chat) {
+  if (!project?.chat) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
@@ -253,7 +255,6 @@ export function ChatUI({ project }: ChatUIProps) {
     body: {
       id: project.chat.id,
       title: project.title,
-      type: project.projectType,
       context: {
         path: currentFile,
         pageTree: project.pageTree,
@@ -558,7 +559,6 @@ export function ChatUI({ project }: ChatUIProps) {
             </>
           ) : (
             <EmptyScreen
-              projectType={project.projectType}
               onSendPrompt={prompt =>
                 append({
                   id: nanoid(),
@@ -606,25 +606,14 @@ export function ChatUI({ project }: ChatUIProps) {
   );
 }
 
-function EmptyScreen({
-  projectType,
-  onSendPrompt,
-}: {
-  projectType: 'site' | 'page';
-  onSendPrompt: (prompt: string) => void;
-}) {
-  const samplePrompts =
-    projectType === 'site'
-      ? [
-          'Create a multi-page site about a new product',
-          'Build a pricing page with three tiers',
-          'Design a hero section with a call-to-action',
-        ]
-      : [
-          'Create a login form with a modern design',
-          'Build a pricing page with three tiers',
-          'Design a hero section with a call-to-action',
-        ];
+function EmptyScreen({ onSendPrompt }: { onSendPrompt: (prompt: string) => void }) {
+  const samplePrompts = [
+    'Create a pricing page with three tiers',
+    'Design a hero section with a call-to-action',
+    'Create a login form with a modern design',
+    'Build a multi-page site about a new product',
+    'Create a operations platform for a marketing SaaS',
+  ];
 
   return (
     <div className="mx-auto max-w-2xl px-4">
