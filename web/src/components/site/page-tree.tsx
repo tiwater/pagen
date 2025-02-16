@@ -23,6 +23,7 @@ interface FileTreeProps {
   onFileCreate: (path: string, type: 'page' | 'layout' | 'component') => void;
   onFileDelete: (fileId: string) => void;
   onFileRename: (fileId: string, newPath: string) => void;
+  onDeleteAllFiles: () => void;
 }
 
 interface TreeNode {
@@ -41,6 +42,7 @@ export function FileTree({
   onFileCreate,
   onFileDelete,
   onFileRename,
+  onDeleteAllFiles,
 }: FileTreeProps) {
   const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [newFilePath, setNewFilePath] = useState('');
@@ -211,20 +213,29 @@ export function FileTree({
     onFileCreate(path, type);
   };
 
+  const handleDeleteAllFiles = () => {
+    onDeleteAllFiles();
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-2 border-b">
+      <div className="flex items-center justify-between p-2 border-b h-12">
         <div className="flex items-center gap-2">
           <span>Pages</span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsCreatingFile(true)}
-          className="h-7 w-7 p-0"
-        >
-          <Icons.plus className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCreatingFile(true)}
+            className="h-7 w-7 p-0"
+          >
+            <Icons.plus className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleDeleteAllFiles} className="h-7 w-7 p-0">
+            <Icons.trash className="h-4 w-4 text-red-500" />
+          </Button>
+        </div>
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2">

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useProject } from '@/hooks/use-project';
 import { toast } from '@/hooks/use-toast';
-import useProjectStore from '@/store/project';
 import { PageTreeNode, Project } from '@/types/project';
 import { nanoid } from 'nanoid';
 import { ChatUI } from '@/components/chat-ui';
@@ -18,7 +18,7 @@ interface SiteLayoutProps {
 }
 
 export function SiteLayout({ project }: SiteLayoutProps) {
-  const { updateProject } = useProjectStore();
+  const { updateProject, isUpdating } = useProject(project.id);
   const [fileToRename, setFileToRename] = useState<PageTreeNode | null>(null);
   const [newFileName, setNewFileName] = useState('');
   const [fileToDelete, setFileToDelete] = useState<PageTreeNode | null>(null);
@@ -79,6 +79,13 @@ export function SiteLayout({ project }: SiteLayoutProps) {
     toast({ title: 'File renamed', description: `Renamed to ${newFileName}` });
   };
 
+  const handleDeleteAllFiles = () => {
+    updateProject(project.id, {
+      pageTree: [],
+    });
+    setActiveFileId(null);
+  };
+
   return (
     <div className="h-screen w-full">
       <ResizablePanelGroup direction="horizontal" className="flex-1">
@@ -100,6 +107,7 @@ export function SiteLayout({ project }: SiteLayoutProps) {
             onFileCreate={handleFileCreate}
             onFileDelete={handleFileDelete}
             onFileRename={handleFileRename}
+            onDeleteAllFiles={handleDeleteAllFiles}
           />
         </ResizablePanel>
 

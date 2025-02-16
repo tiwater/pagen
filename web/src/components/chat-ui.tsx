@@ -518,14 +518,14 @@ function EmptyScreen({
 
   return (
     <div className="mx-auto max-w-2xl px-4">
-      <div className="mt-4 flex flex-col items-start space-y-2">
-        <h2 className="text-lg font-medium">Sample prompts</h2>
+      <div className="mt-4 flex flex-col items-center space-y-2">
+        <h2 className="font-medium">Sample prompts</h2>
         <div className="grid gap-2">
           {samplePrompts.map(prompt => (
             <Button
               key={prompt}
-              variant="ghost"
-              className="h-auto p-2 text-left text-muted-foreground"
+              variant="outline"
+              className="h-auto p-1 text-left text-muted-foreground"
               onClick={() => setInput(prompt)}
             >
               {prompt}
