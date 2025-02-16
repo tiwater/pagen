@@ -6,7 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useProject } from '@/hooks/use-project';
-import { usePageStore } from '@/store/page';
 import { Project } from '@/types/project';
 import { Message, useChat } from '@ai-sdk/react';
 import { nanoid } from 'nanoid';
@@ -29,60 +28,70 @@ interface ChatMessageProps {
     projectId: string;
     messages: Message[];
   };
+  project: Project;
   className?: string;
 }
 
 const MemoizedPageCard = memo(PageCard);
 
-function ChatMessage({ message, chat, className }: ChatMessageProps) {
-  const { updatePage } = usePageStore();
-  const lastContentRef = useRef<string | undefined>(undefined);
-  const updateTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+function ChatMessage({ message, chat, project, className }: ChatMessageProps) {
+  const { updateProject } = useProject(project.id);
   const { user } = useAuth();
   const [showMessageCode, setShowMessageCode] = useState(false);
+  const processedRef = useRef(false);
 
   useEffect(() => {
-    if (message.role !== 'assistant') return;
+    if (message.role !== 'assistant' || processedRef.current) return;
 
-    const startMatch = message.content.match(/```(?:pagen|tsx|jsx)\n/);
-    if (!startMatch) return;
+    // Extract all code blocks from the message
+    const codeBlockRegex = /```(?:pagen|tsx|jsx)?\n([\s\S]*?)```/g;
+    let match;
+    const codeBlocks = [];
 
-    const startIdx = startMatch.index! + startMatch[0].length;
-    const endMatch = message.content.slice(startIdx).match(/```/);
-    const content =
-      endMatch && typeof endMatch.index !== 'undefined'
-        ? message.content.slice(startIdx, startIdx + endMatch.index).trim()
-        : message.content.slice(startIdx).trim();
+    while ((match = codeBlockRegex.exec(message.content)) !== null) {
+      const content = match[1].trim();
+      // Look for the path comment at the start of the code block
+      const pathMatch = content.match(/\/\/\s*Path:\s*(.+\.tsx)/);
 
-    if (content !== lastContentRef.current) {
-      if (updateTimeoutRef.current) {
-        clearTimeout(updateTimeoutRef.current);
+      if (pathMatch) {
+        const path = pathMatch[1].trim();
+        // Remove the path comment and any empty lines that follow it
+        const cleanContent = content.replace(/\/\/\s*Path:\s*(.+\.tsx)(\r?\n)*/, '').trim();
+        codeBlocks.push({ path, content: cleanContent });
       }
-
-      updateTimeoutRef.current = setTimeout(() => {
-        lastContentRef.current = content;
-        const userMessage = chat.messages.find(
-          (msg, index) => msg.role === 'user' && chat.messages[index + 1]?.id === message.id
-        );
-
-        updatePage({
-          messageId: message.id,
-          content,
-          prompt: userMessage?.content || '',
-          status: endMatch ? 'complete' : 'generating',
-          metadata: {
-            title: 'Generated Page',
-          },
-        });
-      }, 300);
-
-      return () => {
-        if (updateTimeoutRef.current) {
-          clearTimeout(updateTimeoutRef.current);
-        }
-      };
     }
-  }, [message.content, message.role, message.id, updatePage, chat.messages]);
+
+    // Process each code block
+    if (codeBlocks.length > 0) {
+      const updatedPageTree = [...(project.pageTree || [])];
+      codeBlocks.forEach(block => {
+        const fileNode = {
+          id: nanoid(),
+          path: block.path,
+          file: {
+            id: nanoid(),
+            name: block.path.split('/').pop() || '',
+            content: block.content,
+            metadata: {
+              title: block.path,
+            },
+          },
+        };
+
+        const existingIndex = updatedPageTree.findIndex(p => p.path === block.path);
+        if (existingIndex !== -1) {
+          updatedPageTree[existingIndex] = fileNode;
+        } else {
+          updatedPageTree.push(fileNode);
+        }
+      });
+
+      updateProject(project.id, {
+        pageTree: updatedPageTree,
+      });
+      processedRef.current = true;
+    }
+  }, [message.content, message.role, message.id, project.id, updateProject]);
 
   const renderCodeBlock = useCallback(
     ({ className, children }: { className?: string; children?: React.ReactNode }) => {
@@ -492,7 +501,12 @@ export function ChatUI({ project }: ChatUIProps) {
     return (
       <>
         {messages.map((message, i) => (
-          <ChatMessage key={`${message.id}-${i + 1}`} message={message} chat={project.chat} />
+          <ChatMessage
+            key={`${message.id}-${i + 1}`}
+            message={message}
+            chat={project.chat}
+            project={project}
+          />
         ))}
       </>
     );
