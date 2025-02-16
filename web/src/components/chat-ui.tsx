@@ -457,7 +457,17 @@ export function ChatUI({ project }: ChatUIProps) {
               )}
             </>
           ) : (
-            <EmptyScreen projectType={project.projectType} setInput={setInput} />
+            <EmptyScreen
+              projectType={project.projectType}
+              onSendPrompt={prompt =>
+                append({
+                  id: nanoid(),
+                  content: prompt,
+                  role: 'user',
+                  createdAt: new Date(),
+                })
+              }
+            />
           )}
         </div>
         <div ref={messagesEndRef} />
@@ -498,10 +508,10 @@ export function ChatUI({ project }: ChatUIProps) {
 
 function EmptyScreen({
   projectType,
-  setInput,
+  onSendPrompt,
 }: {
   projectType: 'site' | 'page';
-  setInput: (input: string) => void;
+  onSendPrompt: (prompt: string) => void;
 }) {
   const samplePrompts =
     projectType === 'site'
@@ -526,7 +536,7 @@ function EmptyScreen({
               key={prompt}
               variant="outline"
               className="h-auto p-1 text-left text-muted-foreground"
-              onClick={() => setInput(prompt)}
+              onClick={() => onSendPrompt(prompt)}
             >
               {prompt}
             </Button>
