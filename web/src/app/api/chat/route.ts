@@ -213,6 +213,18 @@ export async function POST(request: NextRequest) {
          - Keep all components within their respective page.tsx or layout.tsx files
          - Use function components directly in the files where they are needed
          - Avoid creating separate component files
+         - IMPORTANT: Add 'use client' directive at the top of EVERY component file
+         - Example:
+           \`\`\`pagen
+           // Path: app/page.tsx
+           'use client';
+           
+           import { ... } from '...';
+           
+           export function Page() {
+             // ...
+           }
+           \`\`\`
 
          ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
          ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}

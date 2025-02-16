@@ -1,6 +1,19 @@
 import { storePage } from "@/lib/storage";
 import { NextResponse } from "next/server";
 
+interface PageTreeNode {
+  id: string;
+  path: string;
+  file: {
+    id: string;
+    name: string;
+    content: string;
+    metadata: {
+      title: string;
+    };
+  };
+}
+
 export async function POST(request: Request) {
   // Handle preflight request
   if (request.method === "OPTIONS") {
@@ -14,11 +27,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { id, code } = await request.json();
+    const { id, pageTree } = await request.json();
 
-    if (!id || !code) {
+    if (!id || !Array.isArray(pageTree)) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields or invalid format" },
         {
           status: 400,
           headers: {
@@ -28,12 +41,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Store the page
-    storePage(id, code);
-    console.log(`Page stored successfully: /p/${id}`);
+    // Store the pageTree directly
+    storePage(id, JSON.stringify(pageTree));
+    console.log(`Site stored successfully: /p/${id}`);
 
     return NextResponse.json(
-      { message: "Page stored successfully", url: `/p/${id}` },
+      { message: "Site stored successfully", url: `/p/${id}` },
       {
         headers: {
           "Access-Control-Allow-Origin": "*",
@@ -41,9 +54,9 @@ export async function POST(request: Request) {
       },
     );
   } catch (error) {
-    console.error("Error storing page:", error);
+    console.error("Error storing site:", error);
     return NextResponse.json(
-      { error: "Failed to store page" },
+      { error: "Failed to store site" },
       {
         status: 500,
         headers: {

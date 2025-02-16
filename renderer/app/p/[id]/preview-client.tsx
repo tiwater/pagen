@@ -88,41 +88,101 @@ install({
   hash: false,
   rules: [
     // Add custom class rules
-    ['bg-card', { backgroundColor: 'hsl(var(--card))' }],
-    ['text-card-foreground', { color: 'hsl(var(--card-foreground))' }],
-    ['ring-offset-background', { '--tw-ring-offset-color': 'hsl(var(--background))' }],
-    ['border-border', { borderColor: 'hsl(var(--border))' }],
-    ['bg-background', { backgroundColor: 'hsl(var(--background))' }],
-    ['text-foreground', { color: 'hsl(var(--foreground))' }],
-    ['text-muted-foreground', { color: 'hsl(var(--muted-foreground))' }],
-    ['bg-primary', { backgroundColor: 'hsl(var(--primary))' }],
-    ['text-primary', { color: 'hsl(var(--primary))' }],
-    ['text-primary-foreground', { color: 'hsl(var(--primary-foreground))' }],
-    ['bg-secondary', { backgroundColor: 'hsl(var(--secondary))' }],
-    ['text-secondary-foreground', { color: 'hsl(var(--secondary-foreground))' }],
-    ['bg-muted', { backgroundColor: 'hsl(var(--muted))' }],
-    ['bg-accent', { backgroundColor: 'hsl(var(--accent))' }],
-    ['text-accent-foreground', { color: 'hsl(var(--accent-foreground))' }],
-    ['bg-popover', { backgroundColor: 'hsl(var(--popover))' }],
-    ['text-popover-foreground', { color: 'hsl(var(--popover-foreground))' }],
-    ['bg-destructive', { backgroundColor: 'hsl(var(--destructive))' }],
-    ['text-destructive-foreground', { color: 'hsl(var(--destructive-foreground))' }],
-    ['shadow-sm', { boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }],
-    ['shadow', { boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)' }],
-    ['shadow-md', { boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }],
-    ['shadow-lg', { boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' }],
-    ['rounded-lg', { borderRadius: 'calc(var(--radius) + 0.25rem)' }],
-    ['rounded-md', { borderRadius: 'calc(var(--radius))' }],
-    ['rounded-sm', { borderRadius: 'calc(var(--radius) - 0.25rem)' }],
-    ['p-4', { padding: '1rem' }],
+    ["bg-card", { backgroundColor: "hsl(var(--card))" }],
+    ["text-card-foreground", { color: "hsl(var(--card-foreground))" }],
+    [
+      "ring-offset-background",
+      { "--tw-ring-offset-color": "hsl(var(--background))" },
+    ],
+    ["border-border", { borderColor: "hsl(var(--border))" }],
+    ["bg-background", { backgroundColor: "hsl(var(--background))" }],
+    ["text-foreground", { color: "hsl(var(--foreground))" }],
+    ["text-muted-foreground", { color: "hsl(var(--muted-foreground))" }],
+    ["bg-primary", { backgroundColor: "hsl(var(--primary))" }],
+    ["text-primary", { color: "hsl(var(--primary))" }],
+    ["text-primary-foreground", { color: "hsl(var(--primary-foreground))" }],
+    ["bg-secondary", { backgroundColor: "hsl(var(--secondary))" }],
+    [
+      "text-secondary-foreground",
+      { color: "hsl(var(--secondary-foreground))" },
+    ],
+    ["bg-muted", { backgroundColor: "hsl(var(--muted))" }],
+    ["bg-accent", { backgroundColor: "hsl(var(--accent))" }],
+    ["text-accent-foreground", { color: "hsl(var(--accent-foreground))" }],
+    ["bg-popover", { backgroundColor: "hsl(var(--popover))" }],
+    ["text-popover-foreground", { color: "hsl(var(--popover-foreground))" }],
+    ["bg-destructive", { backgroundColor: "hsl(var(--destructive))" }],
+    [
+      "text-destructive-foreground",
+      { color: "hsl(var(--destructive-foreground))" },
+    ],
+    ["shadow-sm", { boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)" }],
+    [
+      "shadow",
+      {
+        boxShadow:
+          "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+      },
+    ],
+    [
+      "shadow-md",
+      {
+        boxShadow:
+          "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+      },
+    ],
+    [
+      "shadow-lg",
+      {
+        boxShadow:
+          "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+      },
+    ],
+    ["rounded-lg", { borderRadius: "calc(var(--radius) + 0.25rem)" }],
+    ["rounded-md", { borderRadius: "calc(var(--radius))" }],
+    ["rounded-sm", { borderRadius: "calc(var(--radius) - 0.25rem)" }],
+    ["p-4", { padding: "1rem" }],
   ],
 });
+
+interface PageTreeNode {
+  id: string;
+  path: string;
+  file: {
+    id: string;
+    name: string;
+    content: string;
+    metadata: {
+      title: string;
+    };
+  };
+}
 
 export function PreviewClient({ code }: { code: string }) {
   const [error, setError] = React.useState<string | null>(null);
   const [Component, setComponent] = React.useState<React.ComponentType | null>(
     null
   );
+
+  // Parse the pageTree from the code string
+  const pageTree: PageTreeNode[] = React.useMemo(() => {
+    try {
+      return JSON.parse(code);
+    } catch (e) {
+      console.error("Failed to parse pageTree:", e);
+      return [];
+    }
+  }, [code]);
+
+  // Find the root page component (app/page.tsx)
+  const rootPage = React.useMemo(() => {
+    return pageTree.find((node) => node.path === "app/page.tsx");
+  }, [pageTree]);
+
+  // Find the root layout component (app/layout.tsx)
+  const rootLayout = React.useMemo(() => {
+    return pageTree.find((node) => node.path === "app/layout.tsx");
+  }, [pageTree]);
 
   // Create a stable reference to our components
   const components = React.useMemo(
@@ -136,20 +196,32 @@ export function PreviewClient({ code }: { code: string }) {
       Google,
       Facebook,
       GitHub,
-      ...Recharts, // Make all Recharts components available
-      tw, // Just for dynamic component's own styles
+      ...Recharts,
+      tw,
     }),
     []
   );
 
   React.useEffect(() => {
+    if (!rootPage) {
+      setError("No root page (app/page.tsx) found");
+      return;
+    }
+
     try {
-      console.log("Original code:", code);
+      // First check if the page is marked as client component
+      const isClientComponent = rootPage.file.content.includes("'use client'");
+      if (!isClientComponent) {
+        setError("Only client components are supported at the moment");
+        return;
+      }
+
+      console.log("Root page code:", rootPage.file.content);
 
       // Parse the code using TypeScript's parser
       const sourceFile = ts.createSourceFile(
         "component.tsx",
-        code,
+        rootPage.file.content,
         ts.ScriptTarget.Latest,
         true
       );
@@ -157,20 +229,22 @@ export function PreviewClient({ code }: { code: string }) {
       // Find the last import declaration position
       let lastImportEnd = 0;
 
-      ts.forEachChild(sourceFile, node => {
+      ts.forEachChild(sourceFile, (node) => {
         if (ts.isImportDeclaration(node)) {
           lastImportEnd = Math.max(lastImportEnd, node.end);
         }
       });
 
       // Get everything after the imports
-      let code_after_imports = code.slice(lastImportEnd).trim();
+      let code_after_imports = rootPage.file.content
+        .slice(lastImportEnd)
+        .trim();
 
       // Find the component declaration
-      const componentNode = ts.forEachChild(sourceFile, node => {
+      const componentNode = ts.forEachChild(sourceFile, (node) => {
         if (
           (ts.isFunctionDeclaration(node) || ts.isVariableStatement(node)) &&
-          node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+          node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
         ) {
           return node;
         }
@@ -196,7 +270,10 @@ export function PreviewClient({ code }: { code: string }) {
       }
 
       // Remove 'export default' or 'export' from the code
-      const cleanCode = code_after_imports.replace(/export\s+(?:default\s+)?/, "");
+      const cleanCode = code_after_imports.replace(
+        /export\s+(?:default\s+)?/,
+        ""
+      );
 
       console.log("Clean code:", cleanCode);
 
@@ -244,7 +321,7 @@ export function PreviewClient({ code }: { code: string }) {
       console.error("Error creating component:", err);
       setError(err instanceof Error ? err.message : "Error creating component");
     }
-  }, [code, components]);
+  }, [rootPage, components]);
 
   if (error) {
     return (
@@ -258,7 +335,21 @@ export function PreviewClient({ code }: { code: string }) {
     return (
       <div className="flex items-center justify-center h-screen bg-background w-full">
         <div className="flex flex-col items-center gap-4">
-          <LucideIcons.Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <div className="h-8 w-8 animate-spin text-blue-500">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+          </div>
           <p className="text-sm text-muted-foreground">Loading preview...</p>
         </div>
       </div>
