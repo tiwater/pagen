@@ -15,11 +15,11 @@ export function PageCard({ messageId }: PageCardProps) {
 
   if (!page) return null;
 
-  const handleClick = () => {
-    if (page.status === 'complete') {
-      setActivePage(messageId);
-    }
-  };
+  // const handleClick = () => {
+  //   if (page.status === 'complete') {
+  //     setActivePage(messageId);
+  //   }
+  // };
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://pages-renderer.tisvc.com';
 
@@ -27,10 +27,9 @@ export function PageCard({ messageId }: PageCardProps) {
     <div
       className={cn(
         'group relative rounded-lg border border-muted-foreground/40 overflow-hidden bg-background/50 transition-colors min-w-0 max-w-full',
-        page.status === 'complete' && 'hover:bg-accent/5 cursor-pointer',
+        page.status === 'complete' && 'hover:bg-accent/5',
         messageId === activePage && 'border-muted-foreground/80'
       )}
-      onClick={handleClick}
     >
       <div className="flex items-center justify-between border-b border-muted bg-background/50 px-3 py-2">
         <div className="flex items-center gap-2">

@@ -135,93 +135,24 @@ Remember:
 - Use appropriate grid layouts
 - Consider mobile responsiveness
 
-Example Response:
-I'll create a modern pricing card component. Let me break down my thought process:
-
-1. Context Analysis:
-   - Purpose: Display pricing information
-   - Users need: Clear price comparison
-   - Key features: Price, features, CTA
-   - Interactions: Hover effects, button clicks
-
-2. Structure Planning:
-   - Card container with gradient border
-   - Header with price
-   - Features list
-   - CTA button
-
-3. Visual Hierarchy:
-   - Price as largest element
-   - Features in readable list
-   - CTA button prominent
-   - Use gradients for emphasis
-
-4. Implementation:
-
 The code should follow the following format strictly:
     - The code should be wrapped in \`\`\`pagen\`\`\` tags
     - import statements should be at the top of the file
-    - export keyword should be placed before the function
-
-\`\`\`pagen
-import React from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
-import { Check } from "lucide-react"
-
-export default function PricingCard() {
-  return (
-    <Card className="group relative w-[300px] overflow-hidden transition-all hover:shadow-xl hover:shadow-primary/25">
-      {/* Gradient border effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 opacity-0 transition-opacity group-hover:opacity-100" />
-      
-      <div className="relative h-full backdrop-blur-md bg-background/80">
-        <CardHeader>
-          <h2 className="text-2xl font-bold bg-gradient-to-br from-purple-600 to-blue-500 bg-clip-text text-transparent">
-            Pro Plan
-          </h2>
-          <p className="text-muted-foreground">Perfect for growing businesses</p>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6 flex items-baseline">
-            <span className="text-4xl font-bold">$29</span>
-            <span className="text-muted-foreground">/month</span>
-          </div>
-          
-          <ul className="space-y-2">
-            <li className="flex items-center gap-2 group/item">
-              <Check className="w-4 h-4 text-primary transition-transform group-hover/item:scale-110" />
-              <span>Unlimited projects</span>
-            </li>
-          </ul>
-          
-          <Button className="w-full mt-6 bg-gradient-to-r from-purple-600 to-blue-500">
-            Get Started
-          </Button>
-        </CardContent>
-      </div>
-    </Card>
-  )
-}
-\`\`\`
-
-5. UX Enhancements:
-   - Gradient border on hover
-   - Scale animation on CTA
-   - Checkmark animations
-   - Smooth transitions
-
-6. Edge Cases:
-   - Responsive width
-   - Dark mode support
-   - Loading skeleton
-   - Error boundary
-
-Always follow this thought process and structure for any component request.`;
+    - export keyword should be placed before the function`;
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, stream = true, rules }: { messages: any; stream?: boolean; rules?: Rule[] } = await request.json();
+    const { messages, stream = true, rules, type, context }: { 
+      messages: any; 
+      stream?: boolean; 
+      rules?: Rule[];
+      type?: 'site' | 'page';
+      context?: {
+        path?: string;
+        parentLayout?: string;
+        pageTree?: any;
+      };
+    } = await request.json();
 
     const headers: {
       'Helicone-Auth': string;
@@ -243,14 +174,46 @@ export async function POST(request: NextRequest) {
       headers,
     });
 
-    // Incorporate the rule into the system prompt
-    let systemPrompt = baseSystemPrompt;
+    // Base system prompt enhanced with site generation capabilities
+    let systemPrompt = type === 'site' 
+      ? `${baseSystemPrompt}
+
+         SITE GENERATION RULES:
+         1. Follow Next.js 13+ App Router conventions:
+            - Use 'app/' directory instead of 'pages/'
+            - Name files as 'page.tsx' instead of 'index.tsx'
+            - Place layouts in 'layout.tsx' files
+            - Follow route groups and dynamic routes patterns
+         2. File naming rules:
+            - Root page should be 'app/page.tsx'
+            - Nested pages should be 'app/[route]/page.tsx'
+            - Layouts should be 'app/[route]/layout.tsx'
+            - Components should be in 'app/components/'
+         3. Keep components modular and reusable
+         4. Optimize for performance with proper code splitting
+         5. Use Server Components where possible
+
+         ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
+         ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}
+         ${context?.pageTree ? `Existing files: ${JSON.stringify(context.pageTree)}` : ''}
+
+         IMPORTANT PATH RULES:
+         - Always include '// Path: [filepath]' at the top of each code block
+         - Use 'app/' prefix for all routes
+         - Use 'page.tsx' for pages (not index.tsx)
+         - Use 'layout.tsx' for layouts
+         - Example paths:
+           • app/page.tsx (root page)
+           • app/about/page.tsx (about page)
+           • app/layout.tsx (root layout)
+           • app/about/layout.tsx (about section layout)
+           • app/components/header.tsx (component)`
+      : baseSystemPrompt;
+
+    // Incorporate additional rules if provided
     if (rules) {
-      console.log('Applying rule:', rules);
       systemPrompt += `\n\nAdditional Rules:\n\n${rules.map(rule => `${rule.title}:\n${rule.content}\n`).join('\n')}\n`;
     }
-
-    console.log('systemPrompt', systemPrompt);
 
     const body = {
       model: openai('gpt-4o'),
@@ -260,10 +223,10 @@ export async function POST(request: NextRequest) {
     };
 
     if (stream) {
-      const result = await streamText(body);
+      const result = await streamText(body as any);
       return result.toDataStreamResponse();
     } else {
-      const { text } = await generateText(body);
+      const { text } = await generateText(body as any);
       return new Response(
         JSON.stringify({ messages: [...messages, { role: 'assistant', content: text }] })
       );

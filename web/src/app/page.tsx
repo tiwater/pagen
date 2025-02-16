@@ -110,7 +110,7 @@ export default function Home() {
   };
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center p-8 md:p-24 gap-8">
+    <main className="relative flex h-screen flex-col items-center p-8 md:p-24 gap-8">
       <div className="flex flex-col items-center gap-6 mb-12">
         <Image src="/images/logo.svg" width={96} height={96} alt="Logo" />
         <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight text-center">

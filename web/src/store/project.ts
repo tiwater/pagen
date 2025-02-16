@@ -78,7 +78,7 @@ export const useProjectStore = create<ProjectState>()(
         })),
     }),
     {
-      name: 'project-store',
+      name: 'pages-project-store',
       version: 1,
       onRehydrateStorage: () => (state) => {
         if (state && Array.isArray(state.projects)) {

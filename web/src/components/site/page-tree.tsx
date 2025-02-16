@@ -215,9 +215,6 @@ export function FileTree({
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between p-2 border-b">
         <div className="flex items-center gap-2">
-          <Link href="/">
-            <Icons.logo className="h-5 w-5" />
-          </Link>
           <span>Pages</span>
         </div>
         <Button

@@ -82,6 +82,16 @@ export function SiteLayout({ project }: SiteLayoutProps) {
   return (
     <div className="h-screen w-full">
       <ResizablePanelGroup direction="horizontal" className="flex-1">
+        <ResizablePanel defaultSize={30}>
+          <ChatUI project={project} />
+        </ResizablePanel>
+
+        <ResizableHandle />
+
+        <ResizablePanel defaultSize={55}>
+          <CodeWorkspace file={activeFile?.file} />
+        </ResizablePanel>
+        <ResizableHandle />
         <ResizablePanel defaultSize={15} className="flex flex-col h-full">
           <FileTree
             files={project.pageTree || []}
@@ -91,16 +101,6 @@ export function SiteLayout({ project }: SiteLayoutProps) {
             onFileDelete={handleFileDelete}
             onFileRename={handleFileRename}
           />
-        </ResizablePanel>
-        <ResizableHandle />
-
-        <ResizablePanel defaultSize={65}>
-          <CodeWorkspace file={activeFile?.file} />
-        </ResizablePanel>
-        <ResizableHandle />
-
-        <ResizablePanel defaultSize={20}>
-          <ChatUI project={project} />
         </ResizablePanel>
 
         {/* Rename Dialog */}

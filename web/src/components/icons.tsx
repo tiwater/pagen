@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Clock,
   CodeXml,
   Copy,
   CornerDownLeft,
@@ -125,7 +126,7 @@ export const Icons = {
   plus: Plus,
   listTodo: ListTodo,
   spinner: Loader2,
-  figma: Square, // Using Square as a placeholder for Figma icon
+  figma: Square,
   send: SendHorizonal,
   sparkles: Sparkles,
   bot: Bot,
@@ -149,6 +150,8 @@ export const Icons = {
   theme: SunMoon,
   project: MessageSquareDiff,
   add: Plus,
+  clock: Clock,
+  alertCircle: AlertCircle,
   // Logos
   google: Google,
   github: Github,

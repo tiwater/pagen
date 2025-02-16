@@ -3,20 +3,21 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
+import { useProject } from '@/hooks/use-project';
 import { usePageStore } from '@/store/page';
-import useProjectStore from '@/store/project';
-import { useSettingsStore } from '@/store/setting';
 import { Project } from '@/types/project';
 import { Message, useChat } from 'ai/react';
 import { nanoid } from 'nanoid';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
+import { Icons } from '@/components/icons';
 import { PageCard } from '@/components/page-card';
+import { SiteGenerationProgress } from '@/components/site-generation-progress';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { Icons } from './icons';
 import { ScrollArea } from './ui/scroll-area';
 
 interface ChatMessageProps {
@@ -32,7 +33,7 @@ interface ChatMessageProps {
 const MemoizedPageCard = memo(PageCard);
 
 function ChatMessage({ message, chat, className }: ChatMessageProps) {
-  const { updatePage, setActivePage } = usePageStore();
+  const { updatePage } = usePageStore();
   const lastContentRef = useRef<string>();
   const updateTimeoutRef = useRef<NodeJS.Timeout>();
   const { user } = useAuth();
@@ -51,12 +52,10 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
         : message.content.slice(startIdx).trim();
 
     if (content !== lastContentRef.current) {
-      // Clear any pending update
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
       }
 
-      // Debounce the update
       updateTimeoutRef.current = setTimeout(() => {
         lastContentRef.current = content;
         const userMessage = chat.messages.find(
@@ -72,9 +71,6 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
             title: 'Generated Page',
           },
         });
-
-        // Always set as active when we update the page
-        setActivePage(message.id);
       }, 300);
 
       return () => {
@@ -83,17 +79,17 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
         }
       };
     }
-  }, [message.content, message.role, message.id, updatePage, setActivePage, chat.messages]);
+  }, [message.content, message.role, message.id, updatePage, chat.messages]);
 
   const renderCodeBlock = useCallback(
     ({ className, children }: { className?: string; children?: React.ReactNode }) => {
       const language = /language-(\w+)/.exec(className || '')?.[1];
-      if (language === 'pagen') {
-        return <MemoizedPageCard key={message.id} messageId={message.id} />;
+      if (language === 'pagen' || language === 'tsx' || language === 'jsx') {
+        return <PageCard messageId={message.id} />;
       }
       return <code className={className}>{children}</code>;
     },
-    [message.id]
+    []
   );
 
   const MemoizedMarkdown = memo(({ content }: { content: string }) => (
@@ -146,12 +142,12 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
               <Image
                 src={user?.user_metadata.avatar_url}
                 alt="avatar"
-                width={24}
-                height={24}
-                className="rounded-full h-7 w-7 shrink-0"
+                width={12}
+                height={12}
+                className="rounded-full h-5 w-5 shrink-0"
               />
             ) : (
-              <Icons.user className="m-1 h-5 w-5 shrink-0" />
+              <Icons.user className="h-5 w-5 shrink-0" />
             )
           ) : (
             <Image
@@ -159,7 +155,7 @@ function ChatMessage({ message, chat, className }: ChatMessageProps) {
               alt="avatar"
               width={24}
               height={24}
-              className="rounded-full h-7 w-7 shrink-0"
+              className="rounded-full h-5 w-5 shrink-0"
             />
           )}
         </div>
@@ -183,9 +179,17 @@ interface ChatUIProps {
 }
 
 export function ChatUI({ project }: ChatUIProps) {
-  const { updateProject } = useProjectStore();
+  const { updateProject, isUpdating } = useProject(project.id);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationFiles, setGenerationFiles] = useState<
+    Array<{
+      path: string;
+      type: 'page' | 'layout';
+      status: 'pending' | 'generating' | 'complete' | 'error';
+    }>
+  >([]);
+  const [currentFile, setCurrentFile] = useState<string>();
 
   if (!project.chat) {
     return (
@@ -198,10 +202,6 @@ export function ChatUI({ project }: ChatUIProps) {
     );
   }
 
-  const initialMessages = useMemo(() => {
-    return project.isNew ? [] : project.chat.messages;
-  }, [project.isNew, project.chat.messages]);
-
   const {
     messages,
     input,
@@ -213,26 +213,137 @@ export function ChatUI({ project }: ChatUIProps) {
     setMessages,
     stop,
   } = useChat({
+    api: '/api/chat',
     id: project.chat.id,
-    initialMessages,
+    initialMessages: project.isNew ? [] : project.chat.messages,
     body: {
       id: project.chat.id,
       title: project.title,
+      type: project.projectType,
+      context: {
+        path: currentFile,
+        pageTree: project.pageTree,
+      },
     },
-    experimental_throttle: 300,
-    onFinish: (response: Message) => {
-      console.log('Chat finished:', response);
+    onResponse: (response: Response) => {
+      const text = response.headers.get('x-completion-text');
+      if (text) {
+        try {
+          const plan = JSON.parse(text);
+          if (plan.files) {
+            const files = plan.files.map((f: any) => ({
+              ...f,
+              status: 'pending',
+            }));
+            setGenerationFiles(files);
+
+            // Start with the first file
+            if (files.length > 0) {
+              handleGenerateNextFile(files[0]);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to parse generation plan:', e);
+        }
+      }
+    },
+    onFinish: (message: Message) => {
       setIsGenerating(false);
-      if (!project.chat.messages.find((m: Message) => m.id === response.id)) {
-        updateProject(project.id, {
-          chat: {
-            ...project.chat,
-            messages: [...project.chat.messages, response],
-          },
-        });
+
+      // Extract all code blocks from the message
+      const codeBlocks = message.content.match(/```(?:tsx|jsx)?\n([\s\S]*?)```/g);
+      if (!codeBlocks) return;
+
+      // Process each code block
+      codeBlocks.forEach(block => {
+        const pathMatch = block.match(/\/\/ Path: (.+\.tsx)/);
+        if (!pathMatch) return;
+
+        const path = pathMatch[1];
+        const codeMatch = block.match(/```(?:tsx|jsx)?\n([\s\S]*?)```/);
+        if (!codeMatch) return;
+
+        const content = codeMatch[1].trim();
+
+        // Update file status if it's the current file
+        if (path === currentFile) {
+          setGenerationFiles(files =>
+            files.map(f => (f.path === path ? { ...f, status: 'complete' } : f))
+          );
+        }
+
+        // Update pageTree
+        handleUpdatePageTree({ path, content });
+      });
+
+      // Find and generate next file
+      const nextFile = generationFiles.find(f => f.status === 'pending');
+      if (nextFile) {
+        handleGenerateNextFile(nextFile);
       }
     },
   });
+
+  const handleGenerateNextFile = useCallback(
+    (nextFile: { path: string; type: 'page' | 'layout' }) => {
+      setCurrentFile(nextFile.path);
+      setGenerationFiles(files =>
+        files.map(f => (f.path === nextFile.path ? { ...f, status: 'generating' } : f))
+      );
+      append({
+        role: 'user',
+        content: `Generate the file: ${nextFile.path}`,
+      });
+    },
+    [append]
+  );
+
+  const handleUpdatePageTree = useCallback(
+    (newFile: { path: string; content: string }) => {
+      // Normalize the path to use app router convention
+      const normalizedPath = newFile.path
+        .replace(/^pages\//, 'app/')
+        .replace(/index\.tsx$/, 'page.tsx');
+
+      // Create the file node
+      const fileNode = {
+        id: nanoid(),
+        path: normalizedPath,
+        file: {
+          id: nanoid(),
+          name: normalizedPath.split('/').pop() || '',
+          content: newFile.content,
+          metadata: {
+            title: normalizedPath,
+          },
+        },
+      };
+
+      // Get the current pageTree or initialize it
+      const currentPageTree = project.pageTree || [];
+      const existingFileIndex = currentPageTree.findIndex(f => f.path === normalizedPath);
+
+      // Create a new pageTree array with the updated or new file
+      const updatedPageTree =
+        existingFileIndex !== -1
+          ? currentPageTree.map((f, i) => (i === existingFileIndex ? fileNode : f))
+          : [...currentPageTree, fileNode];
+
+      // Update the project with the new pageTree
+      updateProject(project.id, {
+        pageTree: updatedPageTree,
+      });
+
+      // Log for debugging
+      console.log('Updated pageTree:', {
+        originalPath: newFile.path,
+        normalizedPath,
+        existingFileIndex,
+        pageTreeLength: updatedPageTree.length,
+      });
+    },
+    [project.id, project.pageTree, updateProject]
+  );
 
   // Scroll to bottom effect with debounce
   useEffect(() => {
@@ -295,7 +406,7 @@ export function ChatUI({ project }: ChatUIProps) {
     return (
       <>
         {messages.map((message, i) => (
-          <ChatMessage key={message.id || i} message={message} chat={project.chat} />
+          <ChatMessage key={`${message.id}-${i + 1}`} message={message} chat={project.chat} />
         ))}
       </>
     );
@@ -303,14 +414,53 @@ export function ChatUI({ project }: ChatUIProps) {
 
   return (
     <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between p-2 border-b">
+        <div className="flex items-center gap-2">
+          <Link href="/">
+            <Icons.logo className="h-5 w-5" />
+          </Link>
+          <span>Pages</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={async () => {
+              updateProject(project.id, {
+                chat: {
+                  ...project.chat,
+                  messages: [],
+                },
+              });
+            }}
+            disabled={isUpdating}
+            className="hover:text-red-500 w-7 h-7"
+          >
+            {isUpdating ? (
+              <Icons.spinner className="h-4 w-4 animate-spin" />
+            ) : (
+              <Icons.trash className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
       <ScrollArea className="flex-1 flex flex-col justify-start">
         <div className="flex flex-col p-2 pr-3 gap-2">
-          {messages.length ? renderMessages() : <EmptyScreen setInput={setInput} />}
+          {messages.length ? (
+            <>
+              {renderMessages()}
+              {generationFiles.length > 0 && (
+                <SiteGenerationProgress files={generationFiles} currentFile={currentFile} />
+              )}
+            </>
+          ) : (
+            <EmptyScreen projectType={project.projectType} setInput={setInput} />
+          )}
         </div>
         <div ref={messagesEndRef} />
       </ScrollArea>
-      <form onSubmit={handleSubmit} className="border-t bg-background p-1">
-        <div className="relative flex w-full overflow-hidden bg-background gap-2">
+      <form onSubmit={handleSubmit} className="p-1">
+        <div className="relative flex w-full border border-foreground/20 focus-within:border-foreground/50 rounded-lg overflow-hidden bg-background gap-2">
           <Textarea
             tabIndex={0}
             rows={1}
@@ -326,15 +476,15 @@ export function ChatUI({ project }: ChatUIProps) {
             size="sm"
             disabled={!isLoading && input === ''}
             className={cn(
-              'absolute right-1 bottom-1 shrink-0 h-7 w-auto flex items-center gap-1 px-2 text-sm',
+              'absolute right-1 bottom-1 rounded shrink-0 h-5 w-auto flex items-center gap-1 px-2 text-xs',
               isLoading && 'bg-red-500 text-white hover:bg-red-600'
             )}
           >
             {isLoading ? 'stop' : 'submit'}
             {isLoading ? (
-              <Icons.square className="h-3 w-3" />
+              <Icons.square className="h-2 w-2" />
             ) : (
-              <Icons.cornerDownLeft className="h-3 w-3" />
+              <Icons.cornerDownLeft className="h-2 w-2" />
             )}
           </Button>
         </div>
@@ -343,28 +493,39 @@ export function ChatUI({ project }: ChatUIProps) {
   );
 }
 
-function EmptyScreen({ setInput }: { setInput: (input: string) => void }) {
+function EmptyScreen({
+  projectType,
+  setInput,
+}: {
+  projectType: 'site' | 'page';
+  setInput: (input: string) => void;
+}) {
+  const samplePrompts =
+    projectType === 'site'
+      ? [
+          'Create a multi-page site about a new product',
+          'Build a pricing page with three tiers',
+          'Design a hero section with a call-to-action',
+        ]
+      : [
+          'Create a login form with a modern design',
+          'Build a pricing page with three tiers',
+          'Design a hero section with a call-to-action',
+        ];
+
   return (
     <div className="mx-auto max-w-2xl px-4">
-      <div className="rounded-lg border bg-background p-8">
-        <h1 className="mb-2 text-lg font-semibold">Welcome to Pagen AI</h1>
-        <p className="mb-2 leading-normal text-muted-foreground">
-          This is an AI-powered web page generator. Describe what you want to create and I&apos;ll
-          help you build it.
-        </p>
-        <div className="mt-4 flex flex-col items-start space-y-2">
-          {[
-            'Create a login form with a modern design',
-            'Build a pricing page with three tiers',
-            'Design a hero section with a call-to-action',
-          ].map(example => (
+      <div className="mt-4 flex flex-col items-start space-y-2">
+        <h2 className="text-lg font-medium">Sample prompts</h2>
+        <div className="grid gap-2">
+          {samplePrompts.map(prompt => (
             <Button
-              key={example}
-              variant="link"
-              className="h-auto p-0 text-base"
-              onClick={() => setInput(example)}
+              key={prompt}
+              variant="ghost"
+              className="h-auto p-2 text-left text-muted-foreground"
+              onClick={() => setInput(prompt)}
             >
-              <span className="text-muted-foreground">&rarr;</span> {example}
+              {prompt}
             </Button>
           ))}
         </div>
