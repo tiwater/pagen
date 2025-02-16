@@ -9,16 +9,29 @@ if (!fs.existsSync(STORAGE_DIR)) {
   fs.mkdirSync(STORAGE_DIR, { recursive: true });
 }
 
-export function storePage(id: string, code: string) {
+interface PageTreeNode {
+  id: string;
+  path: string;
+  file: {
+    id: string;
+    name: string;
+    content: string;
+    metadata: {
+      title: string;
+    };
+  };
+}
+
+export function storePage(id: string, pageTree: string) {
   const filePath = path.join(STORAGE_DIR, `${id}.json`);
-  fs.writeFileSync(filePath, JSON.stringify({ code }), "utf-8");
+  fs.writeFileSync(filePath, pageTree, "utf-8");
 }
 
 export function getPage(id: string): string | null {
   try {
     const filePath = path.join(STORAGE_DIR, `${id}.json`);
-    const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    return data.code;
+    const pageTree = fs.readFileSync(filePath, "utf-8");
+    return pageTree;
   } catch (error) {
     return null;
   }

@@ -15,5 +15,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ code: pageTree });
+  // Return the pageTree directly since it's already JSON stringified
+  return NextResponse.json({ pageTree });
 }

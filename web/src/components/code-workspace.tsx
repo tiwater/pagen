@@ -5,7 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vs, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
-import { ProjectFile } from '@/types/project';
+import { PageTreeNode, ProjectFile } from '@/types/project';
 import { CopyButton } from '@/components/copy-button';
 import { Icons } from '@/components/icons';
 import { PagePreview } from '@/components/page-preview';
@@ -25,7 +25,7 @@ import { AuthButton } from './auth-button';
 
 interface CodeWorkspaceProps {
   id?: string;
-  file?: ProjectFile;
+  file?: PageTreeNode;
 }
 
 export function CodeWorkspace({ id, file }: CodeWorkspaceProps) {
@@ -181,7 +181,7 @@ export function CodeWorkspace({ id, file }: CodeWorkspaceProps) {
                     border: 'none',
                   }}
                 >
-                  {file.content}
+                  {file.file?.content || ''}
                 </SyntaxHighlighter>
               </ScrollArea>
             ) : (
@@ -191,7 +191,7 @@ export function CodeWorkspace({ id, file }: CodeWorkspaceProps) {
             )}
           </TabsContent>
           <TabsContent value="preview" className="h-full m-0">
-            {file && <PagePreview file={file} path={file.name} />}
+            {file && <PagePreview file={file} />}
           </TabsContent>
         </div>
       </Tabs>

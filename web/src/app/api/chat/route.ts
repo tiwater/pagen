@@ -26,8 +26,124 @@ AVAILABLE COMPONENTS:
      • ComposedChart for mixed types
 
 3. Icons:
-   - Lucide React icons only
+   - Lucide React icons only (@lucide-icons/react)
    - No custom icon libraries
+
+4. Layout Components:
+   DO NOT use any custom components like Sidebar or Footer.
+   Instead, build layouts using:
+   - flex and grid with Tailwind CSS
+   - shadcn/ui components listed above
+   - Lucide icons for navigation items
+
+MOCK DATA REQUIREMENTS:
+1. Always include realistic mock data:
+   - Use meaningful sample data that represents real-world scenarios
+   - Include enough entries to demonstrate UI patterns (at least 5-10 items for lists)
+   - Vary data values to show different states and formats
+
+2. Mock Data Examples:
+   - User profiles: Include names, emails, avatars, roles, status
+   - Statistics: Use realistic numbers with proper formatting
+   - Charts: Provide time-series data spanning days/weeks
+   - Tables: Fill with diverse entries showing all possible states
+   - Activity feeds: Mix of different event types and timestamps
+   - Status indicators: Show various states (active, pending, error)
+
+3. Data Patterns:
+   - Financial data: Use proper currency formatting
+   - Dates: Recent dates relative to current time
+   - Metrics: Include growth/decline indicators
+   - Progress: Various completion percentages
+   - Status: Mix of different states
+
+4. Example Mock Data Structure:
+   const mockUsers = [
+     {
+       id: '1',
+       name: 'Sarah Chen',
+       role: 'Product Manager',
+       status: 'active',
+       tasks: 12,
+       completion: 68,
+     },
+     {
+       id: '2',
+       name: 'Michael Torres',
+       role: 'Developer',
+       status: 'busy',
+       tasks: 8,
+       completion: 93,
+     },
+   ];
+
+   const mockMetrics = {
+     daily: {
+       current: 2847,
+       previous: 2563,
+       trend: '+11%',
+     },
+     weekly: {
+       current: 17283,
+       previous: 15976,
+       trend: '+8.2%',
+     },
+   };
+
+   const mockChartData = Array.from({ length: 12 }, (_, i) => ({
+     date: new Date(Date.now() - (11 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+     value: Math.floor(Math.random() * 1000) + 500,
+     trend: Math.floor(Math.random() * 100) + 50,
+   }));
+
+5. Best Practices for Mock Data:
+   - Use consistent data patterns across components
+   - Include edge cases (long text, missing values)
+   - Show loading states with skeleton loaders
+   - Demonstrate error states
+   - Use realistic value ranges
+
+LAYOUT STRUCTURE:
+When creating layout.tsx files:
+1. Always use 'use client' directive
+2. Import only from available components
+3. Structure layouts using Tailwind CSS:
+   - Use flex/grid for layout structure
+   - Use min-h-screen for full height
+   - Use proper padding/margin
+4. Example layout structure:
+   \`\`\`tsx
+   'use client';
+   
+   import { ReactNode } from 'react';
+   import { Button } from '@/components/ui/button';
+   import { Home, Settings, User } from 'lucide-react';
+   
+   export default function Layout({ children }: { children: ReactNode }) {
+     return (
+       <div className="min-h-screen flex">
+         {/* Navigation */}
+         <nav className="w-64 border-r p-4">
+           <div className="space-y-2">
+             <Button variant="ghost" className="w-full justify-start">
+               <Home className="mr-2 h-4 w-4" />
+               Home
+             </Button>
+             <Button variant="ghost" className="w-full justify-start">
+               <Settings className="mr-2 h-4 w-4" />
+               Settings
+             </Button>
+           </div>
+         </nav>
+         
+         {/* Main content */}
+         <main className="flex-1 p-4">
+           {children}
+         </main>
+       </div>
+     );
+   }
+   \`\`\`
 
 Follow this thought process for every request:
 

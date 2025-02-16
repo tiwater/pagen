@@ -14,6 +14,22 @@ interface PageTreeNode {
   };
 }
 
+// Validate pageTree structure
+function validatePageTree(pageTree: any[]): pageTree is PageTreeNode[] {
+  return pageTree.every(node => {
+    return (
+      typeof node.id === 'string' &&
+      typeof node.path === 'string' &&
+      node.file &&
+      typeof node.file.id === 'string' &&
+      typeof node.file.name === 'string' &&
+      typeof node.file.content === 'string' &&
+      node.file.metadata &&
+      typeof node.file.metadata.title === 'string'
+    );
+  });
+}
+
 export async function POST(request: Request) {
   // Handle preflight request
   if (request.method === "OPTIONS") {
@@ -37,7 +53,20 @@ export async function POST(request: Request) {
           headers: {
             "Access-Control-Allow-Origin": "*",
           },
-        },
+        }
+      );
+    }
+
+    // Validate pageTree structure
+    if (!validatePageTree(pageTree)) {
+      return NextResponse.json(
+        { error: "Invalid pageTree structure" },
+        {
+          status: 400,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
       );
     }
 
@@ -51,7 +80,7 @@ export async function POST(request: Request) {
         headers: {
           "Access-Control-Allow-Origin": "*",
         },
-      },
+      }
     );
   } catch (error) {
     console.error("Error storing site:", error);
@@ -62,7 +91,7 @@ export async function POST(request: Request) {
         headers: {
           "Access-Control-Allow-Origin": "*",
         },
-      },
+      }
     );
   }
 }

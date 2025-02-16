@@ -1,25 +1,25 @@
 'use client';
 
+import path from 'path';
 import { useEffect, useState } from 'react';
 import { useProject } from '@/hooks/use-project';
-import { ProjectFile } from '@/types/project';
+import { PageTreeNode, ProjectFile } from '@/types/project';
 import { Loading } from './loading';
 
 const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
 
 interface PagePreviewProps {
-  file: ProjectFile;
-  path: string;
+  file: PageTreeNode;
 }
 
-export function PagePreview({ file, path }: PagePreviewProps) {
+export function PagePreview({ file }: PagePreviewProps) {
   const { project } = useProject();
   const [isLoading, setIsLoading] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     async function createPreviewPage() {
-      if (!project?.pageTree || !path) return;
+      if (!project?.pageTree) return;
 
       try {
         console.log('Sending preview request to:', '/api/render');
@@ -49,12 +49,14 @@ export function PagePreview({ file, path }: PagePreviewProps) {
         // Convert file path to URL path
         // e.g., 'app/about/page.tsx' -> '/about'
         // e.g., 'app/page.tsx' -> '/'
-        const urlPath = path
+        const urlPath = file.path
           .replace(/^app\//, '') // Remove 'app/' prefix
           .replace(/\/page\.tsx$/, '') // Remove '/page.tsx' suffix
           .replace(/^page\.tsx$/, ''); // Handle root page
 
-        const finalUrl = `${RENDERER_URL}${data.url}${urlPath}`;
+        console.log('URL Path:', file, urlPath);
+
+        const finalUrl = `${RENDERER_URL}${data.url}${urlPath === '' ? '' : `/${urlPath}`}`;
         console.log('Final Preview URL:', finalUrl);
         setPreviewUrl(finalUrl);
       } catch (error) {
@@ -65,7 +67,7 @@ export function PagePreview({ file, path }: PagePreviewProps) {
     }
 
     createPreviewPage();
-  }, [project?.id, project?.pageTree, path]);
+  }, [project?.id, project?.pageTree, file.path]);
 
   if (isLoading) {
     return <Loading />;
