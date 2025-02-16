@@ -40,7 +40,7 @@ export function PageCard({ children }: PageCardProps) {
           // messageId === activePage && 'border-muted-foreground/80'
         )}
       >
-        <div className="flex items-center justify-between border-b border-muted bg-background/50 px-3 py-2">
+        <div className="flex items-center justify-between border-b border-muted bg-background/50 p-2 h-7">
           <div className="flex items-center gap-2">
             <Icons.window className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs font-medium">{'Generated Page'}</span>
@@ -48,10 +48,10 @@ export function PageCard({ children }: PageCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-5 w-5"
             onClick={() => setIsDialogOpen(true)}
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <Icons.code className="h-4 w-4" />
           </Button>
         </div>
         {!content && (

@@ -249,32 +249,45 @@ export function ChatUI({ project }: ChatUIProps) {
     },
     onFinish: (message: Message) => {
       setIsGenerating(false);
-
-      // Extract all code blocks from the message
-      const codeBlocks = message.content.match(/```(?:tsx|jsx)?\n([\s\S]*?)```/g);
-      if (!codeBlocks) return;
-
-      // Process each code block
-      codeBlocks.forEach(block => {
-        const pathMatch = block.match(/\/\/ Path: (.+\.tsx)/);
-        if (!pathMatch) return;
-
-        const path = pathMatch[1];
-        const codeMatch = block.match(/```(?:tsx|jsx)?\n([\s\S]*?)```/);
-        if (!codeMatch) return;
-
-        const content = codeMatch[1].trim();
-
-        // Update file status if it's the current file
-        if (path === currentFile) {
-          setGenerationFiles(files =>
-            files.map(f => (f.path === path ? { ...f, status: 'complete' } : f))
-          );
-        }
-
-        // Update pageTree
-        handleUpdatePageTree({ path, content });
+      updateProject(project.id, {
+        chat: {
+          ...project.chat,
+          messages: [...project.chat.messages, message],
+        },
       });
+
+      // Split the message content into sections based on markdown headers
+      const sections = message.content.split(/#{3,}\s+/);
+
+      for (const section of sections) {
+        // Extract code blocks from each section
+        const codeBlockRegex = /```(?:tsx|jsx)?\n([\s\S]*?)```/g;
+        let match;
+
+        while ((match = codeBlockRegex.exec(section)) !== null) {
+          const blockContent = match[1].trim();
+          // Look for the path comment at the start of the code block
+          const pathMatch = blockContent.match(/\/\/\s*Path:\s*(.+\.tsx)/);
+
+          if (pathMatch) {
+            const path = pathMatch[1].trim();
+            const content = blockContent.replace(/\/\/\s*Path:\s*(.+\.tsx)\n/, '').trim();
+
+            // Update file status if it's the current file
+            if (path === currentFile) {
+              setGenerationFiles(files =>
+                files.map(f => (f.path === path ? { ...f, status: 'complete' } : f))
+              );
+            }
+
+            // Update pageTree
+            handleUpdatePageTree({ path, content });
+
+            // Log for debugging
+            console.log('Extracted code block:', { path, contentLength: content.length });
+          }
+        }
+      }
 
       // Find and generate next file
       const nextFile = generationFiles.find(f => f.status === 'pending');
