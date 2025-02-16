@@ -188,10 +188,31 @@ export async function POST(request: NextRequest) {
             - Root page should be 'app/page.tsx'
             - Nested pages should be 'app/[route]/page.tsx'
             - Layouts should be 'app/[route]/layout.tsx'
-            - Components should be in 'app/components/'
-         3. Keep components modular and reusable
+            - DO NOT create separate component files
+         3. Keep code modular within pages and layouts
          4. Optimize for performance with proper code splitting
          5. Use Server Components where possible
+
+         ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
+         ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}
+         ${context?.pageTree ? `Existing files: ${JSON.stringify(context.pageTree)}` : ''}
+
+         IMPORTANT PATH RULES:
+         - Always include '// Path: [filepath]' at the top of each code block
+         - Use 'app/' prefix for all routes
+         - Use 'page.tsx' for pages (not index.tsx)
+         - Use 'layout.tsx' for layouts
+         - Example paths:
+           • app/page.tsx (root page)
+           • app/about/page.tsx (about page)
+           • app/layout.tsx (root layout)
+           • app/about/layout.tsx (about section layout)
+         - DO NOT create separate component files
+
+         CODE ORGANIZATION:
+         - Keep all components within their respective page.tsx or layout.tsx files
+         - Use function components directly in the files where they are needed
+         - Avoid creating separate component files
 
          ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
          ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}

@@ -426,12 +426,15 @@ export function ChatUI({ project }: ChatUIProps) {
             variant="ghost"
             size="icon"
             onClick={async () => {
-              updateProject(project.id, {
+              // Update the project in the database
+              await updateProject(project.id, {
                 chat: {
                   ...project.chat,
                   messages: [],
                 },
               });
+              // Clear the local messages state
+              setMessages([]);
             }}
             disabled={isUpdating}
             className="hover:text-red-500 w-7 h-7"
