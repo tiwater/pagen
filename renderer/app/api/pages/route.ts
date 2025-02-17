@@ -9,11 +9,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
 
-  const code = getPage(id);
+  const pageTree = getPage(id);
 
-  if (!code) {
+  if (!pageTree) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ code });
+  // Return the pageTree directly since it's already JSON stringified
+  return NextResponse.json({ pageTree });
 }

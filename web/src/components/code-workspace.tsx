@@ -1,9 +1,11 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useTheme } from 'next-themes';
 import Link from 'next/link';
-import { usePageStore } from '@/store/page';
-import { CodeBlock } from '@/components/code-block';
+import { PageTreeNode, Project } from '@/types/project';
 import { CopyButton } from '@/components/copy-button';
 import { Icons } from '@/components/icons';
 import { PagePreview } from '@/components/page-preview';
@@ -22,17 +24,18 @@ import { cn } from '@/lib/utils';
 import { AuthButton } from './auth-button';
 
 interface CodeWorkspaceProps {
-  id: string;
-  isMobile: boolean;
-  setIsPreviewOpen?: (open: boolean) => void;
+  id?: string;
+  file?: PageTreeNode;
+  project: Project;
 }
 
-export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
-  const { pages, activePage } = usePageStore();
-  const activePageData = activePage ? pages[activePage] : null;
+export function CodeWorkspace({ id, file, project }: CodeWorkspaceProps) {
+  const { resolvedTheme } = useTheme();
+  const theme = resolvedTheme === 'dark' ? oneDark : oneLight;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
+
   const handleScreenshot = useCallback(async () => {
-    if (!activePage) return;
+    if (!id) return;
 
     try {
       setIsScreenshotting(true);
@@ -42,7 +45,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: activePage,
+          id,
         }),
       });
 
@@ -59,7 +62,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
       // Create a temporary link and trigger download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `screenshot-${activePage}.png`;
+      link.download = `screenshot-${id}.png`;
       document.body.appendChild(link);
       link.click();
 
@@ -71,12 +74,12 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
     } finally {
       setIsScreenshotting(false);
     }
-  }, [activePage]);
+  }, [id]);
 
   return (
     <div className="flex h-full flex-col max-w-full">
       <Tabs defaultValue="code" className="flex-1 h-full flex flex-col">
-        <div className="flex items-center justify-between border-b">
+        <div className="flex items-center justify-between border-b h-10">
           <TabsList className="bg-transparent gap-2">
             {[
               {
@@ -101,19 +104,12 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                 {tab.label}
               </TabsTrigger>
             ))}
-            {activePageData && (
-              <div className="flex items-center gap-2 p-2">
-                {activePageData.status === 'generating' && (
-                  <Icons.spinner className="h-4 w-4 animate-spin" />
-                )}
-              </div>
-            )}
           </TabsList>
           <div className="flex items-center gap-2 p-2">
             <Button
               variant="ghost"
               onClick={handleScreenshot}
-              disabled={!activePageData || activePageData.status !== 'complete' || isScreenshotting}
+              disabled={!file || isScreenshotting}
               className="h-7 w-7 p-0"
             >
               {isScreenshotting ? (
@@ -124,11 +120,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
             </Button>
             <Dialog>
               <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  disabled={!activePageData || activePageData.status !== 'complete'}
-                  className="h-7 w-7 p-0"
-                >
+                <Button variant="ghost" disabled={!file} className="h-7 w-7 p-0">
                   <Icons.api className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
@@ -150,7 +142,7 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                         <code className="text-sm">
                           {`curl -X POST ${'https://pages.tisvc.com'}/api/generate \\
   -H "Content-Type: application/json" \\
-  -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
+  -d '{"prompt": "a beautiful login page"}' \\
   --output page.png`}
                         </code>
                       </pre>
@@ -158,17 +150,12 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
                         className="absolute top-2 right-2 h-6 w-6"
                         text={`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.tisvc.com'}/api/generate \\
   -H "Content-Type: application/json" \\
-  -d '{"prompt": "${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}"}' \\
+  -d '{"prompt": "a beautiful login page"}' \\
   --output page.png`}
-                        prompt={`Command to generate page \"${activePageData?.prompt?.replace(/'/g, "\\'") || 'a beautiful login page'}\" has been copied. You can paste it into your terminal.`}
+                        prompt={`Command to generate page has been copied. You can paste it into your terminal.`}
                       />
                     </div>
                   </div>
-                  {!activePageData?.prompt && (
-                    <p className="text-sm text-yellow-500">
-                      Note: Using default prompt as no prompt was found for this page.
-                    </p>
-                  )}
                   <p className="text-sm text-muted-foreground">
                     For more information on how to use this API, visit our{' '}
                     <Link href="/docs" target="_blank" className="underline hover:text-primary">
@@ -183,19 +170,42 @@ export function CodeWorkspace({ id, isMobile }: CodeWorkspaceProps) {
           </div>
         </div>
         <div className="flex-1 h-[calc(100%-4rem)] overflow-hidden">
-          <TabsContent value="code" className="h-full m-0 bg-muted/20">
-            {activePageData ? (
+          <TabsContent value="code" className="h-full m-0">
+            {file ? (
               <ScrollArea className="h-full w-full">
-                <CodeBlock code={activePageData.content || ''} language="tsx" />
+                <SyntaxHighlighter
+                  language="tsx"
+                  style={theme}
+                  customStyle={{
+                    margin: 0,
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: '12px',
+                  }}
+                  codeTagProps={{
+                    style: {
+                      fontSize: '12px',
+                      lineHeight: '1.4',
+                    },
+                  }}
+                  wrapLines={true}
+                  lineProps={{
+                    style: {
+                      background: 'transparent',
+                    },
+                  }}
+                >
+                  {file.file?.content || ''}
+                </SyntaxHighlighter>
               </ScrollArea>
             ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground">
-                No page selected
+                No file selected
               </div>
             )}
           </TabsContent>
           <TabsContent value="preview" className="h-full m-0">
-            {activePageData && <PagePreview messageId={activePageData.messageId} />}
+            {file && <PagePreview project={project} file={file} />}
           </TabsContent>
         </div>
       </Tabs>

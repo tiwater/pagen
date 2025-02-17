@@ -10,14 +10,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Ensure Supabase auth works in production
-  serverExternalPackages: ['@supabase/ssr'],
-  // Disable static optimization for auth-related pages
-  experimental: {
-    // This ensures these pages are always rendered at runtime
-    workerThreads: false,
-    cpus: 1
-  },
   // Force dynamic rendering for auth pages
   async headers() {
     return [

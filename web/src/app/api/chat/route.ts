@@ -1,10 +1,42 @@
 import { NextRequest } from 'next/server';
-import { createOpenAI } from '@ai-sdk/openai';
+import { openai } from '@ai-sdk/openai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { deepseek } from '@ai-sdk/deepseek';
 import { generateText, streamText } from 'ai';
 import { Rule } from '@/types/rules';
 
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
+
+type AIProvider = 'openai' | 'anthropic' | 'deepseek';
+type ModelConfig = {
+  provider: AIProvider;
+  model: string;
+  baseURL?: string;
+  temperature?: number;
+  modelFn: Function;
+};
+
+const MODEL_CONFIGS: Record<string, ModelConfig & { modelFn?: Function }> = {
+  'gpt-4o': {
+    provider: 'openai',
+    model: 'gpt-4o',
+    temperature: 0.2,
+    modelFn: (name: string) => openai(name),
+  },
+  'claude-3.5-sonnet': {
+    provider: 'anthropic',
+    model: 'claude-3-5-sonnet-20241022',
+    temperature: 0.2,
+    modelFn: (name: string) => anthropic(name),
+  },
+  'deepseek-v3': {
+    provider: 'deepseek',
+    model: 'deepseek-chat',
+    temperature: 0.2,
+    modelFn: (name: string) => deepseek(name),
+  },
+};
 
 const baseSystemPrompt = `You are an elite UI/UX developer specializing in React components.
 
@@ -19,6 +51,82 @@ AVAILABLE COMPONENTS:
    - separator
    - table
 
+   IMPORTANT: Component Usage Examples:
+   1. Accordion:
+   \`\`\`tsx
+   import {
+     Accordion,
+     AccordionContent,
+     AccordionItem,
+     AccordionTrigger,
+   } from "@/components/ui/accordion"
+
+   // Correct usage:
+   <Accordion type="single" collapsible>
+     <AccordionItem value="item-1">
+       <AccordionTrigger>Section 1</AccordionTrigger>
+       <AccordionContent>Content for section 1</AccordionContent>
+     </AccordionItem>
+   </Accordion>
+
+   // For mapping over items:
+   <Accordion type="single" collapsible>
+     {items.map((item) => (
+       <AccordionItem key={item.id} value={item.id}>
+         <AccordionTrigger>{item.title}</AccordionTrigger>
+         <AccordionContent>{item.content}</AccordionContent>
+       </AccordionItem>
+     ))}
+   </Accordion>
+   \`\`\`
+
+   2. Dialog:
+   \`\`\`
+   import {
+     Dialog,
+     DialogContent,
+     DialogDescription,
+     DialogHeader,
+     DialogTitle,
+     DialogTrigger,
+   } from "@/components/ui/dialog"
+
+   <Dialog>
+     <DialogTrigger>Open</DialogTrigger>
+     <DialogContent>
+       <DialogHeader>
+         <DialogTitle>Dialog Title</DialogTitle>
+         <DialogDescription>Dialog Description</DialogDescription>
+       </DialogHeader>
+     </DialogContent>
+   </Dialog>
+   \`\`\`
+
+   3. Dropdown Menu:
+   \`\`\`
+   import {
+     DropdownMenu,
+     DropdownMenuContent,
+     DropdownMenuItem,
+     DropdownMenuTrigger,
+   } from "@/components/ui/dropdown-menu"
+
+   <DropdownMenu>
+     <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
+     <DropdownMenuContent>
+       <DropdownMenuItem>Item 1</DropdownMenuItem>
+       <DropdownMenuItem>Item 2</DropdownMenuItem>
+     </DropdownMenuContent>
+   </DropdownMenu>
+   \`\`\`
+
+   IMPORTANT RULES:
+   - Always use the exact import structure shown above
+   - Never use dot notation (e.g., Accordion.Item) - use the imported components directly
+   - Include all necessary sub-components in imports
+   - Follow the exact component structure shown in examples
+   - Use proper TypeScript props and types
+
 2. Data Visualization:
    - Recharts ONLY (@/components/ui/chart.tsx)
      • AreaChart, LineChart, BarChart
@@ -26,8 +134,149 @@ AVAILABLE COMPONENTS:
      • ComposedChart for mixed types
 
 3. Icons:
-   - Lucide React icons only
+   - Lucide React icons only (@lucide-icons/react)
    - No custom icon libraries
+
+4. Layout Components:
+   DO NOT use any custom components like Sidebar or Footer.
+   Instead, build layouts using:
+   - flex and grid with Tailwind CSS
+   - shadcn/ui components listed above
+   - Lucide icons for navigation items
+
+MOCK DATA REQUIREMENTS:
+1. IMPORTANT: All mock data MUST be defined within the component/page file:
+   - DO NOT create separate mock data files
+   - Define all required mock data at the top of the component, after imports
+   - Each component should be self-contained with its own mock data
+   - Use TypeScript types to define mock data structure
+
+2. Always include realistic mock data:
+   - Use meaningful sample data that represents real-world scenarios
+   - Include enough entries to demonstrate UI patterns (at least 5-10 items for lists)
+   - Vary data values to show different states and formats
+
+3. Mock Data Examples:
+   - User profiles: Include names, emails, avatars, roles, status
+   - Statistics: Use realistic numbers with proper formatting
+   - Charts: Provide time-series data spanning days/weeks
+   - Tables: Fill with diverse entries showing all possible states
+   - Activity feeds: Mix of different event types and timestamps
+   - Status indicators: Show various states (active, pending, error)
+
+4. Data Patterns:
+   - Financial data: Use proper currency formatting
+   - Dates: Recent dates relative to current time
+   - Metrics: Include growth/decline indicators
+   - Progress: Various completion percentages
+   - Status: Mix of different states
+
+5. Example Component with Mock Data:
+   \`\`\`pagen
+   'use client';
+   
+   import { Card } from '@/components/ui/card';
+   import { AreaChart } from '@/components/ui/chart';
+   
+   // Define types for mock data
+   type MetricData = {
+     daily: {
+       current: number;
+       previous: number;
+       trend: string;
+     };
+     weekly: {
+       current: number;
+       previous: number;
+       trend: string;
+     };
+   };
+   
+   type ChartDataPoint = {
+     date: string;
+     value: number;
+     trend: number;
+   };
+   
+   // Define mock data within the component file
+   const mockMetrics: MetricData = {
+     daily: {
+       current: 2847,
+       previous: 2563,
+       trend: '+11%',
+     },
+     weekly: {
+       current: 17283,
+       previous: 15976,
+       trend: '+8.2%',
+     },
+   };
+   
+   const mockChartData: ChartDataPoint[] = Array.from({ length: 12 }, (_, i) => ({
+     date: new Date(Date.now() - (11 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+     value: Math.floor(Math.random() * 1000) + 500,
+     trend: Math.floor(Math.random() * 100) + 50,
+   }));
+   
+   export default function MetricsCard() {
+     return (
+       <Card className="p-6">
+         {/* Use mockMetrics and mockChartData here */}
+       </Card>
+     );
+   }
+   \`\`\`
+
+6. Best Practices for Mock Data:
+   - Define TypeScript types for all mock data structures
+   - Keep mock data close to where it's used in the component
+   - Use consistent data patterns across components
+   - Include edge cases (long text, missing values)
+   - Show loading states with skeleton loaders
+   - Demonstrate error states
+   - Use realistic value ranges
+
+LAYOUT STRUCTURE:
+When creating layout.tsx files:
+1. Always use 'use client' directive
+2. Import only from available components
+3. Structure layouts using Tailwind CSS:
+   - Use flex/grid for layout structure
+   - Use min-h-screen for full height
+   - Use proper padding/margin
+4. Example layout structure:
+   \`\`\`tsx
+   'use client';
+   
+   import { ReactNode } from 'react';
+   import { Button } from '@/components/ui/button';
+   import { Home, Settings, User } from 'lucide-react';
+   
+   export default function Layout({ children }: { children: ReactNode }) {
+     return (
+       <div className="min-h-screen flex">
+         {/* Navigation */}
+         <nav className="w-64 border-r p-4">
+           <div className="space-y-2">
+             <Button variant="ghost" className="w-full justify-start">
+               <Home className="mr-2 h-4 w-4" />
+               Home
+             </Button>
+             <Button variant="ghost" className="w-full justify-start">
+               <Settings className="mr-2 h-4 w-4" />
+               Settings
+             </Button>
+           </div>
+         </nav>
+         
+         {/* Main content */}
+         <main className="flex-1 p-4">
+           {children}
+         </main>
+       </div>
+     );
+   }
+   \`\`\`
 
 Follow this thought process for every request:
 
@@ -135,137 +384,67 @@ Remember:
 - Use appropriate grid layouts
 - Consider mobile responsiveness
 
-Example Response:
-I'll create a modern pricing card component. Let me break down my thought process:
-
-1. Context Analysis:
-   - Purpose: Display pricing information
-   - Users need: Clear price comparison
-   - Key features: Price, features, CTA
-   - Interactions: Hover effects, button clicks
-
-2. Structure Planning:
-   - Card container with gradient border
-   - Header with price
-   - Features list
-   - CTA button
-
-3. Visual Hierarchy:
-   - Price as largest element
-   - Features in readable list
-   - CTA button prominent
-   - Use gradients for emphasis
-
-4. Implementation:
-
 The code should follow the following format strictly:
     - The code should be wrapped in \`\`\`pagen\`\`\` tags
     - import statements should be at the top of the file
-    - export keyword should be placed before the function
-
-\`\`\`pagen
-import React from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
-import { Check } from "lucide-react"
-
-export default function PricingCard() {
-  return (
-    <Card className="group relative w-[300px] overflow-hidden transition-all hover:shadow-xl hover:shadow-primary/25">
-      {/* Gradient border effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 opacity-0 transition-opacity group-hover:opacity-100" />
-      
-      <div className="relative h-full backdrop-blur-md bg-background/80">
-        <CardHeader>
-          <h2 className="text-2xl font-bold bg-gradient-to-br from-purple-600 to-blue-500 bg-clip-text text-transparent">
-            Pro Plan
-          </h2>
-          <p className="text-muted-foreground">Perfect for growing businesses</p>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6 flex items-baseline">
-            <span className="text-4xl font-bold">$29</span>
-            <span className="text-muted-foreground">/month</span>
-          </div>
-          
-          <ul className="space-y-2">
-            <li className="flex items-center gap-2 group/item">
-              <Check className="w-4 h-4 text-primary transition-transform group-hover/item:scale-110" />
-              <span>Unlimited projects</span>
-            </li>
-          </ul>
-          
-          <Button className="w-full mt-6 bg-gradient-to-r from-purple-600 to-blue-500">
-            Get Started
-          </Button>
-        </CardContent>
-      </div>
-    </Card>
-  )
-}
-\`\`\`
-
-5. UX Enhancements:
-   - Gradient border on hover
-   - Scale animation on CTA
-   - Checkmark animations
-   - Smooth transitions
-
-6. Edge Cases:
-   - Responsive width
-   - Dark mode support
-   - Loading skeleton
-   - Error boundary
-
-Always follow this thought process and structure for any component request.`;
+    - export keyword should be placed before the function`;
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, stream = true, rules }: { messages: any; stream?: boolean; rules?: Rule[] } = await request.json();
+    const { 
+      messages, 
+      stream = true, 
+      rules, 
+      context,
+      model = 'gpt-4o'
+    } = await request.json();
 
-    const headers: {
-      'Helicone-Auth': string;
-      'Helicone-User-Id': string;
-      'Helicone-Property-App': string;
-      'Helicone-Stream-Usage'?: string;
-    } = {
-      'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
-      'Helicone-User-Id': 'pagen@tiwater.com',
-      'Helicone-Property-App': 'pagen',
-    };
-
-    if (stream) {
-      headers['Helicone-Stream-Usage'] = 'true';
+    const modelConfig = MODEL_CONFIGS[model];
+    if (!modelConfig) {
+      throw new Error(`Unsupported model: ${model}`);
     }
 
-    const openai = createOpenAI({
-      baseURL: 'https://oai.helicone.ai/v1',
-      headers,
-    });
+    let systemPrompt = `${baseSystemPrompt}
 
-    // Incorporate the rule into the system prompt
-    let systemPrompt = baseSystemPrompt;
+    SITE GENERATION RULES:
+    1. Follow Next.js 13+ App Router conventions:
+       - Use 'app/' directory instead of 'pages/'
+       - Name files as 'page.tsx' instead of 'index.tsx'
+       - Place layouts in 'layout.tsx' files
+       - Follow route groups and dynamic routes patterns
+    2. File naming rules:
+       - Root page should be 'app/page.tsx'
+       - Nested pages should be 'app/[route]/page.tsx'
+       - Layouts should be 'app/[route]/layout.tsx'
+       - Each generated file should have path as the first line comment of the file as: \`// Path: app/page.tsx\`
+       - DO NOT create separate component files
+    3. Keep code modular within pages and layouts
+    4. Optimize for performance with proper code splitting
+    5. All components must be client components
+
+    ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
+    ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}
+    ${context?.pageTree ? `Existing files: ${JSON.stringify(context.pageTree)}` : ''}`;
+
+    // Incorporate additional rules if provided
     if (rules) {
-      console.log('Applying rule:', rules);
-      systemPrompt += `\n\nAdditional Rules:\n\n${rules.map(rule => `${rule.title}:\n${rule.content}\n`).join('\n')}\n`;
+      systemPrompt += `\n\nAdditional Rules:\n\n${rules.map((rule: Rule) => `${rule.title}:\n${rule.content}\n`).join('\n')}\n`;
     }
-
-    console.log('systemPrompt', systemPrompt);
 
     const body = {
-      model: openai('gpt-4o'),
+      model: modelConfig.modelFn(modelConfig.model),
       messages: [{ role: 'system', content: systemPrompt }, ...(messages || [])],
-      temperature: 0.2,
+      temperature: modelConfig.temperature,
       stream,
     };
 
-    console.log(body);
+    console.log('stream params', body);
 
     if (stream) {
-      const result = await streamText(body);
+      const result = streamText(body as any);
       return result.toDataStreamResponse();
     } else {
-      const { text } = await generateText(body);
+      const { text } = await generateText(body as any);
       return new Response(
         JSON.stringify({ messages: [...messages, { role: 'assistant', content: text }] })
       );

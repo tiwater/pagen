@@ -1,31 +1,32 @@
 import {
   AlertCircle,
-  AppWindow,
   AppWindowMac,
   BadgeCheck,
-  Bookmark,
   Bot,
   Camera,
   Check,
-  CheckCircle,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
-  Code,
+  ChevronRight,
+  ChevronUp,
+  Clock,
   CodeXml,
   Copy,
-  Folder,
+  CornerDownLeft,
+  File,
+  FolderTree,
   Laptop,
+  LayoutTemplate,
   Link,
   ListTodo,
   Loader2,
   LogOut,
   Mail,
   MessageSquareDiff,
-  Monitor,
   Moon,
   Plug2,
   Plus,
-  Send,
   SendHorizonal,
   Settings,
   Settings2,
@@ -34,11 +35,9 @@ import {
   Sun,
   SunMoon,
   Terminal,
-  Trash,
-  User,
+  Trash2,
   UserRound,
   Wand,
-  Webhook,
   X,
 } from 'lucide-react';
 
@@ -50,6 +49,28 @@ function Logo(props: React.SVGProps<SVGSVGElement>) {
       <path d="M11 8h8c2.2091 0 4 1.7909 4 4 0 2.2091-1.7909 4-4 4h-4v8h-4V8z" fill="white" />
 
       <path d="M15 12h3.5c1.1046 0 2 .8954 2 2s-.8954 2-2 2H15v-4z" fill="#4F46E5" />
+
+      <rect x="19" y="18" width="6" height="2" rx="1" fill="white" opacity="0.8" />
+      <rect x="19" y="22" width="4" height="2" rx="1" fill="white" opacity="0.6" />
+    </svg>
+  );
+}
+
+function SimpleLogo(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 32 32"
+      fill="none"
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="16" cy="16" r="16" fill="currentColor" />
+
+      <path d="M11 8h8c2.2091 0 4 1.7909 4 4 0 2.2091-1.7909 4-4 4h-4v8h-4V8z" fill="white" />
+
+      <path d="M15 12h3.5c1.1046 0 2 .8954 2 2s-.8954 2-2 2H15v-4z" fill="currentColor" />
 
       <rect x="19" y="18" width="6" height="2" rx="1" fill="white" opacity="0.8" />
       <rect x="19" y="22" width="4" height="2" rx="1" fill="white" opacity="0.6" />
@@ -93,24 +114,29 @@ export function Github({ ...props }: any) {
 }
 
 export const Icons = {
+  cornerDownLeft: CornerDownLeft,
   logo: Logo,
+  simpleLogo: SimpleLogo,
   badgeCheck: BadgeCheck,
   check: Check,
   checkCircle: CheckCircle2,
+  chevronDown: ChevronDown,
   chevronLeft: ChevronLeft,
+  chevronRight: ChevronRight,
+  chevronUp: ChevronUp,
   close: X,
   link: Link,
   mail: Mail,
   plus: Plus,
   listTodo: ListTodo,
   spinner: Loader2,
-  figma: Square, // Using Square as a placeholder for Figma icon
+  figma: Square,
   send: SendHorizonal,
   sparkles: Sparkles,
   bot: Bot,
   square: Square,
   terminal: Terminal,
-  trash: Trash,
+  trash: Trash2,
   wand: Wand,
   window: AppWindowMac,
   code: CodeXml,
@@ -128,7 +154,12 @@ export const Icons = {
   theme: SunMoon,
   project: MessageSquareDiff,
   add: Plus,
+  clock: Clock,
+  alertCircle: AlertCircle,
   // Logos
   google: Google,
   github: Github,
-};
+  file: File,
+  folders: FolderTree,
+  layout: LayoutTemplate,
+} as const;
