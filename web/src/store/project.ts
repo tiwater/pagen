@@ -8,7 +8,7 @@ interface ProjectState {
   projects: Project[];
   currentProjectId: string | null;
   getProjects: () => Project[];
-  createProject: (title: string, userId: string) => string;
+  createProject: (title: string, userId: string) => Project;
   updateProject: (id: string, project: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   setCurrentProject: (id: string) => void;
@@ -28,26 +28,26 @@ export const useProjectStore = create<ProjectState>()(
 
       createProject: (title, userId) => {
         const projectId = nanoid(10);
-        set(state => ({
-          currentProjectId: projectId,
-          projects: [
-            ...state.projects,
-            {
+        const newProject = {
               id: projectId,
               userId,
               title,
-              isNew: false,
+              isNew: true,
               chat: {
-                id: nanoid(10),
                 projectId,
                 messages: [],
               },
               createdAt: new Date().toISOString(),
               pageTree: []  // Initialize with an empty page tree
-            },
+            };
+        set(state => ({
+          currentProjectId: projectId,
+          projects: [
+            ...state.projects,
+            newProject,
           ],
         }));
-        return projectId;
+        return newProject;
       },
 
       updateProject: (id, project) =>

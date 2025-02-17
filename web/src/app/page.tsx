@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useProject } from '@/hooks/use-project';
+import { nanoid } from 'nanoid';
 import { AuthButton } from '@/components/auth-button';
 import { Icons } from '@/components/icons';
 import { ProjectTypeSwitch } from '@/components/project-type-switch';
@@ -72,16 +73,28 @@ export default function Home() {
   const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [projectType, setProjectType] = useState<'page' | 'site'>('site');
-  const { createProject } = useProject();
+  const { createProject, updateProject } = useProject();
 
   const handleCreateProject = (promptText: string) => {
     if (!promptText.trim() || !user?.id) return;
 
     // Create a new project with proper title from prompt
     const title = promptText.split('\n')[0].slice(0, 50) || 'New Project';
-    const projectId = createProject(title, projectType);
+    const project = createProject(title);
+    updateProject(project.id, {
+      chat: {
+        ...project.chat,
+        messages: [
+          {
+            id: nanoid(10),
+            role: 'user',
+            content: promptText,
+          },
+        ],
+      },
+    });
 
-    router.push(`/projects/${projectId}`);
+    router.push(`/projects/${project.id}`);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

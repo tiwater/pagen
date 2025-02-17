@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import useProjectStore from '@/store/project';
-import { Project, ProjectType } from '@/types/project';
+import { Project } from '@/types/project';
+import { Message } from '@ai-sdk/react';
 
 export function useProject(projectId?: string) {
   const { user } = useAuth();
@@ -11,25 +12,18 @@ export function useProject(projectId?: string) {
     updateProject,
     deleteProject,
     getProjects,
-    currentProjectId,
-    setCurrentProject,
   } = useProjectStore();
 
   const project = projectId
-    ? projects.find((p: Project) => p.id === projectId)
-    : projects.find((p: Project) => p.id === currentProjectId);
+    ? projects.find((p: Project) => p.id === projectId) : null;
 
   const createNewProject = useCallback(
-    (title: string, projectType: ProjectType = 'page') => {
+    (title: string) => {
       if (!user?.id) throw new Error('User must be authenticated');
-
-      const projectId = createProject(title, user.id, projectType);
-      
-      setCurrentProject(projectId);
-      
-      return projectId;
+      const project = createProject(title, user.id);
+      return project;
     },
-    [user, createProject, setCurrentProject]
+    [user, createProject]
   );
 
   const [isUpdating, setIsUpdating] = useState(false);
@@ -42,15 +36,33 @@ export function useProject(projectId?: string) {
     [updateProject]
   );
 
+  const appendMessage = useCallback(
+    async (message: Message) => {
+      if (!project) return;
+      
+      setIsUpdating(true);
+      try {
+        updateProject(project.id, {
+          chat: {
+            ...project.chat,
+            messages: [...project.chat.messages, message],
+          },
+        });
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    [project, updateProject]
+  );
+
   return {
     project,
     projects,
     createProject: createNewProject,
     updateProject: handleUpdateProject,
+    appendMessage,
     isUpdating,
     deleteProject,
     getProjects,
-    currentProjectId,
-    setCurrentProject,
   };
 } 

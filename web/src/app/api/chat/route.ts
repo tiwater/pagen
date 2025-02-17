@@ -1,10 +1,42 @@
 import { NextRequest } from 'next/server';
-import { createOpenAI } from '@ai-sdk/openai';
+import { openai } from '@ai-sdk/openai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { deepseek } from '@ai-sdk/deepseek';
 import { generateText, streamText } from 'ai';
 import { Rule } from '@/types/rules';
 
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
+
+type AIProvider = 'openai' | 'anthropic' | 'deepseek';
+type ModelConfig = {
+  provider: AIProvider;
+  model: string;
+  baseURL?: string;
+  temperature?: number;
+  modelFn: Function;
+};
+
+const MODEL_CONFIGS: Record<string, ModelConfig & { modelFn?: Function }> = {
+  'gpt-4o': {
+    provider: 'openai',
+    model: 'gpt-4o',
+    temperature: 0.2,
+    modelFn: (name: string) => openai(name),
+  },
+  'claude-3.5': {
+    provider: 'anthropic',
+    model: 'claude-3-5-sonnet-20241022',
+    temperature: 0.2,
+    modelFn: (name: string) => anthropic(name),
+  },
+  'deepseek-v3': {
+    provider: 'deepseek',
+    model: 'deepseek-chat',
+    temperature: 0.2,
+    modelFn: (name: string) => deepseek(name),
+  },
+};
 
 const baseSystemPrompt = `You are an elite UI/UX developer specializing in React components.
 
@@ -49,7 +81,7 @@ AVAILABLE COMPONENTS:
    \`\`\`
 
    2. Dialog:
-   \`\`\`tsx
+   \`\`\`
    import {
      Dialog,
      DialogContent,
@@ -71,7 +103,7 @@ AVAILABLE COMPONENTS:
    \`\`\`
 
    3. Dropdown Menu:
-   \`\`\`tsx
+   \`\`\`
    import {
      DropdownMenu,
      DropdownMenuContent,
@@ -140,7 +172,7 @@ MOCK DATA REQUIREMENTS:
    - Status: Mix of different states
 
 5. Example Component with Mock Data:
-   \`\`\`tsx
+   \`\`\`pagen
    'use client';
    
    import { Card } from '@/components/ui/card';
@@ -359,36 +391,18 @@ The code should follow the following format strictly:
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, stream = true, rules, context }: { 
-      messages: any; 
-      stream?: boolean; 
-      rules?: Rule[];
-      context?: {
-        path?: string;
-        parentLayout?: string;
-        pageTree?: any;
-      };
+    const { 
+      messages, 
+      stream = true, 
+      rules, 
+      context,
+      model = 'gpt-4o'
     } = await request.json();
 
-    const headers: {
-      'Helicone-Auth': string;
-      'Helicone-User-Id': string;
-      'Helicone-Property-App': string;
-      'Helicone-Stream-Usage'?: string;
-    } = {
-      'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
-      'Helicone-User-Id': 'pagen@tiwater.com',
-      'Helicone-Property-App': 'pagen',
-    };
-
-    if (stream) {
-      headers['Helicone-Stream-Usage'] = 'true';
+    const modelConfig = MODEL_CONFIGS[model];
+    if (!modelConfig) {
+      throw new Error(`Unsupported model: ${model}`);
     }
-
-    const openai = createOpenAI({
-      baseURL: 'https://oai.helicone.ai/v1',
-      headers,
-    });
 
     let systemPrompt = `${baseSystemPrompt}
 
@@ -402,6 +416,7 @@ export async function POST(request: NextRequest) {
        - Root page should be 'app/page.tsx'
        - Nested pages should be 'app/[route]/page.tsx'
        - Layouts should be 'app/[route]/layout.tsx'
+       - Each generated file should have path as the first line comment of the file as: \`// Path: /app/page.tsx\`
        - DO NOT create separate component files
     3. Keep code modular within pages and layouts
     4. Optimize for performance with proper code splitting
@@ -409,55 +424,24 @@ export async function POST(request: NextRequest) {
 
     ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
     ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}
-    ${context?.pageTree ? `Existing files: ${JSON.stringify(context.pageTree)}` : ''}
-
-    IMPORTANT PATH RULES:
-    - Always include '// Path: [filepath]' at the top of each code block
-    - Use 'app/' prefix for all routes
-    - Use 'page.tsx' for pages (not index.tsx)
-    - Use 'layout.tsx' for layouts
-    - Example paths:
-      • app/page.tsx (root page)
-      • app/about/page.tsx (about page)
-      • app/layout.tsx (root layout)
-      • app/about/layout.tsx (about section layout)
-    - DO NOT create separate component files
-
-    CODE ORGANIZATION:
-    - Keep all components within their respective page.tsx or layout.tsx files
-    - Use function components directly in the files where they are needed
-    - Avoid creating separate component files
-    - IMPORTANT: Add 'use client' directive at the top of EVERY component file
-    - Example:
-      \`\`\`pagen
-      // Path: app/page.tsx
-      'use client';
-      
-      import { ... } from '...';
-      
-      export function Page() {
-        // ...
-      }
-      \`\`\`
-
-    ${context?.path ? `Currently generating: ${context.path}` : 'Create a site plan first.'}
-    ${context?.parentLayout ? `This file should be consistent with the parent layout: ${context.parentLayout}` : ''}
     ${context?.pageTree ? `Existing files: ${JSON.stringify(context.pageTree)}` : ''}`;
 
     // Incorporate additional rules if provided
     if (rules) {
-      systemPrompt += `\n\nAdditional Rules:\n\n${rules.map(rule => `${rule.title}:\n${rule.content}\n`).join('\n')}\n`;
+      systemPrompt += `\n\nAdditional Rules:\n\n${rules.map((rule: Rule) => `${rule.title}:\n${rule.content}\n`).join('\n')}\n`;
     }
 
     const body = {
-      model: openai('gpt-4o'),
+      model: modelConfig.modelFn(modelConfig.model),
       messages: [{ role: 'system', content: systemPrompt }, ...(messages || [])],
-      temperature: 0.2,
+      temperature: modelConfig.temperature,
       stream,
     };
 
+    console.log('stream params', body);
+
     if (stream) {
-      const result = await streamText(body as any);
+      const result = streamText(body as any);
       return result.toDataStreamResponse();
     } else {
       const { text } = await generateText(body as any);

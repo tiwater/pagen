@@ -16,25 +16,25 @@ import { Icons } from '@/components/icons';
 import { PageCard } from '@/components/page-card';
 import { SiteGenerationProgress } from '@/components/site-generation-progress';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
 
 interface ChatMessageProps {
   message: Message;
-  chat: {
-    id: string;
-    projectId: string;
-    messages: Message[];
-  };
   project: Project;
   className?: string;
 }
 
 const MemoizedPageCard = memo(PageCard);
 
-function ChatMessage({ message, chat, project: initialProject, className }: ChatMessageProps) {
+function ChatMessage({ message, project: initialProject, className }: ChatMessageProps) {
   const { project, updateProject } = useProject(initialProject.id);
   const { user } = useAuth();
   const [showMessageCode, setShowMessageCode] = useState(false);
@@ -215,9 +215,9 @@ interface ChatUIProps {
 }
 
 export function ChatUI({ project: initialProject }: ChatUIProps) {
-  const { project, updateProject, isUpdating } = useProject(initialProject.id);
+  const { project, updateProject, appendMessage, isUpdating } = useProject(initialProject.id);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const initialMessageSentRef = useRef(false);
   const [generationFiles, setGenerationFiles] = useState<
     Array<{
       path: string;
@@ -226,6 +226,7 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
     }>
   >([]);
   const [currentFile, setCurrentFile] = useState<string>();
+  const [selectedModel, setSelectedModel] = useState<string>('gpt-4o');
 
   if (!project?.chat) {
     return (
@@ -243,22 +244,23 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
     input,
     handleInputChange,
     handleSubmit: onSubmit,
-    isLoading,
     setInput,
     append,
     setMessages,
     stop,
+    status,
   } = useChat({
     api: '/api/chat',
-    id: project.chat.id,
+    id: project.id,
     initialMessages: project.isNew ? [] : project.chat.messages,
     body: {
-      id: project.chat.id,
+      id: project.id,
       title: project.title,
       context: {
         path: currentFile,
         pageTree: project.pageTree,
       },
+      model: project.chat.model,
     },
     onResponse: (response: Response) => {
       const text = response.headers.get('x-completion-text');
@@ -282,17 +284,11 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
         }
       }
     },
-    onFinish: (message: Message) => {
-      setIsGenerating(false);
+    onFinish: async (message: Message) => {
+      // Use appendMessage instead of updateProject
+      await appendMessage(message);
 
-      // Store the message in the project's chat
-      updateProject(project.id, {
-        chat: {
-          ...project.chat,
-          messages: [...project.chat.messages, message],
-        },
-      });
-
+      // Handle code extraction and file generation
       console.log('Starting code extraction from message:', {
         messageLength: message.content.length,
         hasMarkdown: message.content.includes('###'),
@@ -380,6 +376,24 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
     },
   });
 
+  // Handle initial message from home page
+  useEffect(() => {
+    if (project?.isNew && project.chat.messages.length > 0 && !initialMessageSentRef.current) {
+      const initialMessage = project.chat.messages[project.chat.messages.length - 1];
+      // Clear the message from persistence
+      updateProject(project.id, {
+        isNew: false,
+        chat: {
+          ...project.chat,
+          messages: [],
+        },
+      });
+      // Send the message to AI
+      append(initialMessage);
+      initialMessageSentRef.current = true;
+    }
+  }, [project?.isNew, project?.chat.messages, project?.id, append, updateProject]);
+
   const handleGenerateNextFile = useCallback(
     (nextFile: { path: string; type: 'page' | 'layout' }) => {
       setCurrentFile(nextFile.path);
@@ -455,9 +469,9 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
     return () => clearTimeout(timeoutId);
   }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isLoading) {
+    if (status === 'streaming') {
       stop();
       return;
     }
@@ -466,8 +480,6 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
     }
 
     const messageId = nanoid();
-    setIsGenerating(true);
-
     const currentInput = input;
     setInput('');
 
@@ -478,14 +490,11 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
       createdAt: new Date(),
     };
 
+    // Append to local state first for immediate UI update
     append(newMessage);
 
-    updateProject(project.id, {
-      chat: {
-        ...project.chat,
-        messages: [...project.chat.messages, newMessage],
-      },
-    });
+    // Use appendMessage instead of updateProject
+    await appendMessage(newMessage);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -502,12 +511,7 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
     return (
       <>
         {messages.map((message, i) => (
-          <ChatMessage
-            key={`${message.id}-${i + 1}`}
-            message={message}
-            chat={project.chat}
-            project={project}
-          />
+          <ChatMessage key={`${message.id}-${i + 1}`} message={message} project={project} />
         ))}
       </>
     );
@@ -527,14 +531,12 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
             variant="ghost"
             size="icon"
             onClick={async () => {
-              // Update the project in the database
               await updateProject(project.id, {
                 chat: {
                   ...project.chat,
                   messages: [],
                 },
               });
-              // Clear the local messages state
               setMessages([]);
             }}
             disabled={isUpdating}
@@ -584,17 +586,38 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
             spellCheck={false}
             className="w-full sm:text-sm resize-none overflow-hidden bg-background border-0 focus:ring-0 focus-visible:ring-0 focus:border-primary/20 focus-visible:border-primary/20 focus-visible:ring-offset-0"
           />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute left-1 bottom-1 h-5 text-xs text-muted-foreground gap-1"
+              >
+                {selectedModel}
+                <Icons.chevronUp className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="">
+              <DropdownMenuItem onClick={() => setSelectedModel('gpt-4o')}>gpt-4o</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSelectedModel('claude-3.5-sonnet')}>
+                claude-3.5-sonnet
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSelectedModel('deepseek-v3')}>
+                deepseek-v3
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             type="submit"
             size="sm"
-            disabled={!isLoading && input === ''}
+            disabled={status === 'streaming' && input === ''}
             className={cn(
               'absolute right-1 bottom-1 rounded shrink-0 h-5 w-auto flex items-center gap-1 px-2 text-xs',
-              isLoading && 'bg-red-500 text-white hover:bg-red-600'
+              status === 'streaming' && 'bg-red-500 text-white hover:bg-red-600'
             )}
           >
-            {isLoading ? 'stop' : 'submit'}
-            {isLoading ? (
+            {status === 'streaming' ? 'stop' : 'submit'}
+            {status === 'streaming' ? (
               <Icons.square className="h-2 w-2" />
             ) : (
               <Icons.cornerDownLeft className="h-2 w-2" />
