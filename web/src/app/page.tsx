@@ -12,6 +12,12 @@ import { Icons } from '@/components/icons';
 import { ProjectTypeSwitch } from '@/components/project-type-switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 
 const samplePrompts = {
@@ -36,7 +42,7 @@ function ProjectList() {
     deleteProject(projectId);
   };
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 w-full max-w-4xl">
       {projects.map(project => (
         <Link href={`/projects/${project.id}`} key={project.id} className="w-full">
           <Card className="relative group p-2 gap-2 flex items-center w-full h-full cursor-pointer hover:bg-accent">
@@ -73,6 +79,7 @@ export default function Home() {
   const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [projectType, setProjectType] = useState<'page' | 'site'>('site');
+  const [model, setModel] = useState('gpt-4o');
   const { createProject, updateProject } = useProject();
 
   const handleCreateProject = (promptText: string) => {
@@ -84,6 +91,7 @@ export default function Home() {
     updateProject(project.id, {
       chat: {
         ...project.chat,
+        model: model,
         messages: [
           {
             id: nanoid(10),
@@ -127,25 +135,51 @@ export default function Home() {
       </div>
       <div className="flex flex-col gap-2 w-full max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-2">
-          <div className="relative">
+          <div className="relative rounded-xl shadow-lg">
             <Textarea
               name="prompt"
               placeholder={`Describe the ${projectType} you want to create...`}
               value={prompt}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="min-h-[120px] resize-none text-xs sm:text-sm"
+              className="min-h-[120px] resize-none rounded-xl text-xs sm:text-sm"
             />
             <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between">
               <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 text-xs text-muted-foreground gap-1"
+                    >
+                      {model}
+                      <Icons.chevronUp className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="text-xs">
+                    {['gpt-4o', 'claude-3.5-sonnet', 'deepseek-v3'].map(model => (
+                      <DropdownMenuItem
+                        key={model}
+                        onClick={() => {
+                          setModel(model);
+                        }}
+                        className="text-xs"
+                      >
+                        {model}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <ProjectTypeSwitch value={projectType} onChange={setProjectType} />
-                <Button disabled variant="outline" size="sm" className="h-7 gap-2">
-                  <Icons.bot className="w-4 h-4" />
-                  <span className="text-xs">gpt-4o</span>
-                </Button>
               </div>
               <div className="flex items-center gap-2">
-                <Button type="submit" size="sm" className="h-7 gap-2" disabled={!prompt.trim()}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="h-7 gap-2 rounded-lg"
+                  disabled={!prompt.trim()}
+                >
                   <span className="text-xs">submit</span>
                   <Icons.cornerDownLeft className="w-3 h-3" />
                 </Button>
