@@ -449,9 +449,39 @@ function compileComponent(
       document.head.appendChild(style);
     }
 
-    // Destructure all needed components
+    // Destructure React and hooks
     const {
-      React,
+      React: {
+        createElement,
+        Fragment,
+        useState,
+        useEffect,
+        useCallback,
+        useMemo,
+        useRef,
+        useContext,
+        createContext,
+        ...otherReact
+      },
+      ...components
+    } = arguments[0];
+
+    // Make React APIs available
+    const React = {
+      createElement,
+      Fragment,
+      useState,
+      useEffect,
+      useCallback,
+      useMemo,
+      useRef,
+      useContext,
+      createContext,
+      ...otherReact
+    };
+
+    // Destructure UI components and other utilities
+    const {
       tw,
       Button,
       Input,
