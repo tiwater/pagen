@@ -24,7 +24,7 @@ const MODEL_CONFIGS: Record<string, ModelConfig & { modelFn?: Function }> = {
     temperature: 0.2,
     modelFn: (name: string) => openai(name),
   },
-  'claude-3.5': {
+  'claude-3.5-sonnet': {
     provider: 'anthropic',
     model: 'claude-3-5-sonnet-20241022',
     temperature: 0.2,

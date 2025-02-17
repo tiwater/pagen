@@ -226,7 +226,6 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
     }>
   >([]);
   const [currentFile, setCurrentFile] = useState<string>();
-  const [selectedModel, setSelectedModel] = useState<string>('gpt-4o');
 
   if (!project?.chat) {
     return (
@@ -593,18 +592,27 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
                 size="sm"
                 className="absolute left-1 bottom-1 h-5 text-xs text-muted-foreground gap-1"
               >
-                {selectedModel}
+                {project.chat.model || 'gpt-4o'}
                 <Icons.chevronUp className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="">
-              <DropdownMenuItem onClick={() => setSelectedModel('gpt-4o')}>gpt-4o</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSelectedModel('claude-3.5-sonnet')}>
-                claude-3.5-sonnet
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSelectedModel('deepseek-v3')}>
-                deepseek-v3
-              </DropdownMenuItem>
+            <DropdownMenuContent align="start" className="text-xs">
+              {['gpt-4o', 'claude-3.5-sonnet', 'deepseek-v3'].map(model => (
+                <DropdownMenuItem
+                  key={model}
+                  onClick={() => {
+                    updateProject(project.id, {
+                      chat: {
+                        ...project.chat,
+                        model,
+                      },
+                    });
+                  }}
+                  className="text-xs"
+                >
+                  {model}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
