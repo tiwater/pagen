@@ -190,7 +190,7 @@ function ChatMessage({ message, chat, project: initialProject, className }: Chat
             className={cn(
               'flex-1 flex flex-col space-y-1 leading-normal rounded-lg min-w-0 w-full',
               message.role === 'user'
-                ? 'border border-primary/60 bg-muted-foreground/5 text-primary/60 p-2 '
+                ? 'border border-primary/20 bg-muted-foreground/5 text-primary/60 p-2 shadow-sm'
                 : 'text-muted-foreground py-2'
             )}
           >

@@ -19,6 +19,82 @@ AVAILABLE COMPONENTS:
    - separator
    - table
 
+   IMPORTANT: Component Usage Examples:
+   1. Accordion:
+   \`\`\`tsx
+   import {
+     Accordion,
+     AccordionContent,
+     AccordionItem,
+     AccordionTrigger,
+   } from "@/components/ui/accordion"
+
+   // Correct usage:
+   <Accordion type="single" collapsible>
+     <AccordionItem value="item-1">
+       <AccordionTrigger>Section 1</AccordionTrigger>
+       <AccordionContent>Content for section 1</AccordionContent>
+     </AccordionItem>
+   </Accordion>
+
+   // For mapping over items:
+   <Accordion type="single" collapsible>
+     {items.map((item) => (
+       <AccordionItem key={item.id} value={item.id}>
+         <AccordionTrigger>{item.title}</AccordionTrigger>
+         <AccordionContent>{item.content}</AccordionContent>
+       </AccordionItem>
+     ))}
+   </Accordion>
+   \`\`\`
+
+   2. Dialog:
+   \`\`\`tsx
+   import {
+     Dialog,
+     DialogContent,
+     DialogDescription,
+     DialogHeader,
+     DialogTitle,
+     DialogTrigger,
+   } from "@/components/ui/dialog"
+
+   <Dialog>
+     <DialogTrigger>Open</DialogTrigger>
+     <DialogContent>
+       <DialogHeader>
+         <DialogTitle>Dialog Title</DialogTitle>
+         <DialogDescription>Dialog Description</DialogDescription>
+       </DialogHeader>
+     </DialogContent>
+   </Dialog>
+   \`\`\`
+
+   3. Dropdown Menu:
+   \`\`\`tsx
+   import {
+     DropdownMenu,
+     DropdownMenuContent,
+     DropdownMenuItem,
+     DropdownMenuTrigger,
+   } from "@/components/ui/dropdown-menu"
+
+   <DropdownMenu>
+     <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
+     <DropdownMenuContent>
+       <DropdownMenuItem>Item 1</DropdownMenuItem>
+       <DropdownMenuItem>Item 2</DropdownMenuItem>
+     </DropdownMenuContent>
+   </DropdownMenu>
+   \`\`\`
+
+   IMPORTANT RULES:
+   - Always use the exact import structure shown above
+   - Never use dot notation (e.g., Accordion.Item) - use the imported components directly
+   - Include all necessary sub-components in imports
+   - Follow the exact component structure shown in examples
+   - Use proper TypeScript props and types
+
 2. Data Visualization:
    - Recharts ONLY (@/components/ui/chart.tsx)
      • AreaChart, LineChart, BarChart
@@ -37,12 +113,18 @@ AVAILABLE COMPONENTS:
    - Lucide icons for navigation items
 
 MOCK DATA REQUIREMENTS:
-1. Always include realistic mock data:
+1. IMPORTANT: All mock data MUST be defined within the component/page file:
+   - DO NOT create separate mock data files
+   - Define all required mock data at the top of the component, after imports
+   - Each component should be self-contained with its own mock data
+   - Use TypeScript types to define mock data structure
+
+2. Always include realistic mock data:
    - Use meaningful sample data that represents real-world scenarios
    - Include enough entries to demonstrate UI patterns (at least 5-10 items for lists)
    - Vary data values to show different states and formats
 
-2. Mock Data Examples:
+3. Mock Data Examples:
    - User profiles: Include names, emails, avatars, roles, status
    - Statistics: Use realistic numbers with proper formatting
    - Charts: Provide time-series data spanning days/weeks
@@ -50,34 +132,42 @@ MOCK DATA REQUIREMENTS:
    - Activity feeds: Mix of different event types and timestamps
    - Status indicators: Show various states (active, pending, error)
 
-3. Data Patterns:
+4. Data Patterns:
    - Financial data: Use proper currency formatting
    - Dates: Recent dates relative to current time
    - Metrics: Include growth/decline indicators
    - Progress: Various completion percentages
    - Status: Mix of different states
 
-4. Example Mock Data Structure:
-   const mockUsers = [
-     {
-       id: '1',
-       name: 'Sarah Chen',
-       role: 'Product Manager',
-       status: 'active',
-       tasks: 12,
-       completion: 68,
-     },
-     {
-       id: '2',
-       name: 'Michael Torres',
-       role: 'Developer',
-       status: 'busy',
-       tasks: 8,
-       completion: 93,
-     },
-   ];
-
-   const mockMetrics = {
+5. Example Component with Mock Data:
+   \`\`\`tsx
+   'use client';
+   
+   import { Card } from '@/components/ui/card';
+   import { AreaChart } from '@/components/ui/chart';
+   
+   // Define types for mock data
+   type MetricData = {
+     daily: {
+       current: number;
+       previous: number;
+       trend: string;
+     };
+     weekly: {
+       current: number;
+       previous: number;
+       trend: string;
+     };
+   };
+   
+   type ChartDataPoint = {
+     date: string;
+     value: number;
+     trend: number;
+   };
+   
+   // Define mock data within the component file
+   const mockMetrics: MetricData = {
      daily: {
        current: 2847,
        previous: 2563,
@@ -89,14 +179,25 @@ MOCK DATA REQUIREMENTS:
        trend: '+8.2%',
      },
    };
-
-   const mockChartData = Array.from({ length: 12 }, (_, i) => ({
+   
+   const mockChartData: ChartDataPoint[] = Array.from({ length: 12 }, (_, i) => ({
      date: new Date(Date.now() - (11 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
      value: Math.floor(Math.random() * 1000) + 500,
      trend: Math.floor(Math.random() * 100) + 50,
    }));
+   
+   export default function MetricsCard() {
+     return (
+       <Card className="p-6">
+         {/* Use mockMetrics and mockChartData here */}
+       </Card>
+     );
+   }
+   \`\`\`
 
-5. Best Practices for Mock Data:
+6. Best Practices for Mock Data:
+   - Define TypeScript types for all mock data structures
+   - Keep mock data close to where it's used in the component
    - Use consistent data patterns across components
    - Include edge cases (long text, missing values)
    - Show loading states with skeleton loaders

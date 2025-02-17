@@ -485,6 +485,17 @@ function compileComponent(
     // Destructure UI components and other utilities
     const {
       tw,
+      Alert,
+      AlertTitle,
+      AlertDescription,
+      AlertDialog,
+      AlertDialogTrigger,
+      AlertDialogContent,
+      AlertDialogHeader,
+      Accordion,
+      AccordionItem,
+      AccordionTrigger,
+      AccordionContent,
       Button,
       Input,
       Card,
