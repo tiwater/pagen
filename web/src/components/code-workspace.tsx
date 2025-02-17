@@ -2,10 +2,10 @@
 
 import { useCallback, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vs, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
-import { PageTreeNode, ProjectFile } from '@/types/project';
+import { PageTreeNode } from '@/types/project';
 import { CopyButton } from '@/components/copy-button';
 import { Icons } from '@/components/icons';
 import { PagePreview } from '@/components/page-preview';
@@ -30,7 +30,7 @@ interface CodeWorkspaceProps {
 
 export function CodeWorkspace({ id, file }: CodeWorkspaceProps) {
   const { resolvedTheme } = useTheme();
-  const theme = resolvedTheme === 'dark' ? vscDarkPlus : vs;
+  const theme = resolvedTheme === 'dark' ? oneDark : oneLight;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
 
   const handleScreenshot = useCallback(async () => {

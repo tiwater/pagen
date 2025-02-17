@@ -118,7 +118,7 @@ function ChatMessage({ message, chat, project: initialProject, className }: Chat
           </ul>
         ),
         ol: ({ className, children, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
-          <ol className={cn('list-decimal pl-4 mb-2 space-y-2', className)} {...props}>
+          <ol className={cn('list-decimal pl-4 mb-0 space-y-2', className)} {...props}>
             {children}
           </ol>
         ),

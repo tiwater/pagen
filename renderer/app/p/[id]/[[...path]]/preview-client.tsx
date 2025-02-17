@@ -8,7 +8,7 @@ import * as ts from "typescript";
 import { install, tw } from "@twind/core";
 import presetTailwind from "@twind/preset-tailwind";
 import { Google, Facebook, GitHub } from "@/components/icons";
-import { useToast } from "@/hooks/use-toast";
+import { Icons } from "@/components/icons";
 
 // Add base styles for Shadcn UI
 const shadcnBaseStyles = `
@@ -159,72 +159,30 @@ interface PageTreeNode {
   };
 }
 
-// Create a namespace for all UI components
-const UIComponents = {
-  // Shadcn UI components
-  Button: UI.Button,
-  Input: UI.Input,
-  Card: UI.Card,
-  CardHeader: UI.CardHeader,
-  CardTitle: UI.CardTitle,
-  CardDescription: UI.CardDescription,
-  CardContent: UI.CardContent,
-  CardFooter: UI.CardFooter,
-  Dialog: UI.Dialog,
-  DialogTrigger: UI.DialogTrigger,
-  DialogContent: UI.DialogContent,
-  DialogHeader: UI.DialogHeader,
-  DialogFooter: UI.DialogFooter,
-  DialogTitle: UI.DialogTitle,
-  DialogDescription: UI.DialogDescription,
-  Label: UI.Label,
-  Tabs: UI.Tabs,
-  TabsList: UI.TabsList,
-  TabsTrigger: UI.TabsTrigger,
-  TabsContent: UI.TabsContent,
-  Select: UI.Select,
-  SelectTrigger: UI.SelectTrigger,
-  SelectValue: UI.SelectValue,
-  SelectContent: UI.SelectContent,
-  SelectItem: UI.SelectItem,
-  Sheet: UI.Sheet,
-  SheetTrigger: UI.SheetTrigger,
-  SheetContent: UI.SheetContent,
-  SheetHeader: UI.SheetHeader,
-  SheetFooter: UI.SheetFooter,
-  SheetTitle: UI.SheetTitle,
-  SheetDescription: UI.SheetDescription,
-  Avatar: UI.Avatar,
-  AvatarImage: UI.AvatarImage,
-  AvatarFallback: UI.AvatarFallback,
-  Badge: UI.Badge,
-  Progress: UI.Progress,
-  Separator: UI.Separator,
-  ScrollArea: UI.ScrollArea,
-  Table: UI.Table,
-  TableHeader: UI.TableHeader,
-  TableBody: UI.TableBody,
-  TableFooter: UI.TableFooter,
-  TableHead: UI.TableHead,
-  TableRow: UI.TableRow,
-  TableCell: UI.TableCell,
-  TableCaption: UI.TableCaption,
-  Textarea: UI.Textarea,
-  Toast: UI.Toast,
-  Toaster: UI.Toaster,
-  useToast,
+// Create a unified components object that includes everything needed
+const Components = {
+  // React components
+  React,
 
-  // Icons
-  Icons: {
-    ...LucideIcons,
-    Google,
-    Facebook,
-    GitHub,
-  },
+  // UI components
+  ...UI,
+
+  // Icons - make all icons directly available
+  ...LucideIcons,
+  Google,
+  Facebook,
+  GitHub,
 
   // Chart components
-  Charts: Recharts,
+  ...Recharts,
+
+  // Styling
+  tw,
 };
+
+interface LayoutProps {
+  children: React.ReactNode;
+}
 
 export function PreviewClient({ code }: { code: string }) {
   const [error, setError] = React.useState<string | null>(null);
@@ -243,11 +201,21 @@ export function PreviewClient({ code }: { code: string }) {
     }
   }, [code]);
 
-  // Get the current URL path
-  const pathname = window.location.pathname;
-  const matches = pathname.match(/^\/p\/([^\/]+)(?:\/(.*))?$/);
-  const projectId = matches?.[1] || "";
-  const pagePath = matches?.[2] || "";
+  // Use useEffect for client-side path parsing
+  const [currentPath, setCurrentPath] = React.useState<{
+    projectId: string;
+    pagePath: string;
+  }>({ projectId: "", pagePath: "" });
+
+  React.useEffect(() => {
+    // Only run on client side
+    const pathname = window.location.pathname;
+    const matches = pathname.match(/^\/p\/([^\/]+)(?:\/(.*))?$/);
+    setCurrentPath({
+      projectId: matches?.[1] || "",
+      pagePath: matches?.[2] || "",
+    });
+  }, []);
 
   // Create a temporary filesystem in memory
   React.useEffect(() => {
@@ -260,8 +228,8 @@ export function PreviewClient({ code }: { code: string }) {
         setError(null);
 
         // Find the current page
-        const currentPagePath = pagePath
-          ? `app/${pagePath}/page.tsx`
+        const currentPagePath = currentPath.pagePath
+          ? `app/${currentPath.pagePath}/page.tsx`
           : "app/page.tsx";
 
         console.log("Looking for page:", currentPagePath);
@@ -278,8 +246,8 @@ export function PreviewClient({ code }: { code: string }) {
 
         // Find all relevant layouts
         const layoutPaths = ["app/layout.tsx"];
-        if (pagePath) {
-          const segments = pagePath.split("/");
+        if (currentPath.pagePath) {
+          const segments = currentPath.pagePath.split("/");
           for (let i = 0; i < segments.length; i++) {
             layoutPaths.push(
               `app/${segments.slice(0, i + 1).join("/")}/layout.tsx`
@@ -306,13 +274,7 @@ export function PreviewClient({ code }: { code: string }) {
         for (const layout of layouts) {
           if (!layout) continue;
           try {
-            const component = compileComponent(layout.file.content, {
-              React,
-              UI,
-              LucideIcons,
-              Recharts,
-              tw,
-            });
+            const component = compileComponent(layout.file.content, Components);
             compiledComponents.set(layout.path, component);
             console.log("Compiled layout:", layout.path);
           } catch (err) {
@@ -322,13 +284,10 @@ export function PreviewClient({ code }: { code: string }) {
 
         // Then compile the page component
         try {
-          const pageComponent = compileComponent(currentPage.file.content, {
-            React,
-            UI,
-            LucideIcons,
-            Recharts,
-            tw,
-          });
+          const pageComponent = compileComponent(
+            currentPage.file.content,
+            Components
+          );
           compiledComponents.set(currentPage.path, pageComponent);
           console.log("Compiled page:", currentPage.path);
         } catch (err) {
@@ -348,7 +307,8 @@ export function PreviewClient({ code }: { code: string }) {
             const layout = layouts[i];
             const Layout = layout ? compiledComponents.get(layout.path) : null;
             if (Layout) {
-              content = React.createElement(Layout, null, content);
+              const LayoutComponent = Layout as React.FC<LayoutProps>;
+              content = <LayoutComponent>{content}</LayoutComponent>;
             }
           }
 
@@ -370,12 +330,14 @@ export function PreviewClient({ code }: { code: string }) {
       }
     }
 
-    setupPreview();
+    if (currentPath.projectId) {
+      setupPreview();
+    }
 
     return () => {
       isMounted = false;
     };
-  }, [pageTree, pagePath]);
+  }, [pageTree, currentPath]);
 
   if (error) {
     return (
@@ -389,21 +351,7 @@ export function PreviewClient({ code }: { code: string }) {
     return (
       <div className="flex items-center justify-center h-screen bg-background w-full">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin text-blue-500">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-            </svg>
-          </div>
+          <Icons.spinner className="h-8 w-8 animate-spin text-blue-500" />
           <p className="text-sm text-muted-foreground">Loading preview...</p>
         </div>
       </div>
@@ -438,8 +386,10 @@ export function PreviewClient({ code }: { code: string }) {
   }
 }
 
-// Helper function to compile a component
-function compileComponent(code: string, components: any) {
+function compileComponent(
+  code: string,
+  components: typeof Components
+): React.ComponentType {
   // Parse the code using TypeScript's parser
   const sourceFile = ts.createSourceFile(
     "component.tsx",
@@ -474,7 +424,7 @@ function compileComponent(code: string, components: any) {
   }
 
   // Get the component name
-  let componentName: string;
+  let componentName = "";
   if (ts.isFunctionDeclaration(componentNode) && componentNode.name) {
     componentName = componentNode.name.text;
   } else if (ts.isVariableStatement(componentNode)) {
@@ -484,24 +434,122 @@ function compileComponent(code: string, components: any) {
     } else {
       throw new Error("Could not determine component name");
     }
-  } else {
+  }
+
+  if (!componentName) {
     throw new Error("Could not determine component name");
   }
 
-  // Add necessary imports at the top
+  // Add necessary imports and styles at the top
   const preamble = `
-    const { ${Object.keys(UIComponents).join(", ")} } = UI;
-    
-    interface Props {
-      children?: React.ReactNode;
+    // Inject shadcn base styles
+    if (typeof window !== 'undefined') {
+      const style = document.createElement('style');
+      style.textContent = \`${shadcnBaseStyles}\`;
+      document.head.appendChild(style);
     }
+
+    // Destructure all needed components
+    const {
+      React,
+      tw,
+      Button,
+      Input,
+      Card,
+      CardHeader,
+      CardTitle,
+      CardDescription,
+      CardContent,
+      CardFooter,
+      Dialog,
+      DialogTrigger,
+      DialogContent,
+      DialogHeader,
+      DialogFooter,
+      DialogTitle,
+      DialogDescription,
+      Label,
+      Tabs,
+      TabsList,
+      TabsTrigger,
+      TabsContent,
+      Select,
+      SelectTrigger,
+      SelectValue,
+      SelectContent,
+      SelectItem,
+      Sheet,
+      SheetTrigger,
+      SheetContent,
+      SheetHeader,
+      SheetFooter,
+      SheetTitle,
+      SheetDescription,
+      Avatar,
+      AvatarImage,
+      AvatarFallback,
+      Badge,
+      Progress,
+      Separator,
+      ScrollArea,
+      Table,
+      TableHeader,
+      TableBody,
+      TableFooter,
+      TableHead,
+      TableRow,
+      TableCell,
+      TableCaption,
+      Textarea,
+      Toast,
+      Toaster,
+      useToast,
+      // Recharts components
+      AreaChart,
+      LineChart,
+      BarChart,
+      PieChart,
+      Area,
+      Line,
+      Bar,
+      Pie,
+      XAxis,
+      YAxis,
+      CartesianGrid,
+      Tooltip,
+      Legend,
+      ResponsiveContainer,
+      // Lucide icons
+      ...rest
+    } = components;
   `;
 
   // Remove 'export default' or 'export' from the code
   const cleanCode = code_after_imports
     .replace(/export\s+(?:default\s+)?/, "")
     .replace(/function\s+(\w+)\s*\([^)]*\)/, (match, name) => {
-      return `function ${name}({ children }: Props)`;
+      // Check if the function already has props
+      if (match.includes("props") || match.includes("children")) {
+        return match;
+      }
+      // For layout components, add children prop
+      if (code.includes("layout.tsx")) {
+        return `function ${name}({ children }: { children: React.ReactNode })`;
+      }
+      // For page components, use empty props
+      return `function ${name}()`;
+    })
+    .replace(/const\s+(\w+)\s*=\s*\([^)]*\)/, (match, name) => {
+      // Check if the arrow function already has props
+      if (match.includes("props") || match.includes("children")) {
+        return match;
+      }
+      // For layout components, add children prop
+      if (code.includes("layout.tsx")) {
+        return `const ${name} = ({ children }: { children: React.ReactNode })`;
+      }
+      // For page components, use empty props
+      return `const ${name} = ()`;
     });
 
   // Transform TSX to JS using TypeScript compiler
@@ -515,6 +563,9 @@ function compileComponent(code: string, components: any) {
       esModuleInterop: true,
       allowJs: true,
       allowSyntheticDefaultImports: true,
+      sourceMap: false,
+      inlineSourceMap: false,
+      inlineSources: false,
     },
   });
 
@@ -522,15 +573,15 @@ function compileComponent(code: string, components: any) {
 
   // Create a function that will return our component
   const createComponent = new Function(
-    "React",
-    "UI",
-    "tw",
+    "components",
     `
-    ${transformedCode}
-    return ${componentName};
+    with (components) {
+      ${transformedCode}
+      return ${componentName};
+    }
     `
-  );
+  ) as (components: typeof Components) => React.ComponentType;
 
   // Create the component with all dependencies
-  return createComponent(React, UIComponents, tw);
+  return createComponent(components);
 }
