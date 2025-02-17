@@ -164,11 +164,13 @@ const Components = {
   // React components
   React,
 
-  // UI components
+  // UI components (these should take precedence)
   ...UI,
 
-  // Icons - make all icons directly available
-  ...LucideIcons,
+  // Icons - make all icons directly available, but don't override UI components
+  ...Object.fromEntries(
+    Object.entries(LucideIcons).filter(([key]) => !(key in UI))
+  ),
   Google,
   Facebook,
   GitHub,
