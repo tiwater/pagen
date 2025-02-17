@@ -1,23 +1,33 @@
 
-> @pagen/web@0.1.0 build /Users/hugh/dustland/pagen/web
+
+> @pagen/web@0.1.0 build /Users/hugh/tc/pagen/web
 > next build
 
-   ▲ Next.js 15.1.1
+   [1m[38;2;173;127;168m▲ Next.js 15.1.7[39m[22m
    - Environments: .env.local
 
-   Creating an optimized production build ...
- ✓ Compiled successfully
-   Linting and checking validity of types ...
-Failed to compile.
+ [37m[1m [22m[39m Creating an optimized production build ...
+ [32m[1m✓[22m[39m Compiled successfully
+[?25l [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G[?25h
+./src/components/chat-ui.tsx
+96:6  Warning: React Hook useEffect has a missing dependency: 'project'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 
-./src/components/ui/label.tsx:4:33
-Type error: Cannot find module '@radix-ui/react-label' or its corresponding type declarations.
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+[?25l [36m.[39m [2K[1G [36m..[39m [2K[1G [36m...[39m [2K[1G [36m.[39m [2K[1G [36m..[39m [2K[1G [36m...[39m [2K[1G [36m.[39m [2K[1G [36m..[39m [2K[1G [36m...[39m [2K[1G [36m.[39m [2K[1G [36m..[39m [2K[1G [36m...[39m [2K[1G [36m.[39m [2K[1G [36m..[39m [2K[1G [36m...[39m [2K[1G [36m.[39m Failed to compile.
 
-[0m [90m 2 |[39m[0m
-[0m [90m 3 |[39m [36mimport[39m [33m*[39m [36mas[39m [33mReact[39m [36mfrom[39m [32m"react"[39m[0m
-[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m [33m*[39m [36mas[39m [33mLabelPrimitive[39m [36mfrom[39m [32m"@radix-ui/react-label"[39m[0m
-[0m [90m   |[39m                                 [31m[1m^[22m[39m[0m
-[0m [90m 5 |[39m [36mimport[39m { cva[33m,[39m type [33mVariantProps[39m } [36mfrom[39m [32m"class-variance-authority"[39m[0m
-[0m [90m 6 |[39m[0m
-[0m [90m 7 |[39m [36mimport[39m { cn } [36mfrom[39m [32m"@/lib/utils"[39m[0m
- ELIFECYCLE  Command failed with exit code 1.
+./src/app/auth/auth-code-error/page.tsx:71:14
+Type error: 'AlertTriangle' cannot be used as a JSX component.
+  Its type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>' is not a valid JSX element type.
+    Type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'React.ReactNode' is not assignable to type 'import("/Users/hugh/tc/pagen/node_modules/.pnpm/@types+react@18.3.18/node_modules/@types/react/index").ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+
+[0m [90m 69 |[39m         [33m<[39m[33mCardHeader[39m[33m>[39m[0m
+[0m [90m 70 |[39m           [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex items-center space-x-2"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 71 |[39m             [33m<[39m[33mAlertTriangle[39m className[33m=[39m[32m"h-12 w-12 text-destructive"[39m [33m/[39m[33m>[39m[0m
+[0m [90m    |[39m              [31m[1m^[22m[39m[0m
+[0m [90m 72 |[39m             [33m<[39m[33mCardTitle[39m[33m>[39m[33mAuthentication[39m [33mError[39m[33m<[39m[33m/[39m[33mCardTitle[39m[33m>[39m[0m
+[0m [90m 73 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 74 |[39m           [33m<[39m[33mCardDescription[39m[33m>[39m[0m
+[2K[1G[?25hNext.js build worker exited with code: 1 and signal: null
+[?25l [36m.[39m [?25h[41m[30m ELIFECYCLE [39m[49m [31mCommand failed with exit code 1.[39m

@@ -1,35 +1,31 @@
 
-> @pagen/renderer@0.1.0 build /Users/hugh/dustland/pagen/renderer
+
+> @pagen/renderer@0.1.0 build /Users/hugh/tc/pagen/renderer
 > next build
 
-   ▲ Next.js 15.1.1
+   [1m[38;2;173;127;168m▲ Next.js 15.1.7[39m[22m
 
-   Creating an optimized production build ...
- ✓ Compiled successfully
-   Linting and checking validity of types ...
-   Collecting page data ...
-   Generating static pages (0/8) ...
-   Generating static pages (2/8) 
-   Generating static pages (4/8) 
-   Generating static pages (6/8) 
- ✓ Generating static pages (8/8)
-   Finalizing page optimization ...
-   Collecting build traces ...
+ [37m[1m [22m[39m Creating an optimized production build ...
+ [32m[1m✓[22m[39m Compiled successfully
+[?25l [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G[?25h [37m[1m [22m[39m Linting and checking validity of types     [32m[1m✓[22m[39m Linting and checking validity of types 
+[?25l [37m[1m [22m[39m Collecting page data  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting page data  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting page data  [36m...[39m[2K[1G[?25h [37m[1m [22m[39m Collecting page data     [32m[1m✓[22m[39m Collecting page data 
+[?25l [37m[1m [22m[39m Generating static pages (0/6)  [36m[    ][39m[2K[1G [37m[1m [22m[39m Generating static pages (0/6)  [36m[=   ][39m[2K[1G [37m[1m [22m[39m Generating static pages (0/6)  [36m[==  ][39m[2K[1G[?25h [32m[1m✓[22m[39m Generating static pages (6/6)
+[?25l [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[?25l [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G[?25h [37m[1m [22m[39m Collecting build traces     [32m[1m✓[22m[39m Collecting build traces 
+[2K[1G[?25h [37m[1m [22m[39m Finalizing page optimization     [32m[1m✓[22m[39m Finalizing page optimization 
 
-Route (app)                              Size     First Load JS
-┌ ○ /                                    145 B           105 kB
-├ ○ /_not-found                          980 B           106 kB
-├ ƒ /api/render                          145 B           105 kB
-├ ƒ /p/[id]                              422 B           106 kB
-├ ○ /p/test                              145 B           105 kB
-├ ○ /p/test-1                            145 B           105 kB
-└ ○ /p/test123                           376 B           106 kB
-+ First Load JS shared by all            105 kB
-  ├ chunks/543-34bbc9c6aac1d1e2.js       50.5 kB
-  ├ chunks/79c11659-de361d7b0ac27927.js  52.9 kB
-  └ other shared chunks (total)          1.88 kB
+[4mRoute (app)[24m                              [4mSize[24m     [4mFirst Load JS[24m
+┌ ○ /                                    142 B           [37m[1m106 kB[22m[39m
+├ ○ /_not-found                          982 B           [37m[1m106 kB[22m[39m
+├ ƒ /api/pages                           142 B           [37m[1m106 kB[22m[39m
+├ ƒ /api/render                          142 B           [37m[1m106 kB[22m[39m
+└ ƒ /p/[id]/[[...path]]                  1.24 MB         [37m[1m1.5 MB[22m[39m
++ First Load JS shared by all            [37m[1m106 kB[22m[39m
+  ├ chunks/41-5f3d60bb81e7924a.js        50.6 kB
+  ├ chunks/845ecdb4-d895639310b15ea5.js  53 kB
+  └ other shared chunks (total)          1.96 kB
 
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
+[?25h

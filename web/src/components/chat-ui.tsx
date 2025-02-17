@@ -214,8 +214,8 @@ interface ChatUIProps {
   project: Project;
 }
 
-export function ChatUI({ project: initialProject }: ChatUIProps) {
-  const { project, updateProject, appendMessage, isUpdating } = useProject(initialProject.id);
+export function ChatUI({ project }: ChatUIProps) {
+  const { updateProject, appendMessage, isUpdating } = useProject(project.id);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
   const [generationFiles, setGenerationFiles] = useState<
@@ -226,17 +226,6 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
     }>
   >([]);
   const [currentFile, setCurrentFile] = useState<string>();
-
-  if (!project?.chat) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <Icons.warning className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-2 text-muted-foreground">No chat found</p>
-        </div>
-      </div>
-    );
-  }
 
   const {
     messages,
@@ -391,7 +380,7 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
       append(initialMessage);
       initialMessageSentRef.current = true;
     }
-  }, [project?.isNew, project?.chat.messages, project?.id, append, updateProject]);
+  }, [project, append, updateProject]);
 
   const handleGenerateNextFile = useCallback(
     (nextFile: { path: string; type: 'page' | 'layout' }) => {
@@ -409,6 +398,7 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
 
   const handleUpdatePageTree = useCallback(
     (newFile: { path: string; content: string }) => {
+      if (!project) return;
       // Normalize the path to use app router convention
       const normalizedPath = newFile.path
         .replace(/^pages\//, 'app/')
@@ -451,7 +441,7 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
         pageTreeLength: updatedPageTree.length,
       });
     },
-    [project.id, project.pageTree, updateProject]
+    [project?.id, project?.pageTree, updateProject]
   );
 
   // Scroll to bottom effect with debounce
@@ -515,6 +505,17 @@ export function ChatUI({ project: initialProject }: ChatUIProps) {
       </>
     );
   };
+
+  if (!project?.chat) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <Icons.warning className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="mt-2 text-muted-foreground">No chat found</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">

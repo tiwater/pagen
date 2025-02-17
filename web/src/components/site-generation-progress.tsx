@@ -1,7 +1,7 @@
 'use client';
 
+import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
-import { Icons } from './icons';
 
 interface FileStatus {
   path: string;
@@ -37,7 +37,7 @@ export function SiteGenerationProgress({ files, currentFile }: SiteGenerationPro
             {file.status === 'pending' && <Icons.clock className="h-3 w-3 text-muted-foreground" />}
             {file.status === 'generating' && <Icons.spinner className="h-3 w-3 animate-spin" />}
             {file.status === 'complete' && <Icons.check className="h-3 w-3 text-green-500" />}
-            {file.status === 'error' && <Icons.alertCircle className="h-3 w-3 text-red-500" />}
+            {file.status === 'error' && <Icons.alertCircle className="h-4 w-4" />}
           </div>
         ))}
       </div>

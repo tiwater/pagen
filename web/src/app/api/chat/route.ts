@@ -14,27 +14,27 @@ type ModelConfig = {
   model: string;
   baseURL?: string;
   temperature?: number;
-  modelFn: Function;
+  modelFn: (name: string) => any;
 };
 
-const MODEL_CONFIGS: Record<string, ModelConfig & { modelFn?: Function }> = {
+const MODEL_CONFIGS: Record<string, ModelConfig> = {
   'gpt-4o': {
     provider: 'openai',
     model: 'gpt-4o',
     temperature: 0.2,
-    modelFn: (name: string) => openai(name),
+    modelFn: openai,
   },
   'claude-3.5-sonnet': {
     provider: 'anthropic',
     model: 'claude-3-5-sonnet-20241022',
     temperature: 0.2,
-    modelFn: (name: string) => anthropic(name),
+    modelFn: anthropic,
   },
   'deepseek-v3': {
     provider: 'deepseek',
     model: 'deepseek-chat',
     temperature: 0.2,
-    modelFn: (name: string) => deepseek(name),
+    modelFn: deepseek,
   },
 };
 
@@ -432,7 +432,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = {
-      model: modelConfig.modelFn(modelConfig.model),
+      model: modelConfig.modelFn(modelConfig.model)({}),
       messages: [{ role: 'system', content: systemPrompt }, ...(messages || [])],
       temperature: modelConfig.temperature,
       stream,

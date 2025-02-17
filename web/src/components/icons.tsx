@@ -1,5 +1,6 @@
 import {
   AlertCircle,
+  AlertTriangle,
   AppWindowMac,
   BadgeCheck,
   Bot,
@@ -144,7 +145,7 @@ export const Icons = {
   api: Plug2,
   copy: Copy,
   user: UserRound,
-  warning: AlertCircle,
+  warning: AlertTriangle,
   settings: Settings,
   settings2: Settings2,
   logout: LogOut,

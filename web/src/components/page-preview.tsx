@@ -68,7 +68,7 @@ export function PagePreview({ file, project }: PagePreviewProps) {
     }
 
     createPreviewPage();
-  }, [project?.id, file]);
+  }, [project?.id, project?.pageTree, file]);
 
   if (isLoading) {
     return <Loading />;

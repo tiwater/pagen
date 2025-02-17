@@ -1,12 +1,11 @@
 'use client';
 
-import { ProjectType } from '@/types/project';
 import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 interface ProjectTypeSwitchProps {
-  value: ProjectType;
-  onChange: (type: ProjectType) => void;
+  value: 'page' | 'site';
+  onChange: (type: 'page' | 'site') => void;
 }
 
 export function ProjectTypeSwitch({ value, onChange }: ProjectTypeSwitchProps) {

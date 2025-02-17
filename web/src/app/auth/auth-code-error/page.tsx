@@ -4,7 +4,8 @@ import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Icons } from '@/components/icons';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Loading } from '@/components/loading';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -13,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 
 const errorMessages: { [key: string]: string } = {
   default: 'An unexpected error occurred during authentication.',
@@ -68,7 +68,7 @@ function AuthErrorContent() {
       <Card className="w-[640px] mx-4">
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <Icons.warning className="h-12 w-12 text-destructive" />
+            <Icons.alertCircle className="h-12 w-12 text-destructive" />
             <CardTitle>Authentication Error</CardTitle>
           </div>
           <CardDescription>
@@ -82,11 +82,11 @@ function AuthErrorContent() {
           )}
         </CardContent>
         <CardFooter className="flex justify-center gap-4">
-          <Link href="/auth/login" className={cn(buttonVariants({ variant: 'default' }))}>
-            Login Again
+          <Link href="/auth/login">
+            <Button variant="default">Login Again</Button>
           </Link>
-          <Link href="/" className={cn(buttonVariants({ variant: 'outline' }))}>
-            Back to Home
+          <Link href="/">
+            <Button variant="outline">Back to Home</Button>
           </Link>
         </CardFooter>
       </Card>
@@ -96,7 +96,7 @@ function AuthErrorContent() {
 
 export default function AuthErrorPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loading />}>
       <AuthErrorContent />
     </Suspense>
   );
