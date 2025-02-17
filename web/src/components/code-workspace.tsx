@@ -5,7 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
-import { PageTreeNode } from '@/types/project';
+import { PageTreeNode, Project } from '@/types/project';
 import { CopyButton } from '@/components/copy-button';
 import { Icons } from '@/components/icons';
 import { PagePreview } from '@/components/page-preview';
@@ -26,9 +26,10 @@ import { AuthButton } from './auth-button';
 interface CodeWorkspaceProps {
   id?: string;
   file?: PageTreeNode;
+  project: Project;
 }
 
-export function CodeWorkspace({ id, file }: CodeWorkspaceProps) {
+export function CodeWorkspace({ id, file, project }: CodeWorkspaceProps) {
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? oneDark : oneLight;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
@@ -169,7 +170,7 @@ export function CodeWorkspace({ id, file }: CodeWorkspaceProps) {
           </div>
         </div>
         <div className="flex-1 h-[calc(100%-4rem)] overflow-hidden">
-          <TabsContent value="code" className="h-full m-0 bg-muted/20">
+          <TabsContent value="code" className="h-full m-0">
             {file ? (
               <ScrollArea className="h-full w-full">
                 <SyntaxHighlighter
@@ -204,7 +205,7 @@ export function CodeWorkspace({ id, file }: CodeWorkspaceProps) {
             )}
           </TabsContent>
           <TabsContent value="preview" className="h-full m-0">
-            {file && <PagePreview file={file} />}
+            {file && <PagePreview project={project} file={file} />}
           </TabsContent>
         </div>
       </Tabs>

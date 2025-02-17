@@ -122,7 +122,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         <ResizableHandle />
 
         <ResizablePanel defaultSize={55}>
-          <CodeWorkspace file={activeFile} />
+          <CodeWorkspace file={activeFile} project={project} />
         </ResizablePanel>
 
         <ResizableHandle />

@@ -416,7 +416,7 @@ export async function POST(request: NextRequest) {
        - Root page should be 'app/page.tsx'
        - Nested pages should be 'app/[route]/page.tsx'
        - Layouts should be 'app/[route]/layout.tsx'
-       - Each generated file should have path as the first line comment of the file as: \`// Path: /app/page.tsx\`
+       - Each generated file should have path as the first line comment of the file as: \`// Path: app/page.tsx\`
        - DO NOT create separate component files
     3. Keep code modular within pages and layouts
     4. Optimize for performance with proper code splitting

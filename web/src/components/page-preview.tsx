@@ -3,17 +3,18 @@
 import path from 'path';
 import { useEffect, useState } from 'react';
 import { useProject } from '@/hooks/use-project';
-import { PageTreeNode, ProjectFile } from '@/types/project';
+import { PageTreeNode, Project, ProjectFile } from '@/types/project';
 import { Loading } from './loading';
 
 const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
 
 interface PagePreviewProps {
+  project: Project;
   file: PageTreeNode;
 }
 
-export function PagePreview({ file }: PagePreviewProps) {
-  const { project } = useProject();
+export function PagePreview({ file, project }: PagePreviewProps) {
+  console.log('PagePreview', file, project);
   const [isLoading, setIsLoading] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -67,7 +68,7 @@ export function PagePreview({ file }: PagePreviewProps) {
     }
 
     createPreviewPage();
-  }, [project?.id, project?.pageTree, file.path]);
+  }, [project?.id, file]);
 
   if (isLoading) {
     return <Loading />;
