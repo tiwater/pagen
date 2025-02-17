@@ -647,18 +647,18 @@ function EmptyScreen({ onSendPrompt }: { onSendPrompt: (prompt: string) => void 
   ];
 
   return (
-    <div className="mx-auto max-w-2xl px-4">
-      <div className="mt-4 flex flex-col items-center space-y-2">
-        <h2 className="font-medium">Sample prompts</h2>
-        <div className="grid gap-2">
+    <div className="w-full px-4">
+      <div className="w-full mt-4 flex flex-col items-center space-y-2">
+        <h2 className="font-medium">Try these prompts</h2>
+        <div className="grid gap-2 w-full">
           {samplePrompts.map(prompt => (
             <Button
               key={prompt}
               variant="outline"
-              className="h-auto p-1 text-left text-muted-foreground"
+              className="h-auto w-full p-1 text-left text-muted-foreground truncate overflow-hidden"
               onClick={() => onSendPrompt(prompt)}
             >
-              {prompt}
+              <span className="text-xs truncate w-full block">{prompt}</span>
             </Button>
           ))}
         </div>
