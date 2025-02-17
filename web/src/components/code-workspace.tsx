@@ -179,6 +179,19 @@ export function CodeWorkspace({ id, file }: CodeWorkspaceProps) {
                     margin: 0,
                     background: 'transparent',
                     border: 'none',
+                    fontSize: '12px',
+                  }}
+                  codeTagProps={{
+                    style: {
+                      fontSize: '12px',
+                      lineHeight: '1.4',
+                    },
+                  }}
+                  wrapLines={true}
+                  lineProps={{
+                    style: {
+                      background: 'transparent',
+                    },
                   }}
                 >
                   {file.file?.content || ''}
