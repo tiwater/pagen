@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { id } = await request.json();
+    const { projectId, path } = await request.json();
     const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
-    const pageUrl = `${baseUrl}/p/${id}`;
+    const pageUrl = `${baseUrl}/p/${projectId}${path ? `/${path}` : ''}`;
 
     const response = await fetch('https://pages-webshot.tisvc.com/screenshot', {
       method: 'POST',
@@ -30,11 +30,12 @@ export async function POST(request: Request) {
 
     // Get the image blob
     const imageBlob = await response.blob();
+    const normalizedPath = path?.replace(/\//g, '-');
 
     return new NextResponse(imageBlob, {
       headers: {
         'Content-Type': 'image/png',
-        'Content-Disposition': `attachment; filename=screenshot-${id}.png`,
+        'Content-Disposition': `attachment; filename=screenshot-${projectId}-${normalizedPath}.png`,
       },
     });
   } catch (error) {

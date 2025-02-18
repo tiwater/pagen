@@ -24,19 +24,16 @@ import { cn } from '@/lib/utils';
 import { AuthButton } from './auth-button';
 
 interface CodeWorkspaceProps {
-  id?: string;
   file?: PageTreeNode;
   project: Project;
 }
 
-export function CodeWorkspace({ id, file, project }: CodeWorkspaceProps) {
+export function CodeWorkspace({ file, project }: CodeWorkspaceProps) {
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? oneDark : oneLight;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
 
   const handleScreenshot = useCallback(async () => {
-    if (!id) return;
-
     try {
       setIsScreenshotting(true);
       const response = await fetch('/api/screenshot', {
@@ -45,7 +42,8 @@ export function CodeWorkspace({ id, file, project }: CodeWorkspaceProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id,
+          projectId: project.id,
+          path: file?.path,
         }),
       });
 
@@ -62,7 +60,7 @@ export function CodeWorkspace({ id, file, project }: CodeWorkspaceProps) {
       // Create a temporary link and trigger download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `screenshot-${id}.png`;
+      link.download = `screenshot-${project.id}-${file?.path}.png`;
       document.body.appendChild(link);
       link.click();
 
@@ -74,7 +72,7 @@ export function CodeWorkspace({ id, file, project }: CodeWorkspaceProps) {
     } finally {
       setIsScreenshotting(false);
     }
-  }, [id]);
+  }, [project.id, file?.path]);
 
   return (
     <div className="flex h-full flex-col max-w-full">
