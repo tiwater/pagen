@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 export async function middleware(request: NextRequest) {
   // Skip middleware for the root path when coming from auth callback
   const referer = request.headers.get('referer') || '';
-  if (request.nextUrl.pathname === '/' && referer.includes('/auth/callback')) {
+  if (referer.includes('/auth/callback')) {
     return NextResponse.next();
   }
   

@@ -135,7 +135,7 @@ export default function Home() {
       </div>
       <div className="flex flex-col gap-2 w-full max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-2">
-          <div className="relative rounded-xl shadow-lg">
+          <div className="relative rounded-xl shadow">
             <Textarea
               name="prompt"
               placeholder={`Describe the ${projectType} you want to create...`}
@@ -144,7 +144,7 @@ export default function Home() {
               onKeyDown={handleKeyDown}
               className="min-h-[120px] resize-none rounded-xl text-xs sm:text-sm"
             />
-            <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between">
+            <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
