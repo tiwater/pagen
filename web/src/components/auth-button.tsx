@@ -91,6 +91,11 @@ export function AuthButton() {
             API Documentation
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem className="w-full p-2">
+          <Link href="/docs" className="flex w-full items-center gap-2 cursor-pointer">
+            Webshot API
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => signOut()}
