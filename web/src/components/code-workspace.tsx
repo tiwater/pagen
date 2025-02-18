@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToastAction } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { AuthButton } from './auth-button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface CodeWorkspaceProps {
   file?: PageTreeNode;
@@ -90,6 +91,14 @@ export function CodeWorkspace({ file, project }: CodeWorkspaceProps) {
     }
   }, [project.id, file?.path]);
 
+  const subPath = file?.path
+    ? file.path
+        .replace(/^app\//, '') // Remove 'app/' prefix
+        .replace(/\/page\.tsx$/, '') // Remove '/page.tsx' suffix
+        .replace(/^page\.tsx$/, '')
+    : ''; // Handle root page
+  const fullPreviewUrl = `${process.env.NEXT_PUBLIC_RENDERER_URL}/p/${project.id}/${subPath}`;
+
   return (
     <div className="flex h-full flex-col max-w-full">
       <Tabs defaultValue="code" className="flex-1 h-full flex flex-col">
@@ -120,23 +129,37 @@ export function CodeWorkspace({ file, project }: CodeWorkspaceProps) {
             ))}
           </TabsList>
           <div className="flex items-center gap-2 p-2">
-            <Button
-              variant="ghost"
-              onClick={handleScreenshot}
-              disabled={!file || isScreenshotting}
-              className="h-7 w-7 p-0"
-            >
-              {isScreenshotting ? (
-                <Icons.spinner className="h-4 w-4 animate-spin" />
-              ) : (
-                <Icons.camera className="h-4 w-4" />
-              )}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  onClick={handleScreenshot}
+                  disabled={!file || isScreenshotting}
+                  className="h-7 w-7 p-0"
+                >
+                  {isScreenshotting ? (
+                    <Icons.spinner className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Icons.camera className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Take a screenshot of the current page</p>
+              </TooltipContent>
+            </Tooltip>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="ghost" disabled={!file} className="h-7 w-7 p-0">
-                  <Icons.api className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" disabled={!file} className="h-7 w-7 p-0">
+                      <Icons.api className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>API to generate pages and get screenshots</p>
+                  </TooltipContent>
+                </Tooltip>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
@@ -180,6 +203,18 @@ export function CodeWorkspace({ file, project }: CodeWorkspaceProps) {
                 </div>
               </DialogContent>
             </Dialog>
+            <Link href={fullPreviewUrl} target="_blank" className="underline hover:text-primary">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
+                    <Icons.externalLink className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Open the preview page in a new tab</p>
+                </TooltipContent>
+              </Tooltip>
+            </Link>
             <AuthButton />
           </div>
         </div>

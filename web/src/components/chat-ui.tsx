@@ -526,6 +526,7 @@ export function ChatUI({ project }: ChatUIProps) {
             <Icons.logo className="h-5 w-5" />
           </Link>
           <span>Pages</span>
+          {status === 'streaming' && <Icons.spinner className="h-4 w-4 animate-spin" />}
         </div>
         <div className="flex items-center gap-2">
           <Button

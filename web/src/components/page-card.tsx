@@ -1,16 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vs, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
-import { MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CodeViewer } from './code-viewer';
 import { Icons } from './icons';
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
-import { ScrollArea } from './ui/scroll-area';
 
 interface PageCardProps {
   children: React.ReactNode;
@@ -32,6 +27,7 @@ export function PageCard({ children }: PageCardProps) {
   }
 
   const content = children?.toString();
+  const lines = content?.split('\n').length;
   return (
     <>
       <div
@@ -44,7 +40,7 @@ export function PageCard({ children }: PageCardProps) {
         <div className="flex items-center justify-between border-b border-muted bg-background/50 p-2 h-7">
           <div className="flex items-center gap-2">
             <Icons.window className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs font-medium">{'Generated Page'}</span>
+            <span className="text-xs font-medium">{`Generated Page (${lines} lines)`}</span>
           </div>
           <Button
             variant="ghost"
