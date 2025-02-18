@@ -14,7 +14,7 @@ type ModelConfig = {
   model: string;
   baseURL?: string;
   temperature?: number;
-  modelFn: (name: string) => any;
+  modelFn: any;
 };
 
 const MODEL_CONFIGS: Record<string, ModelConfig> = {
@@ -431,8 +431,11 @@ export async function POST(request: NextRequest) {
       systemPrompt += `\n\nAdditional Rules:\n\n${rules.map((rule: Rule) => `${rule.title}:\n${rule.content}\n`).join('\n')}\n`;
     }
 
+    // Initialize the model with the correct configuration
+    const modelInstance = modelConfig.modelFn(modelConfig.model);
+
     const body = {
-      model: modelConfig.modelFn(modelConfig.model)({}),
+      model: modelInstance,
       messages: [{ role: 'system', content: systemPrompt }, ...(messages || [])],
       temperature: modelConfig.temperature,
       stream,

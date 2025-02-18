@@ -376,6 +376,7 @@ export function ChatUI({ project }: ChatUIProps) {
           messages: [],
         },
       });
+      console.log('Initial message:', initialMessage);
       // Send the message to AI
       append(initialMessage);
       initialMessageSentRef.current = true;
