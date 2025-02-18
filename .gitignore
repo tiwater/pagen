@@ -33,7 +33,11 @@ pnpm-error.log*
 .pnpm-debug.log*
 
 # local env files
+.env
 .env*.local
+.env.development
+.env.test
+.env.production
 
 # vercel
 .vercel
@@ -56,4 +60,4 @@ next-env.d.ts
 .yarn/**/*
 
 # turbo
-**/.turbo/**
+**/.turbo/**/*.log
