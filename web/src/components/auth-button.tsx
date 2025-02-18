@@ -35,7 +35,6 @@ export function AuthButton() {
         className="flex items-center gap-2"
       >
         <Icons.google className="h-4 w-4" />
-        Sign in with Google
       </Button>
     );
   }
@@ -87,13 +86,16 @@ export function AuthButton() {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="w-full p-2">
-          <Link href="/docs" className="flex w-full items-center gap-2 cursor-pointer">
-            API Documentation
+          <Link
+            href="https://pages-webshot.tisvc.com/docs"
+            className="flex w-full items-center gap-2 cursor-pointer"
+          >
+            Webshot API
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="w-full p-2">
           <Link href="/docs" className="flex w-full items-center gap-2 cursor-pointer">
-            Webshot API
+            API Documentation
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

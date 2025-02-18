@@ -28,12 +28,12 @@ export const CodeViewer = memo(function CodeViewer({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[80vh] p-0">
-        <DialogTitle className="flex flex-row items-center gap-2 p-2">
+      <DialogContent className="flex flex-col max-w-4xl h-[80vh] bg-background p-0 shadow-xl">
+        <DialogTitle className="flex items-center gap-2 p-2 h-12">
           <Icons.code className="h-5 w-5" />
           <span className="text-sm font-medium">{title}</span>
         </DialogTitle>
-        <ScrollArea className="flex-1 h-full">
+        <ScrollArea className="flex-1">
           <SyntaxHighlighter
             language={language}
             style={resolvedTheme === 'dark' ? vscDarkPlus : vs}
