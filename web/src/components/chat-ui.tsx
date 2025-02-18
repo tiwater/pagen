@@ -251,6 +251,7 @@ export function ChatUI({ project }: ChatUIProps) {
       model: project.chat.model,
     },
     onResponse: (response: Response) => {
+      // Handle generation plan
       const text = response.headers.get('x-completion-text');
       if (text) {
         try {
@@ -273,6 +274,19 @@ export function ChatUI({ project }: ChatUIProps) {
       }
     },
     onFinish: async (message: Message) => {
+      // Check for incomplete generation marker and remove it
+      if (message.content.includes('[INCOMPLETE_GENERATION')) {
+        message.content = message.content
+          .replace(/\[INCOMPLETE_GENERATION:remaining_pages=\d+\]/, '')
+          .trim();
+
+        // Immediately append the continuation message
+        append({
+          role: 'user',
+          content: 'Please continue generating the remaining pages.',
+        });
+      }
+
       // Use appendMessage instead of updateProject
       await appendMessage(message);
 

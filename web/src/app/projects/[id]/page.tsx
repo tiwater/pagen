@@ -38,9 +38,11 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const [fileToDelete, setFileToDelete] = useState<PageTreeNode | null>(null);
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
 
+  const pageTree = project?.pageTree || [];
+
   const activeFile = project?.pageTree?.find(f => f.id === activeFileId);
 
-  const handleFileCreate = (path: string, type: 'page' | 'layout' | 'component') => {
+  const handleFileCreate = async (path: string, type: 'page' | 'layout' | 'component') => {
     if (!project) return;
     const newFile: PageTreeNode = {
       id: nanoid(),
@@ -55,9 +57,12 @@ export default function ProjectPage({ params }: ProjectPageProps) {
       },
     };
 
-    updateProject(project.id, {
-      pageTree: [...(project.pageTree || []), newFile],
+    await updateProject(project.id, {
+      pageTree: [...pageTree, newFile],
     });
+
+    setActiveFileId(newFile.id);
+    toast({ title: 'File created', description: `Created ${path}` });
   };
 
   const handleFileDelete = (fileId: string) => {
@@ -129,7 +134,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
         <ResizablePanel defaultSize={15} className="flex flex-col h-full">
           <FileTree
-            files={project.pageTree || []}
+            key={pageTree.length}
+            files={pageTree}
             activeFileId={activeFileId || undefined}
             onFileSelect={setActiveFileId}
             onFileCreate={handleFileCreate}

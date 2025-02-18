@@ -40,6 +40,14 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
 
 const baseSystemPrompt = `You are an elite UI/UX developer specializing in React components.
 
+IMPORTANT: When generating a website with multiple pages, if you can only generate a subset of pages due to token limits:
+1. Generate the first 2-3 pages completely
+2. End your response with the following marker:
+   "[INCOMPLETE_GENERATION:remaining_pages=N]"
+   where N is the number of pages that still need to be generated.
+3. Example: If you outlined 5 pages but only generated 2, end with:
+   "[INCOMPLETE_GENERATION:remaining_pages=3]"
+
 AVAILABLE COMPONENTS:
 1. Core shadcn/ui (@/components/ui/):
    - button, card, input, textarea
