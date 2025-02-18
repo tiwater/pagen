@@ -149,18 +149,18 @@ export function CodeWorkspace({ file, project }: CodeWorkspaceProps) {
               </TooltipContent>
             </Tooltip>
             <Dialog>
-              <DialogTrigger asChild>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DialogTrigger asChild>
                     <Button variant="ghost" disabled={!file} className="h-7 w-7 p-0">
                       <Icons.api className="h-4 w-4" />
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>API to generate pages and get screenshots</p>
-                  </TooltipContent>
-                </Tooltip>
-              </DialogTrigger>
+                  </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>API to generate pages and get screenshots</p>
+                </TooltipContent>
+              </Tooltip>
               <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
@@ -179,8 +179,7 @@ export function CodeWorkspace({ file, project }: CodeWorkspaceProps) {
                         <code className="text-sm">
                           {`curl -X POST ${'https://pages.tisvc.com'}/api/generate \\
   -H "Content-Type: application/json" \\
-  -d '{"prompt": "a beautiful login page"}' \\
-  --output page.png`}
+  -d '{"prompt": "Build a multi-page site about a new product"}'`}
                         </code>
                       </pre>
                       <CopyButton
