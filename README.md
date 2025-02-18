@@ -29,20 +29,54 @@ pagen/
 
 ## Getting Started
 
+### Using Docker Compose (Recommended)
+
 1. Clone the repository
-2. Install dependencies:
+2. Copy the example environment file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Update the `.env` file with your credentials:
+
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `BROWSERLESS_URL`
+   - `BROWSERLESS_TOKEN`
+
+4. Build and start the services:
+
+   ```bash
+   # First-time build and start
+   docker compose up --build
+
+   # Subsequent starts
+   docker compose up -d
+
+   # View logs
+   docker compose logs -f
+   ```
+
+5. Access the applications:
+   - Web App: [http://localhost:1578](http://localhost:1578)
+   - Renderer: [http://localhost:3000](http://localhost:3000)
+
+### Local Development
+
+1. Install dependencies:
 
    ```bash
    pnpm install
    ```
 
-3. Copy the example environment file and add your API keys:
+2. Copy the environment file:
 
    ```bash
    cp web/.env.example web/.env.local
    ```
 
-4. Start the development servers:
+3. Start the development servers:
 
    ```bash
    # Start all applications
@@ -53,7 +87,7 @@ pagen/
    pnpm --filter @pagen/renderer dev
    ```
 
-5. Open:
+4. Open:
    - Web App: [http://localhost:1578](http://localhost:1578)
    - Renderer: [http://localhost:3345](http://localhost:3345)
 
@@ -66,6 +100,28 @@ pagen/
 - Zustand for state management
 - Turborepo for monorepo management
 - pnpm for package management
+- Docker & Docker Compose for containerization
+
+## Docker Commands
+
+```bash
+# View service status
+docker compose ps
+
+# Restart services
+docker compose restart web
+docker compose restart renderer
+
+# View logs
+docker compose logs -f web
+docker compose logs -f renderer
+
+# Stop services
+docker compose down
+
+# Rebuild services
+docker compose build --no-cache
+```
 
 ## Applications
 

@@ -1,15 +1,17 @@
 'use server';
 
 import { NextRequest } from 'next/server';
+import { PageTreeNode } from '@/types/project';
 
 const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'http://localhost:3345';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:1578';
 
 export async function POST(request: NextRequest) {
   try {
     const { projectId, pageTree } = await request.json();
 
     // First, send the pageTree to the renderer
-    const rendererResponse = await fetch(`/api/render`, {
+    const rendererResponse = await fetch(`${RENDERER_URL}/api/render`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
 
       try {
         // Take screenshot using the existing screenshot endpoint
-        const screenshotResponse = await fetch('/api/screenshot', {
+        const screenshotResponse = await fetch(`${BASE_URL}/api/screenshot`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
