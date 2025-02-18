@@ -1,3 +1,4 @@
+import { uploadFile } from '@/lib/supabase/client';
 import { NextResponse } from 'next/server';
 
 
@@ -6,8 +7,8 @@ export async function POST(request: Request) {
     const { projectId, path } = await request.json();
     const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
     const pageUrl = `${baseUrl}/p/${projectId}${path ? `/${path}` : ''}`;
-
-    const response = await fetch('https://pages-webshot.tisvc.com/screenshot', {
+    // const pageUrl = `https://www.google.com`; // for testing
+    const response = await fetch('https://pages-webshot.tisvc.com/chrome/screenshot', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -17,9 +18,9 @@ export async function POST(request: Request) {
         options: {
           fullPage: true,
         },
-        waitForSelector: {
-          selector: '.preview-container',
-          timeout: 10000,
+        viewport: {
+          width: 1920,
+          height: 1080,
         },
       }),
     });
@@ -28,15 +29,23 @@ export async function POST(request: Request) {
       throw new Error(`Failed to capture screenshot ${response.status}`);
     }
 
-    // Get the image blob
+    // Get the image blob with explicit MIME type
     const imageBlob = await response.blob();
-    const normalizedPath = path?.replace(/\//g, '-');
+    // Create a new Blob with explicit PNG MIME type
+    const pngBlob = new Blob([imageBlob], { type: 'image/png' });
+    
+    // Handle undefined path and normalize by removing slashes
+    const normalizedPath = path ? path.replace(/\//g, '-') : 'index';
+    const filename = `page-${projectId}-${normalizedPath}-${Date.now()}.png`;
 
-    return new NextResponse(imageBlob, {
-      headers: {
-        'Content-Type': 'image/png',
-        'Content-Disposition': `attachment; filename=screenshot-${projectId}-${normalizedPath}.png`,
-      },
+    console.log('Uploading screenshot:', filename);
+    const uploadedFile = await uploadFile(new File([pngBlob], filename, { type: 'image/png' }), "screenshots");
+    if (!uploadedFile) {
+      throw new Error(`Failed to upload screenshot`);
+    }
+
+    return NextResponse.json({
+      url: uploadedFile.url,
     });
   } catch (error) {
     console.error('Screenshot error:', error);

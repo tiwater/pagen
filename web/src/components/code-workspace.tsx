@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 import { PageTreeNode, Project } from '@/types/project';
 import { CopyButton } from '@/components/copy-button';
 import { Icons } from '@/components/icons';
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToastAction } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { AuthButton } from './auth-button';
 
@@ -32,7 +34,7 @@ export function CodeWorkspace({ file, project }: CodeWorkspaceProps) {
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? oneDark : oneLight;
   const [isScreenshotting, setIsScreenshotting] = useState(false);
-
+  const { toast } = useToast();
   const handleScreenshot = useCallback(async () => {
     try {
       setIsScreenshotting(true);
@@ -51,22 +53,36 @@ export function CodeWorkspace({ file, project }: CodeWorkspaceProps) {
         throw new Error('Failed to capture screenshot');
       }
 
-      // Get the blob from response
-      const blob = await response.blob();
-
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(blob);
-
-      // Create a temporary link and trigger download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `screenshot-${project.id}-${file?.path}.png`;
-      document.body.appendChild(link);
-      link.click();
-
-      // Clean up
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      const data = await response.json();
+      console.log('Screenshot data:', data);
+      toast({
+        title: 'Screenshot captured',
+        description: (
+          <div className="mt-2 flex flex-col gap-2 w-full">
+            <p>The screenshot of current page has been captured and saved successfully.</p>
+            <div className="flex items-center justify-between relative w-full">
+              <Link
+                href={data.url}
+                target="_blank"
+                className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1"
+                rel="noopener noreferrer"
+              >
+                <Icons.link className="h-3 w-3" />
+                {`...${data.url.slice(-20)}`}
+              </Link>
+              <ToastAction
+                altText="Download"
+                className="h-8 w-8 absolute right-0 bottom-0"
+                onClick={() => {
+                  window.open(data.url, '_blank');
+                }}
+              >
+                <Icons.download className="h-4 w-4 shrink-0" />
+              </ToastAction>
+            </div>
+          </div>
+        ),
+      });
     } catch (error) {
       console.error('Screenshot error:', error);
     } finally {

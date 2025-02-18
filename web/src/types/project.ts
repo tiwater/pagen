@@ -20,6 +20,7 @@ export interface PageTreeNode {
   id: string;
   path: string;           // URL path: '/', '/about', '/blog/[slug]' etc.
   file?: ProjectFile;     // Optional file attached to this node
+  screenshot?: string;   // Optional screenshot URL
   children?: PageTreeNode[];
 }
 
