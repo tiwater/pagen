@@ -353,8 +353,7 @@ export function PreviewClient({ code }: { code: string }) {
     return (
       <div className="flex items-center justify-center h-screen bg-background w-full">
         <div className="flex flex-col items-center gap-4">
-          <Icons.spinner className="h-8 w-8 animate-spin text-blue-500" />
-          <p className="text-sm text-muted-foreground">Loading preview...</p>
+          <Icons.simpleLogo className="h-8 w-8 animate-pulse text-blue-500" />
         </div>
       </div>
     );

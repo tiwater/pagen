@@ -34,15 +34,15 @@ pagen/
 1. Set up the Webshot Service:
 
    ```bash
-   # Pull the browserless/chrome image
-   docker pull browserless/chrome
-
-   # Run the container on port 3001 (or any available port)
-   docker run -d --name webshot -p 3001:3000 browserless/chrome
+   # Pull and run the container on port 8842 (or any available port)
+   docker run -p 8842:3000 ghcr.io/browserless/chromium
    ```
 
-   Note: The default port is 3000, but we use 3001 to avoid conflicts with the renderer service.
+   Note: The default port is 3000, but we use 8842 to avoid conflicts with the renderer service.
    You can choose a different port if needed.
+
+   Note: The default image on docker hub for browserless/chrome is v1, we use the image from ghcr.io, which is v2.
+   If you deployed different versions, you need to adjust the API call in the webshot service.
 
 2. Set up environment variables:
    ```bash

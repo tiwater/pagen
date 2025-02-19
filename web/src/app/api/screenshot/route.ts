@@ -30,6 +30,10 @@ export async function POST(request: Request) {
           width: 1920,
           height: 1080,
         },
+        waitForSelector: {
+          selector: '.preview-container',
+          timeout: 10000,
+        },
       }),
     });
 
