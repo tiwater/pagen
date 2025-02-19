@@ -1,6 +1,8 @@
 import { uploadFile } from '@/lib/supabase/client';
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge'; // Without this, the uploadFile function is not available
+
 const webshotUrl = process.env.NEXT_PUBLIC_WEBSHOT_URL || 'https://pages-webshot.tisvc.com/chrome';
 
 export async function POST(request: Request) {
