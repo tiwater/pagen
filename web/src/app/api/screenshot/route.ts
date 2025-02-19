@@ -1,12 +1,12 @@
 import { uploadFile } from '@/lib/supabase/client';
 import { NextResponse } from 'next/server';
 
-const webshotUrl = process.env.NEXT_PUBLIC_WEBSHOT_URL || 'https://pages-webshot.tisvc.com';
+const webshotUrl = process.env.NEXT_PUBLIC_WEBSHOT_URL || 'https://pages-webshot.tisvc.com/chrome';
 
 export async function POST(request: Request) {
   try {
     const { projectId, path } = await request.json();
-    const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com/chrome';
+    const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
     let pageUrl = `${baseUrl}/p/${projectId}${path ? `/${path}` : ''}`;
     if (process.env.NODE_ENV === 'development' && baseUrl.includes('localhost')) {
       // We assumed the webshot service is running as a docker container
