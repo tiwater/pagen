@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { deepseek } from '@ai-sdk/deepseek';
+import { createDeepSeek, deepseek } from '@ai-sdk/deepseek';
 import { generateText, streamText } from 'ai';
 import { Rule } from '@/types/rules';
 
@@ -15,6 +15,7 @@ type ModelConfig = {
   baseURL?: string;
   temperature?: number;
   modelFn: any;
+  apiKey?: string;
 };
 
 const MODEL_CONFIGS: Record<string, ModelConfig> = {
@@ -35,6 +36,17 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
     model: 'deepseek-chat',
     temperature: 0.2,
     modelFn: deepseek,
+  },
+  'deepseek-v3-volcengine': {
+    provider: 'deepseek',
+    baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
+    apiKey: process.env.DEEPSEEK_API_KEY_VOLCENGINE,
+    model: 'deepseek-v3-241226',
+    temperature: 0.2,
+    modelFn: createDeepSeek({
+      baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
+      apiKey: process.env.DEEPSEEK_API_KEY_VOLCENGINE,
+    }),
   },
 };
 

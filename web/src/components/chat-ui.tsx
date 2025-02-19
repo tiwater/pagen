@@ -614,22 +614,24 @@ export function ChatUI({ project }: ChatUIProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="text-xs">
-              {['gpt-4o', 'claude-3.5-sonnet', 'deepseek-v3'].map(model => (
-                <DropdownMenuItem
-                  key={model}
-                  onClick={() => {
-                    updateProject(project.id, {
-                      chat: {
-                        ...project.chat,
-                        model,
-                      },
-                    });
-                  }}
-                  className="text-xs"
-                >
-                  {model}
-                </DropdownMenuItem>
-              ))}
+              {['gpt-4o', 'claude-3.5-sonnet', 'deepseek-v3', 'deepseek-v3-volcengine'].map(
+                model => (
+                  <DropdownMenuItem
+                    key={model}
+                    onClick={() => {
+                      updateProject(project.id, {
+                        chat: {
+                          ...project.chat,
+                          model,
+                        },
+                      });
+                    }}
+                    className="text-xs"
+                  >
+                    {model}
+                  </DropdownMenuItem>
+                )
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
