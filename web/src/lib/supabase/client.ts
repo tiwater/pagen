@@ -11,30 +11,6 @@ export interface Attachment {
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    cookies: {
-      getAll() {
-        if (typeof window === 'undefined') return [];
-        return document.cookie.split("; ").map((cookie) => {
-          const [name, value] = cookie.split("=");
-          return { name, value };
-        });
-      },
-      setAll(cookiesToSet) {
-        if (typeof window === 'undefined') return;
-        cookiesToSet.forEach(({ name, value, options }) => {
-          // Get the current hostname
-          const domain = window.location.hostname;
-          // If it's localhost, don't set domain
-          const domainPart = domain === 'localhost' ? '' : `; domain=${domain}`;
-          
-          document.cookie = `${name}=${value}; path=${
-            options?.path || "/"
-          }; secure; samesite=lax${domainPart}`;
-        });
-      },
-    },
-  }
 );
 
 // Export a function that returns the singleton instance
