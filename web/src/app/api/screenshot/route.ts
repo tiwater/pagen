@@ -1,14 +1,20 @@
 import { uploadFile } from '@/lib/supabase/client';
 import { NextResponse } from 'next/server';
 
+const webshotUrl = process.env.NEXT_PUBLIC_WEBSHOT_URL || 'https://pages-webshot.tisvc.com';
 
 export async function POST(request: Request) {
   try {
     const { projectId, path } = await request.json();
-    const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
-    const pageUrl = `${baseUrl}/p/${projectId}${path ? `/${path}` : ''}`;
-    // const pageUrl = `https://www.google.com`; // for testing
-    const response = await fetch('https://pages-webshot.tisvc.com/chrome/screenshot', {
+    const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com/chrome';
+    let pageUrl = `${baseUrl}/p/${projectId}${path ? `/${path}` : ''}`;
+    if (process.env.NODE_ENV === 'development' && baseUrl.includes('localhost')) {
+      // We assumed the webshot service is running as a docker container
+      // and it needs to access the target page using the host.docker.internal alias
+      pageUrl = pageUrl.replace(/\/\//g, '/').replace('localhost', 'host.docker.internal');
+    }
+    // const pageUrl = `https://www.google.com`; // for testing`
+    const response = await fetch(`${webshotUrl}/screenshot`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,7 +32,7 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to capture screenshot ${response.status}`);
+      throw new Error(`Failed to capture screenshot of ${pageUrl}: ${response.status}`);
     }
 
     // Get the image blob with explicit MIME type

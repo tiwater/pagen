@@ -3,23 +3,11 @@ import path from "path";
 import os from "os";
 
 const STORAGE_DIR = path.join(os.tmpdir(), "pagen-storage");
+console.log("STORAGE_DIR", STORAGE_DIR);
 
 // Ensure storage directory exists
 if (!fs.existsSync(STORAGE_DIR)) {
   fs.mkdirSync(STORAGE_DIR, { recursive: true });
-}
-
-interface PageTreeNode {
-  id: string;
-  path: string;
-  file: {
-    id: string;
-    name: string;
-    content: string;
-    metadata: {
-      title: string;
-    };
-  };
 }
 
 export function storePage(id: string, pageTree: string) {

@@ -29,6 +29,27 @@ pagen/
 
 ## Getting Started
 
+### Prerequisites
+
+1. Set up the Webshot Service:
+
+   ```bash
+   # Pull the browserless/chrome image
+   docker pull browserless/chrome
+
+   # Run the container on port 3001 (or any available port)
+   docker run -d --name webshot -p 3001:3000 browserless/chrome
+   ```
+
+   Note: The default port is 3000, but we use 3001 to avoid conflicts with the renderer service.
+   You can choose a different port if needed.
+
+2. Set up environment variables:
+   ```bash
+   # Set the webshot service URL (use the port you chose above)
+   NEXT_PUBLIC_WEBSHOT_URL=http://localhost:3001
+   ```
+
 ### Using Docker Compose (Recommended)
 
 1. Clone the repository
@@ -42,8 +63,7 @@ pagen/
 
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `BROWSERLESS_URL`
-   - `BROWSERLESS_TOKEN`
+   - `NEXT_PUBLIC_WEBSHOT_URL` (set to http://localhost:3001 or your chosen port)
 
 4. Build and start the services:
 
@@ -61,6 +81,7 @@ pagen/
 5. Access the applications:
    - Web App: [http://localhost:1578](http://localhost:1578)
    - Renderer: [http://localhost:3000](http://localhost:3000)
+   - Webshot Service: [http://localhost:3001](http://localhost:3001) (or your chosen port)
 
 ### Local Development
 
@@ -85,11 +106,16 @@ pagen/
    # Start specific application
    pnpm --filter @pagen/web dev
    pnpm --filter @pagen/renderer dev
+
+   # Ensure webshot service is running
+   docker ps | grep webshot # Check if running
+   docker start webshot    # Start if not running
    ```
 
 4. Open:
    - Web App: [http://localhost:1578](http://localhost:1578)
    - Renderer: [http://localhost:3345](http://localhost:3345)
+   - Webshot Service: [http://localhost:3001](http://localhost:3001) (or your chosen port)
 
 ## Technologies Used
 

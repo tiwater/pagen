@@ -34,6 +34,10 @@ paths:
                   type: string
                   description: The text prompt describing the webpage you want to generate
                   example: 'a beautiful login page with gradient background'
+                model:
+                  type: string
+                  description: The model to use for generation, defaults to gpt-4o, other options are deepseek-v3
+                  example: 'gpt-4o'
       responses:
         200:
           description: Successfully generated webpage screenshot
