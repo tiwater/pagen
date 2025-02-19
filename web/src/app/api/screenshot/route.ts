@@ -9,7 +9,11 @@ export async function POST(request: Request) {
   try {
     const { projectId, path } = await request.json();
     const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
-    let pageUrl = `${baseUrl}/p/${projectId}${path ? `/${path}` : ''}`;
+    let cleanPath = path ? path
+      .replace(/^app\//, '')
+      .replace(/\/page\.tsx$/, '')
+      .replace(/^page\.tsx$/, '') : '';
+    let pageUrl = `${baseUrl}/p/${projectId}${cleanPath ? `/${cleanPath}` : ''}`;
     if (process.env.NODE_ENV === 'development' && baseUrl.includes('localhost')) {
       // We assumed the webshot service is running as a docker container
       // and it needs to access the target page using the host.docker.internal alias
