@@ -93,7 +93,7 @@ function ChatMessage({ message, project: initialProject, className }: ChatMessag
       });
       processedRef.current = true;
     }
-  }, [message.content, message.role, message.id, project?.id, project?.pageTree, updateProject]);
+  }, [message.content, message.role, message.id, project, updateProject]);
 
   const renderCodeBlock = useCallback(
     ({ className, children }: { className?: string; children?: React.ReactNode }) => {
@@ -456,7 +456,7 @@ export function ChatUI({ project }: ChatUIProps) {
         pageTreeLength: updatedPageTree.length,
       });
     },
-    [project?.id, project?.pageTree, updateProject]
+    [project, updateProject]
   );
 
   // Scroll to bottom effect with debounce

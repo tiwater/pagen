@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   try {
     const { projectId, path } = await request.json();
     const baseUrl = process.env.NEXT_PUBLIC_RENDERER_URL || 'https://pages-renderer.tisvc.com';
-    let cleanPath = path ? path
+    const cleanPath = path ? path
       .replace(/^app\//, '')
       .replace(/\/page\.tsx$/, '')
       .replace(/^page\.tsx$/, '') : '';
