@@ -40,13 +40,43 @@ paths:
                   example: 'gpt-4o'
       responses:
         200:
-          description: Successfully generated webpage screenshot
+          description: Successfully generated project and pages
           content:
-            image/png:
+            application/json:
               schema:
-                type: string
-                format: binary
-                description: PNG image of the generated webpage
+                type: object
+                properties:
+                  project:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Unique ID of the generated project
+                      title:
+                        type: string
+                        description: Title of the project
+                      description:
+                        type: string
+                        description: Project description
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                      pageTree:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PageTreeNode'
+                      userId:
+                        type: string
+                      chat:
+                        type: object
+                        properties:
+                          projectId:
+                            type: string
+                          messages:
+                            type: array
         400:
           description: Bad request
           content:
@@ -67,3 +97,37 @@ paths:
                   error:
                     type: string
                     example: 'Failed to generate page'
+
+components:
+  schemas:
+    PageTreeNode:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique ID of the page node
+        path:
+          type: string
+          description: File path of the page
+        file:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique ID of the file
+            name:
+              type: string
+              description: Name of the file
+            content:
+              type: string
+              description: File content (TSX code)
+            metadata:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Title of the page
+        screenshot:
+          type: string
+          description: URL of the page screenshot
+          nullable: true
