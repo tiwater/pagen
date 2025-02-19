@@ -148,60 +148,6 @@ export function CodeWorkspace({ file, project }: CodeWorkspaceProps) {
                 <p>Take a screenshot of the current page</p>
               </TooltipContent>
             </Tooltip>
-            <Dialog>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" disabled={!file} className="h-7 w-7 p-0">
-                      <Icons.api className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>API to generate pages and get screenshots</p>
-                </TooltipContent>
-              </Tooltip>
-              <DialogContent className="sm:max-w-[600px]">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Icons.api className="h-5 w-5" />
-                    <span>Generate API</span>
-                  </DialogTitle>
-                  <DialogDescription className="space-y-2">
-                    <p>Use this API to generate a page from a prompt and get its screenshot.</p>
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <p>Send a POST request with the following command:</p>
-                  <div className="relative">
-                    <div className="rounded-lg overflow-hidden bg-muted">
-                      <pre className="p-4 text-xs overflow-x-auto whitespace-pre-wrap break-all">
-                        <code className="text-sm">
-                          {`curl -X POST ${'https://pages.tisvc.com'}/api/generate \\
-  -H "Content-Type: application/json" \\
-  -d '{"prompt": "Build a multi-page site about a new product"}'`}
-                        </code>
-                      </pre>
-                      <CopyButton
-                        className="absolute top-2 right-2 h-6 w-6"
-                        text={`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL || 'https://pages.tisvc.com'}/api/generate \\
-  -H "Content-Type: application/json" \\
-  -d '{"prompt": "a beautiful login page"}' \\
-  --output page.png`}
-                        prompt={`Command to generate page has been copied. You can paste it into your terminal.`}
-                      />
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    For more information on how to use this API, visit our{' '}
-                    <Link href="/docs" target="_blank" className="underline hover:text-primary">
-                      API documentation
-                    </Link>
-                    .
-                  </p>
-                </div>
-              </DialogContent>
-            </Dialog>
             <Link href={fullPreviewUrl} target="_blank" className="underline hover:text-primary">
               <Tooltip>
                 <TooltipTrigger asChild>

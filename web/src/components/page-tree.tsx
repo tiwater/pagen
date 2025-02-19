@@ -219,8 +219,8 @@ export function FileTree({
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between p-2 border-b h-10">
-        <div className="flex items-center gap-2">
-          <span>Pages</span>
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <span>Project</span>
         </div>
         <div className="flex items-center gap-2">
           <Button
