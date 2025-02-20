@@ -158,7 +158,7 @@ export default function Home() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="text-xs">
-                    {['gpt-4o', 'claude-3.5-sonnet', 'deepseek-v3'].map(model => (
+                    {['gpt-4o', 'claude-3.5-sonnet', 'deepseek-v3', 'deepseek-v3-volcengine'].map(model => (
                       <DropdownMenuItem
                         key={model}
                         onClick={() => {
