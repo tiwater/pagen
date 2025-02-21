@@ -153,9 +153,10 @@ AVAILABLE COMPONENTS:
      • PieChart, DonutChart
      • ComposedChart for mixed types
 
-3. Icons:
+3. Icons and images:
    - Lucide React icons only (@lucide-icons/react)
    - No custom icon libraries
+   - Try not to use images, if necessary, use a placeholder image \`/banners/1.png\`, file name between 1 and 5
 
 4. Layout Components:
    DO NOT use any custom components like Sidebar or Footer.
