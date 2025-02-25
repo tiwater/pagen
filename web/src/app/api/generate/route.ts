@@ -7,11 +7,11 @@ import { Project, PageTreeNode } from '@/types/project';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:1578';
 const RENDERER_URL = process.env.NEXT_PUBLIC_RENDERER_URL || 'http://localhost:3345';
 
-async function generateAllPages(projectId: string, initialPrompt: string, model: string): Promise<PageTreeNode[]> {
+async function generateAllPages(projectId: string, initialPrompt: string, model: string, loops: number): Promise<PageTreeNode[]> {
   let allPages: PageTreeNode[] = [];
   let currentPrompt = initialPrompt;
   let continuationCount = 0;
-  const MAX_CONTINUATIONS = 5; // Safety limit to prevent infinite loops
+  const MAX_CONTINUATIONS = loops || 5; // Safety limit to prevent infinite loops
 
   while (continuationCount < MAX_CONTINUATIONS) {
     const chatResponse = await fetch(`${BASE_URL}/api/chat`, {
@@ -95,7 +95,7 @@ async function generateAllPages(projectId: string, initialPrompt: string, model:
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, model = 'gpt-4' } = await request.json();
+    const { prompt, model = 'gpt-4', loops } = await request.json();
 
     if (!prompt) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), { status: 400 });
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Generate all pages with auto-continuation
-    const pageTree = await generateAllPages(project.id, prompt, model);
+    const pageTree = await generateAllPages(project.id, prompt, model, loops);
     project.pageTree = pageTree;
 
     // Now that we have all pages, send them to the renderer
