@@ -178,6 +178,33 @@ const Components = {
   // Chart components
   ...Recharts,
 
+  // Next.js routing hooks
+  useRouter: () => ({
+    push: () => {},
+    replace: () => {},
+    back: () => {},
+    forward: () => {},
+    refresh: () => {},
+    prefetch: () => {},
+    pathname: window.location.pathname,
+    query: {},
+    asPath: window.location.pathname,
+    basePath: "",
+    locale: "",
+    locales: [],
+    defaultLocale: "",
+    isReady: true,
+    isFallback: false,
+    isPreview: false,
+    events: {
+      on: () => {},
+      off: () => {},
+      emit: () => {},
+    },
+  }),
+  usePathname: () => window.location.pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
+
   // Styling
   tw,
 };
@@ -367,13 +394,55 @@ export function PreviewClient({ code }: { code: string }) {
     );
   }
 
+  class ErrorBoundary extends React.Component<
+    { children: React.ReactNode },
+    { hasError: boolean; error: Error | null }
+  > {
+    constructor(props: { children: React.ReactNode }) {
+      super(props);
+      this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error: Error) {
+      return { hasError: true, error };
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+      console.error('Component error:', error);
+      console.error('Error info:', errorInfo);
+    }
+
+    render() {
+      if (this.state.hasError) {
+        return (
+          <div className="p-4 text-red-500">
+            <h2>组件渲染错误</h2>
+            <pre className="whitespace-pre-wrap mt-2">
+              {this.state.error?.message}
+            </pre>
+            <button
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={() => this.setState({ hasError: false, error: null })}
+            >
+              重试
+            </button>
+          </div>
+        );
+      }
+
+      return this.props.children;
+    }
+  }
+
   try {
     return (
-      <div className="preview-container flex items-start justify-center h-screen overflow-y-auto w-full bg-background">
-        <div className="preview-content w-full h-full">
-          <Component />
+      <ErrorBoundary>
+        <div className="preview-container flex items-start justify-center h-screen overflow-y-auto w-full bg-background">
+          <div className="preview-content w-full h-full">
+            <Component />
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     );
   } catch (error) {
     console.error("Error rendering component:", error);
@@ -546,6 +615,10 @@ function compileComponent(
       Toast,
       Toaster,
       useToast,
+      // Next.js routing hooks
+      useRouter,
+      usePathname,
+      useSearchParams,
       // Recharts components
       AreaChart,
       LineChart,
